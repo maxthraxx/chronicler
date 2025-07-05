@@ -1,5 +1,28 @@
-/* Import Fonts */
-@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Uncial+Antiqua&display=swap');
+/* --- Local Font Definitions (from /static folder) --- */
+
+/* IM Fell English */
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/IM-Fell-English-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: italic;
+  font-weight: 400;
+  src: url('/fonts/IM-Fell-English-italic.woff2') format('woff2');
+}
+
+/* Uncial Antiqua */
+@font-face {
+  font-family: 'Uncial Antiqua';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/Uncial-Antiqua-regular.woff2') format('woff2');
+}
+
 
 @tailwind base;
 @tailwind components;
