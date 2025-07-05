@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { files, isWorldLoaded } from '$lib/worldStore';
-	import type { FileNode } from '$lib/bindings';
 	import FileTree from './FileTree.svelte';
 	import { filterFileTree } from '$lib/utils';
 
