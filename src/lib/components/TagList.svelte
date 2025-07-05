@@ -3,9 +3,7 @@
 	import type { TagMap } from '$lib/bindings';
 	import { tags as allTagsStore } from '$lib/worldStore';
 
-	// Provide a standard default value for the optional prop.
-	// You cannot use the $state rune as a default value for a prop.
-	let { tags = [] } = $props<{ tags?: TagMap }>();
+	let { tags } = $props<{ tags: TagMap }>();
 </script>
 
 <div class="tag-list">
