@@ -52,7 +52,7 @@ Chronicler is made for creators who believe in **ownership**, **privacy**, and *
 
 ---
 
-![Screenshot 4](https://github.com/user-attachments/assets/9b266b2b-ecaf-46af-9ffb-b669f6907231)
+![image](https://github.com/user-attachments/assets/bfc318e9-62eb-4968-8aa9-453c481465b4)
 
 ## 🧙‍♂️ Patreon Pitch
 
