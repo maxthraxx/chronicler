@@ -34,7 +34,7 @@
 			tabindex="0"
 		>
 			<span class="icon">📜</span>
-			<span>{node.name.replace('.md', '')}</span>
+			<span>{node.name}</span>
 		</div>
 	{/if}
 </div>
