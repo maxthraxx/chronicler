@@ -67,7 +67,7 @@
 	</div>
 
 	<div class="sidebar-footer">
-		<Button size="small" class="flex-grow" title="New Page" onclick={() => (showCreateFile = true)}>
+		<Button size="small" class="new-page-button" title="New Page" onclick={() => (showCreateFile = true)}>
 			+ New Page
 		</Button>
 		<Button variant="ghost" title="Settings" onclick={() => (showSettings = true)}>
@@ -132,7 +132,8 @@
 		align-items: center;
 		gap: 0.5rem;
 	}
-	:global(.sidebar-footer .flex-grow) {
+	/* Use :global() to apply styles to a class passed to a child component */
+	.sidebar-footer :global(.new-page-button) {
 		flex-grow: 1;
 	}
 </style>

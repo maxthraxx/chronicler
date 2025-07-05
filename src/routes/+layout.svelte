@@ -129,7 +129,7 @@
 		height: 100vh;
 		background-image: url('/parchment.jpg');
 		background-size: cover;
-		color: #4a3f35;
+		color: var(--ink);
 		padding: 2rem;
 	}
 	.error-message {
@@ -157,7 +157,7 @@
 		width: 100vw;
 		background-image: url('/parchment.jpg');
 		background-size: cover;
-		color: #4a3f35;
+		color: var(--ink);
 		font-family: 'IM Fell English', serif;
 	}
 	.main-content {
@@ -191,7 +191,7 @@
 		font-family: 'Uncial Antiqua', cursive;
 		font-size: 4rem;
 		margin-bottom: 1rem;
-		color: #6a5f55;
+		color: var(--ink-light);
 	}
 	.animate-spin {
 		animation: spin 2s linear infinite;

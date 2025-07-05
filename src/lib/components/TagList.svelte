@@ -41,12 +41,12 @@
 	}
 	.tag-group:hover,
 	.tag-group:focus {
-		background-color: rgba(0, 0, 0, 0.08);
+		background-color: var(--parchment-mid);
 		outline: none;
 	}
 	.tag-name {
 		font-weight: bold;
-		color: var(--accent-color);
+		color: var(--ink);
 	}
 	.tag-count {
 		color: var(--ink-light);

@@ -158,7 +158,7 @@
 	}
 	.tag-link {
 		background-color: rgba(0, 0, 0, 0.07);
-		color: var(--accent-color);
+		color: var(--ink);
 		padding: 0.2rem 0.6rem;
 		border-radius: 9999px; /* pill shape */
 		font-size: 0.8rem;
@@ -170,8 +170,7 @@
 	}
 	.tag-link:hover,
 	.tag-link:focus {
-		background-color: var(--accent-color);
-		color: var(--parchment);
+		background-color: var(--parchment-dark);
 		outline: none;
 		transform: translateY(-1px);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

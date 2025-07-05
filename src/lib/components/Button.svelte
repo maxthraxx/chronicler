@@ -56,12 +56,12 @@
 
 	/* --- Variants --- */
 	.primary {
-		border: 1px solid rgba(211, 199, 179, 0.5);
-		background-color: #d3c7b380;
-		color: var(--parchment);
+		border: 1px solid var(--parchment-mid);
+		background-color: var(--parchment-mid);
+		color: var(--ink);
 	}
 	.primary:hover:not(:disabled) {
-		background-color: #d3c7b3;
+		background-color: var(--parchment-dark);
 	}
 
 	.ghost {

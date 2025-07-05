@@ -55,11 +55,11 @@
 	}
 	.directory:hover,
 	.file:hover {
-		background-color: rgba(0, 0, 0, 0.08);
+		background-color: var(--parchment-mid);
 	}
 	.file.active {
-		background-color: var(--accent-color);
-		color: var(--parchment);
+		background-color: var(--parchment-dark);
+		color: var(--ink);
 	}
 	.children {
 		padding-left: 1rem;

@@ -79,16 +79,8 @@
 	li {
 		margin-bottom: 0.5rem;
 	}
-	.link-button {
-		background: none;
-		border: none;
-		padding: 0;
-		color: #2563eb;
-		text-decoration: none;
-		border-bottom: 1px dotted #2563eb;
-		cursor: pointer;
-		text-align: left;
-		font-family: inherit;
+	/* Target the global helper class within this component */
+	.sidebar-content :global(.link-button) {
 		font-size: 0.95rem;
 	}
 	.no-results {
