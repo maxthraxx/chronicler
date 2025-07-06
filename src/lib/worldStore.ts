@@ -1,25 +1,25 @@
-import { writable, derived } from 'svelte/store';
-import { listen } from '@tauri-apps/api/event';
-import { getFileTree, getAllTags, getVaultPath } from './commands';
-import type { FileNode, TagMap } from './bindings';
+import { writable, derived } from "svelte/store";
+import { listen } from "@tauri-apps/api/event";
+import { getFileTree, getAllTags, getVaultPath } from "./commands";
+import type { FileNode, TagMap } from "./bindings";
 
 /**
  * The shape of the core application data.
  */
 export interface WorldState {
-	vaultPath: string | null;
-	files: FileNode | null;
-	tags: TagMap;
-	isLoaded: boolean;
-	error: string | null;
+    vaultPath: string | null;
+    files: FileNode | null;
+    tags: TagMap;
+    isLoaded: boolean;
+    error: string | null;
 }
 
 const initialState: WorldState = {
-	vaultPath: null,
-	files: null,
-	tags: [],
-	isLoaded: false,
-	error: null
+    vaultPath: null,
+    files: null,
+    tags: [],
+    isLoaded: false,
+    error: null,
 };
 
 /**
@@ -27,59 +27,72 @@ const initialState: WorldState = {
  * This encapsulates asynchronous loading, error handling, and real-time updates.
  */
 function createWorldStore() {
-	const { subscribe, set, update } = writable<WorldState>(initialState);
-	let unlisten: (() => void) | null = null;
+    const { subscribe, set, update } = writable<WorldState>(initialState);
+    let unlisten: (() => void) | null = null;
 
-	/**
-	 * Fetches all necessary data from the backend and updates the store state.
-	 */
-	const loadData = async () => {
-		try {
-			// Fetch all data in parallel for efficiency.
-			const [files, tags, vaultPath] = await Promise.all([
-				getFileTree(),
-				getAllTags(),
-				getVaultPath()
-			]);
-			update((s) => ({ ...s, files, tags, vaultPath, isLoaded: true, error: null }));
-		} catch (e: any) {
-			console.error('Failed to load world data:', e);
-			update((s) => ({ ...s, isLoaded: false, error: `Failed to load world data: ${e.message}` }));
-		}
-	};
+    /**
+     * Fetches all necessary data from the backend and updates the store state.
+     */
+    const loadData = async () => {
+        try {
+            // Fetch all data in parallel for efficiency.
+            const [files, tags, vaultPath] = await Promise.all([
+                getFileTree(),
+                getAllTags(),
+                getVaultPath(),
+            ]);
+            update((s) => ({
+                ...s,
+                files,
+                tags,
+                vaultPath,
+                isLoaded: true,
+                error: null,
+            }));
+        } catch (e: any) {
+            console.error("Failed to load world data:", e);
+            update((s) => ({
+                ...s,
+                isLoaded: false,
+                error: `Failed to load world data: ${e.message}`,
+            }));
+        }
+    };
 
-	return {
-		subscribe, // so components can subscribe to the store via $
-		/**
-		 * Initializes the store by loading data for the first time and setting up
-		 * the real-time event listener for backend updates.
-		 */
-		initialize: async () => {
-			// Ensure we don't set up multiple listeners
-			if (unlisten) {
-				unlisten();
-				unlisten = null;
-			}
+    return {
+        subscribe, // so components can subscribe to the store via $
+        /**
+         * Initializes the store by loading data for the first time and setting up
+         * the real-time event listener for backend updates.
+         */
+        initialize: async () => {
+            // Ensure we don't set up multiple listeners
+            if (unlisten) {
+                unlisten();
+                unlisten = null;
+            }
 
-			await loadData();
+            await loadData();
 
-			unlisten = await listen('index-updated', () => {
-				console.log('Index update received from backend, refreshing world data...');
-				loadData();
-			});
-		},
-		/**
-		 * Resets the store to its initial state and cleans up any active listeners.
-		 * This should be called when the user changes or closes the vault.
-		 */
-		destroy: () => {
-			if (unlisten) {
-				unlisten();
-				unlisten = null;
-			}
-			set(initialState);
-		}
-	};
+            unlisten = await listen("index-updated", () => {
+                console.log(
+                    "Index update received from backend, refreshing world data...",
+                );
+                loadData();
+            });
+        },
+        /**
+         * Resets the store to its initial state and cleans up any active listeners.
+         * This should be called when the user changes or closes the vault.
+         */
+        destroy: () => {
+            if (unlisten) {
+                unlisten();
+                unlisten = null;
+            }
+            set(initialState);
+        },
+    };
 }
 
 /**

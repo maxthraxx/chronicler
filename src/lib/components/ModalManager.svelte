@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { activeModal } from '$lib/modalStore';
+    import { activeModal } from "$lib/modalStore";
 
-	/**
-	 * This component acts as the single "listener" for the modal system.
-	 * It is placed once in the root layout (`+layout.svelte`) and its only job
-	 * is to watch the `$activeModal` store.
-	 */
+    /**
+     * This component acts as the single "listener" for the modal system.
+     * It is placed once in the root layout (`+layout.svelte`) and its only job
+     * is to watch the `$activeModal` store.
+     */
 </script>
 
 <!--
@@ -21,5 +21,5 @@
   (e.g., `RenameModal`) is rendered *inside* this `ModalManager` component.
 -->
 {#if $activeModal}
-	<svelte:component this={$activeModal.component} {...$activeModal.props} />
+    <svelte:component this={$activeModal.component} {...$activeModal.props} />
 {/if}

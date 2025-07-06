@@ -3,23 +3,23 @@
  * Svelte components in the application.
  */
 
-import type { FileNode } from './bindings';
-import type { Component } from 'svelte';
+import type { FileNode } from "./bindings";
+import type { Component } from "svelte";
 
 // --- Context Menu Types ---
 
 /** A standard action item in the context menu. */
 export type MenuAction = {
-	label: string;
-	handler: () => void;
-	isSeparator?: undefined;
+    label: string;
+    handler: () => void;
+    isSeparator?: undefined;
 };
 
 /** A separator line in the context menu. */
 export type MenuSeparator = {
-	isSeparator: true;
-	label?: undefined;
-	handler?: undefined;
+    isSeparator: true;
+    label?: undefined;
+    handler?: undefined;
 };
 
 /** A union type representing any possible item in the context menu. */

@@ -1,5 +1,11 @@
-import { invoke } from '@tauri-apps/api/core';
-import type { FileNode, FullPageData, PageHeader, RenderedPage, TagMap } from './bindings';
+import { invoke } from "@tauri-apps/api/core";
+import type {
+    FileNode,
+    FullPageData,
+    PageHeader,
+    RenderedPage,
+    TagMap,
+} from "./bindings";
 
 /**
  * A wrapper around Tauri's invoke to provide type safety and a single point of entry
@@ -13,14 +19,15 @@ import type { FileNode, FullPageData, PageHeader, RenderedPage, TagMap } from '.
  * Retrieves the stored vault path from the configuration file.
  * @returns A promise that resolves to the vault path string or null if not set.
  */
-export const getVaultPath = () => invoke<string | null>('get_vault_path');
+export const getVaultPath = () => invoke<string | null>("get_vault_path");
 
 /**
  * Sets the vault path, saves it to config, and initializes the world state.
  * @param path The absolute path to the new vault directory.
  * @returns A promise that resolves when the vault is successfully initialized.
  */
-export const initializeVault = (path: string) => invoke<void>('initialize_vault', { path });
+export const initializeVault = (path: string) =>
+    invoke<void>("initialize_vault", { path });
 
 // --- Sidebar and Indexing Commands ---
 
@@ -28,19 +35,20 @@ export const initializeVault = (path: string) => invoke<void>('initialize_vault'
  * Returns the hierarchical file tree structure of the vault.
  * @returns A promise that resolves to the root FileNode of the vault.
  */
-export const getFileTree = () => invoke<FileNode>('get_file_tree');
+export const getFileTree = () => invoke<FileNode>("get_file_tree");
 
 /**
  * Returns the tag index mapping tags to lists of pages that contain them.
  * @returns A promise that resolves to a map of tags to page paths.
  */
-export const getAllTags = () => invoke<TagMap>('get_all_tags');
+export const getAllTags = () => invoke<TagMap>("get_all_tags");
 
 /**
  * Returns a list of all directory paths in the vault.
  * @returns A promise that resolves to an array of directory path strings.
  */
-export const getAllDirectoryPaths = () => invoke<string[]>('get_all_directory_paths');
+export const getAllDirectoryPaths = () =>
+    invoke<string[]>("get_all_directory_paths");
 
 // --- Page & File Operation Commands ---
 
@@ -49,7 +57,8 @@ export const getAllDirectoryPaths = () => invoke<string[]>('get_all_directory_pa
  * @param path The path to the file to build the view for.
  * @returns A promise that resolves to the complete data for the page view.
  */
-export const buildPageView = (path: string) => invoke<FullPageData>('build_page_view', { path });
+export const buildPageView = (path: string) =>
+    invoke<FullPageData>("build_page_view", { path });
 
 /**
  * Writes new content to a page on disk.
@@ -58,7 +67,7 @@ export const buildPageView = (path: string) => invoke<FullPageData>('build_page_
  * @returns A promise that resolves when the file has been written.
  */
 export const writePageContent = (path: string, content: string) =>
-	invoke('write_page_content', { path, content });
+    invoke("write_page_content", { path, content });
 
 /**
  * Renders a preview of markdown content without saving it to disk.
@@ -66,7 +75,7 @@ export const writePageContent = (path: string, content: string) =>
  * @returns A promise that resolves to the rendered page data.
  */
 export const renderPagePreview = (content: string) =>
-	invoke<RenderedPage>('render_page_preview', { content });
+    invoke<RenderedPage>("render_page_preview", { content });
 
 /**
  * Creates a new, empty markdown file.
@@ -75,7 +84,7 @@ export const renderPagePreview = (content: string) =>
  * @returns A promise that resolves to the header data of the newly created page.
  */
 export const createNewFile = (parentDir: string, fileName: string) =>
-	invoke<PageHeader>('create_new_file', { parentDir, fileName });
+    invoke<PageHeader>("create_new_file", { parentDir, fileName });
 
 /**
  * Creates a new, empty folder.
@@ -83,7 +92,7 @@ export const createNewFile = (parentDir: string, fileName: string) =>
  * @param folderName The name for the new folder.
  */
 export const createNewFolder = (parentDir: string, folderName: string) =>
-	invoke<void>('create_new_folder', { parentDir, folderName });
+    invoke<void>("create_new_folder", { parentDir, folderName });
 
 /**
  * Renames a file or folder.
@@ -91,14 +100,14 @@ export const createNewFolder = (parentDir: string, folderName: string) =>
  * @param newName The new name for the item.
  */
 export const renamePath = (path: string, newName: string) =>
-	invoke<void>('rename_path', { path, newName });
+    invoke<void>("rename_path", { path, newName });
 
 /**
  * Deletes a file or folder.
  * @param path The path of the item to delete.
  */
-export const deletePath = (path: string) => invoke<void>('delete_path', { path });
-
+export const deletePath = (path: string) =>
+    invoke<void>("delete_path", { path });
 
 // --- Importer Commands ---
 
@@ -106,13 +115,13 @@ export const deletePath = (path: string) => invoke<void>('delete_path', { path }
  * Checks if Pandoc is installed in the application's config directory.
  * @returns A promise that resolves to true if Pandoc is found, false otherwise.
  */
-export const isPandocInstalled = () => invoke<boolean>('is_pandoc_installed');
+export const isPandocInstalled = () => invoke<boolean>("is_pandoc_installed");
 
 /**
  * Downloads and extracts Pandoc to the application's config directory.
  * @returns A promise that resolves when Pandoc has been successfully downloaded.
  */
-export const downloadPandoc = () => invoke<void>('download_pandoc');
+export const downloadPandoc = () => invoke<void>("download_pandoc");
 
 /**
  * Imports a list of .docx files, converting them to Markdown.
@@ -120,4 +129,4 @@ export const downloadPandoc = () => invoke<void>('download_pandoc');
  * @returns A promise that resolves to an array of paths of the newly created Markdown files.
  */
 export const importDocxFiles = (docxPaths: string[]) =>
-	invoke<string[]>('import_docx_files', { docxPaths });
+    invoke<string[]>("import_docx_files", { docxPaths });

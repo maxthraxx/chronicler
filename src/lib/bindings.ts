@@ -3,14 +3,14 @@
 // is crucial for type safety between frontend and backend.
 
 export interface PageHeader {
-	title: string;
-	path: string; // In Rust this is PathBuf
+    title: string;
+    path: string; // In Rust this is PathBuf
 }
 
 export interface FileNode {
-	name: string;
-	path: string; // In Rust this is PathBuf
-	children?: FileNode[];
+    name: string;
+    path: string; // In Rust this is PathBuf
+    children?: FileNode[];
 }
 
 export type TagMap = [string, string[]][];
