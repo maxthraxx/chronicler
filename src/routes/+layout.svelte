@@ -48,7 +48,7 @@
 		$appStatus = 'selecting_vault';
 	}
 
-	function startResize(event: MouseEvent) {
+	function startResize() {
 		isResizing = true;
 		// Add the passive option for better scroll performance during resize.
 		window.addEventListener('mousemove', doResize, { passive: true });
