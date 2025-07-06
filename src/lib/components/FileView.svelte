@@ -8,6 +8,7 @@
 	import { buildPageView, writePageContent, renderPagePreview } from '$lib/commands';
 	import type { PageHeader, FullPageData } from '$lib/bindings';
 	import { findFileInTree } from '$lib/utils';
+	import { AUTOSAVE_DEBOUNCE_MS } from '$lib/config';
 
 	let { file } = $props<{ file: PageHeader }>();
 
@@ -91,7 +92,7 @@
 					console.error('Failed to save or re-render content:', e);
 					saveStatus = 'error';
 				});
-		}, 500); // Debounce interval
+		}, AUTOSAVE_DEBOUNCE_MS);
 	});
 
 	// This effect navigates away if the current file is deleted from the vault.

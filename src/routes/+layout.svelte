@@ -6,6 +6,7 @@
 	import { getVaultPath } from '$lib/commands';
 	import VaultSelector from '$lib/components/VaultSelector.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH, SIDEBAR_KEYBOARD_RESIZE_STEP } from '$lib/config';
 	import '../app.css';
 
 	let { children } = $props();
@@ -56,7 +57,7 @@
 	function doResize(event: MouseEvent) {
 		if (isResizing) {
 			const newWidth = event.clientX;
-			if (newWidth > 200 && newWidth < 600) {
+			if (newWidth > SIDEBAR_MIN_WIDTH && newWidth < SIDEBAR_MAX_WIDTH) {
 				sidebarWidth = newWidth;
 			}
 		}
@@ -71,11 +72,11 @@
 	function handleKeyResize(event: KeyboardEvent) {
 		if (event.key === 'ArrowLeft') {
 			event.preventDefault();
-			const newWidth = Math.max(200, sidebarWidth - 10);
+			const newWidth = Math.max(SIDEBAR_MIN_WIDTH, sidebarWidth - SIDEBAR_KEYBOARD_RESIZE_STEP);
 			sidebarWidth = newWidth;
 		} else if (event.key === 'ArrowRight') {
 			event.preventDefault();
-			const newWidth = Math.min(600, sidebarWidth + 10);
+			const newWidth = Math.min(SIDEBAR_MAX_WIDTH, sidebarWidth + SIDEBAR_KEYBOARD_RESIZE_STEP);
 			sidebarWidth = newWidth;
 		}
 	}
@@ -107,8 +108,8 @@
 			aria-label="Resize sidebar"
 			aria-orientation="vertical"
 			aria-valuenow={sidebarWidth}
-			aria-valuemin={200}
-			aria-valuemax={600}
+			aria-valuemin={SIDEBAR_MIN_WIDTH}
+			aria-valuemax={SIDEBAR_MAX_WIDTH}
 			style="left: {sidebarWidth - 2.5}px;"
 		></div>
 
