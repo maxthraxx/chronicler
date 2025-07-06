@@ -6,6 +6,7 @@
 	import { getVaultPath } from '$lib/commands';
 	import VaultSelector from '$lib/components/VaultSelector.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import ModalManager from '$lib/components/ModalManager.svelte';
 	import { SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH, SIDEBAR_KEYBOARD_RESIZE_STEP } from '$lib/config';
 	import '../app.css';
 
@@ -81,6 +82,8 @@
 		}
 	}
 </script>
+
+<ModalManager />
 
 {#if $appStatus === 'selecting_vault'}
 	<VaultSelector onVaultSelected={handleVaultSelected} />

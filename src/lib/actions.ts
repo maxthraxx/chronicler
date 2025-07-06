@@ -1,13 +1,13 @@
 import { currentView, appStatus } from '$lib/stores';
 import type { PageHeader, TagMap } from '$lib/bindings';
 import type { ViewState } from '$lib/stores';
-import { initializeVault as invokeInitializeVault } from './commands';
+// Import all commands under a 'commands' namespace to prevent naming conflicts.
+import * as commands from './commands';
 import { getTitleFromPath } from './utils';
+import { world } from './worldStore';
 
 /**
  * Navigates to the tag index view for the selected tag.
- * This is a centralized action to ensure consistent navigation behavior
- * from anywhere in the app.
  *
  * @param tagName The name of the tag to navigate to.
  * @param allTags The complete map of all tags and their associated page paths.
@@ -21,7 +21,6 @@ export function navigateToTag(tagName: string, allTags: TagMap) {
 	}
 
 	const pagePaths = tagData[1];
-
 	const pages: PageHeader[] = pagePaths.map((path) => ({
 		path,
 		title: getTitleFromPath(path)
@@ -40,18 +39,72 @@ export function navigateToTag(tagName: string, allTags: TagMap) {
 
 /**
  * Initializes the vault at the given path.
- * This sets the app status, calls the backend, and handles success/error states.
- * On failure, it throws an error to be caught by the calling component.
- * @param path The absolute path to the vault folder.
  */
 export async function initializeVault(path: string) {
 	appStatus.set('loading');
 	try {
-		await invokeInitializeVault(path);
+		await commands.initializeVault(path);
 		appStatus.set('ready');
 	} catch (e) {
 		console.error(`Failed to initialize vault at ${path}:`, e);
 		// Re-throw the error so the calling component can handle it (e.g., display a message)
 		throw new Error(`Could not open vault at "${path}". Please ensure it is a valid directory. Error: ${e}`);
+	}
+}
+
+/**
+ * Creates a new file, then navigates the main view to that file.
+ */
+export async function createFile(parentDir: string, name: string) {
+	try {
+		const newPage = await commands.createNewFile(parentDir, name);
+		currentView.set({ type: 'file', data: newPage });
+		return newPage;
+	} catch (e) {
+		console.error('Failed to create file:', e);
+		alert(`Error: ${e}`);
+		throw e;
+	}
+}
+
+/**
+ * Renames a file or folder and then refreshes the world state.
+ */
+export async function renamePath(path: string, newName: string) {
+	try {
+		await commands.renamePath(path, newName);
+		await world.initialize(); // Refresh data
+	} catch (e) {
+		console.error(`Rename failed for path: ${path}`, e);
+		alert(`Error: ${e}`);
+		throw e;
+	}
+}
+
+/**
+ * Deletes a file or folder and then refreshes the world state.
+ */
+export async function deletePath(path: string) {
+	try {
+		await commands.deletePath(path);
+		await world.initialize(); // Refresh data
+	} catch (e) {
+		console.error(`Delete failed for path: ${path}`, e);
+		alert(`Error: ${e}`);
+		throw e;
+	}
+}
+
+/**
+ * Creates a new folder and then refreshes the world state.
+ */
+export async function createFolder(parentDir: string, name: string) {
+	try {
+		await commands.createNewFolder(parentDir, name);
+		await world.initialize(); // Refresh data
+	} catch (e) {
+		console.error(`Failed to create folder in: ${parentDir}`, e);
+		alert(`Error: ${e}`);
+		throw e;
 	}
 }

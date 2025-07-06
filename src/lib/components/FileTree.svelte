@@ -1,9 +1,16 @@
 <script lang="ts">
 	import type { FileNode, PageHeader } from '$lib/bindings';
+	import type { ContextMenuHandler } from '$lib/types';
 	import { currentView } from '$lib/stores';
 	import FileTree from './FileTree.svelte';
 
-	let { node } = $props<{ node: FileNode }>();
+	let {
+		node,
+		onContextMenu
+	} = $props<{
+		node: FileNode;
+		onContextMenu: ContextMenuHandler;
+	}>();
 	let expanded = $state(true);
 
 	function openFile(file: PageHeader) {
@@ -13,14 +20,24 @@
 
 <div class="file-node">
 	{#if node.children}
-		<div class="directory" onclick={() => (expanded = !expanded)} onkeydown={e => e.key === 'Enter' && (expanded = !expanded)} role="button" tabindex="0">
+		<div
+			class="directory"
+			onclick={() => (expanded = !expanded)}
+			onkeydown={(e) => e.key === 'Enter' && (expanded = !expanded)}
+			role="button"
+			tabindex="0"
+			oncontextmenu={(e) => {
+				e.preventDefault();
+				onContextMenu(e, node);
+			}}
+		>
 			<span class="icon">{expanded ? '▼' : '►'}</span>
 			<span>{node.name}</span>
 		</div>
 		{#if expanded}
 			<div class="children">
 				{#each node.children as child}
-					<FileTree node={child} />
+					<FileTree node={child} {onContextMenu} />
 				{/each}
 			</div>
 		{/if}
@@ -29,9 +46,13 @@
 			class="file"
 			class:active={$currentView.type === 'file' && $currentView.data?.path === node.path}
 			onclick={() => openFile({ title: node.name, path: node.path })}
-			onkeydown={e => e.key === 'Enter' && openFile({ title: node.name, path: node.path })}
+			onkeydown={(e) => e.key === 'Enter' && openFile({ title: node.name, path: node.path })}
 			role="button"
 			tabindex="0"
+			oncontextmenu={(e) => {
+				e.preventDefault();
+				onContextMenu(e, node);
+			}}
 		>
 			<span class="icon">📜</span>
 			<span>{node.name}</span>

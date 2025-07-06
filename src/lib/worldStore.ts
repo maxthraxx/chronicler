@@ -1,12 +1,13 @@
 import { writable, derived } from 'svelte/store';
 import { listen } from '@tauri-apps/api/event';
-import { getFileTree, getAllTags } from './commands';
+import { getFileTree, getAllTags, getVaultPath } from './commands';
 import type { FileNode, TagMap } from './bindings';
 
 /**
  * The shape of the core application data.
  */
 export interface WorldState {
+	vaultPath: string | null;
 	files: FileNode | null;
 	tags: TagMap;
 	isLoaded: boolean;
@@ -14,6 +15,7 @@ export interface WorldState {
 }
 
 const initialState: WorldState = {
+	vaultPath: null,
 	files: null,
 	tags: [],
 	isLoaded: false,
@@ -33,8 +35,13 @@ function createWorldStore() {
 	 */
 	const loadData = async () => {
 		try {
-			const [files, tags] = await Promise.all([getFileTree(), getAllTags()]);
-			update((s) => ({ ...s, files, tags, isLoaded: true, error: null }));
+			// Fetch all data in parallel for efficiency.
+			const [files, tags, vaultPath] = await Promise.all([
+				getFileTree(),
+				getAllTags(),
+				getVaultPath()
+			]);
+			update((s) => ({ ...s, files, tags, vaultPath, isLoaded: true, error: null }));
 		} catch (e: any) {
 			console.error('Failed to load world data:', e);
 			update((s) => ({ ...s, isLoaded: false, error: `Failed to load world data: ${e.message}` }));
@@ -84,6 +91,11 @@ export const world = createWorldStore();
 
 // --- Derived Stores ---
 // Components should import these directly to make their data dependencies explicit.
+
+/**
+ * A derived store that only contains the vault's root path.
+ */
+export const vaultPath = derived(world, ($world) => $world.vaultPath);
 
 /**
  * A derived store that only contains the file tree.

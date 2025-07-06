@@ -77,6 +77,29 @@ export const renderPagePreview = (content: string) =>
 export const createNewFile = (parentDir: string, fileName: string) =>
 	invoke<PageHeader>('create_new_file', { parentDir, fileName });
 
+/**
+ * Creates a new, empty folder.
+ * @param parentDir The directory where the new folder should be created.
+ * @param folderName The name for the new folder.
+ */
+export const createNewFolder = (parentDir: string, folderName: string) =>
+	invoke<void>('create_new_folder', { parentDir, folderName });
+
+/**
+ * Renames a file or folder.
+ * @param path The current path of the item to rename.
+ * @param newName The new name for the item.
+ */
+export const renamePath = (path: string, newName: string) =>
+	invoke<void>('rename_path', { path, newName });
+
+/**
+ * Deletes a file or folder.
+ * @param path The path of the item to delete.
+ */
+export const deletePath = (path: string) => invoke<void>('delete_path', { path });
+
+
 // --- Importer Commands ---
 
 /**

@@ -1,44 +1,58 @@
 <script lang="ts">
-	import { appStatus, resetAllStores, currentView } from '$lib/stores';
-	import { world, tags } from '$lib/worldStore';
-	import type { PageHeader } from '$lib/bindings';
+	import { appStatus, resetAllStores } from '$lib/stores';
+	import { world, tags, vaultPath } from '$lib/worldStore';
+	import { createFile } from '$lib/actions';
+	import { openModal, closeModal } from '$lib/modalStore';
 	import FileExplorer from './FileExplorer.svelte';
 	import TagList from './TagList.svelte';
 	import SettingsModal from './SettingsModal.svelte';
-	import CreateFileModal from './CreateFileModal.svelte';
+	import TextInputModal from './TextInputModal.svelte';
 	import Button from './Button.svelte';
 	import SearchInput from './SearchInput.svelte';
 
 	let { width = $bindable() } = $props();
 	let activeTab = $state<'files' | 'tags'>('files');
 	let searchTerm = $state('');
-	let showSettings = $state(false);
-	let showCreateFile = $state(false);
 
-	function onChangeVault() {
-		showSettings = false;
-		world.destroy();
-		resetAllStores();
-		appStatus.set('selecting_vault');
+	function showSettings() {
+		openModal({
+			component: SettingsModal,
+			props: {
+				onClose: closeModal,
+				onChangeVault: () => {
+					closeModal();
+					world.destroy();
+					resetAllStores();
+					appStatus.set('selecting_vault');
+				}
+			}
+		});
 	}
 
-	function onFileCreated(page: PageHeader) {
-		showCreateFile = false;
-		currentView.set({ type: 'file', data: page });
+	function showCreateFile() {
+		if ($vaultPath) {
+			openModal({
+				component: TextInputModal,
+				props: {
+					title: 'New Page',
+					label: 'Enter the name for the new page:',
+					buttonText: 'Create',
+					onClose: closeModal,
+					onSubmit: (name: string) => {
+						createFile($vaultPath as string, name);
+						closeModal();
+					}
+				}
+			});
+		} else {
+			alert('Could not determine the vault path. Cannot create file.');
+		}
 	}
 
 	const filteredTags = $derived(
 		$tags.filter(([tag]) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
 	);
 </script>
-
-{#if showSettings}
-	<SettingsModal onClose={() => (showSettings = false)} {onChangeVault} />
-{/if}
-
-{#if showCreateFile}
-	<CreateFileModal onClose={() => (showCreateFile = false)} {onFileCreated} />
-{/if}
 
 <aside style="width: {width}px;">
 	<div class="sidebar-header">
@@ -67,10 +81,15 @@
 	</div>
 
 	<div class="sidebar-footer">
-		<Button size="small" class="new-page-button" title="New Page" onclick={() => (showCreateFile = true)}>
+		<Button
+			size="small"
+			class="new-page-button"
+			title="New Page"
+			onclick={showCreateFile}
+		>
 			+ New Page
 		</Button>
-		<Button variant="ghost" title="Settings" onclick={() => (showSettings = true)}>
+		<Button variant="ghost" title="Settings" onclick={showSettings}>
 			⚙️
 		</Button>
 	</div>
