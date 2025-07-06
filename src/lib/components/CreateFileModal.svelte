@@ -109,7 +109,6 @@
 		border: 1px solid var(--border-color);
 		background-color: var(--parchment);
 		color: var(--ink);
-		font-family: 'IM Fell English', serif;
 		font-size: 1rem;
 	}
 	.text-input:focus,

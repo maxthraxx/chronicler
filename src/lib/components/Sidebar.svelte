@@ -108,7 +108,6 @@
 		padding: 0.75rem;
 		background: none;
 		border: none;
-		font-family: 'IM Fell English', serif;
 		font-size: 1rem;
 		cursor: pointer;
 		color: var(--ink-light);

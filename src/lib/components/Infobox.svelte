@@ -166,7 +166,6 @@
 		border: 1px solid transparent;
 		cursor: pointer;
 		transition: all 0.2s ease-in-out;
-		font-family: 'IM Fell English', serif;
 	}
 	.tag-link:hover,
 	.tag-link:focus {

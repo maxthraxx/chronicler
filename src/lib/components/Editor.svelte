@@ -22,7 +22,6 @@
 		border: none;
 		outline: none;
 		resize: none;
-		font-family: 'IM Fell English', serif;
 		font-size: 1.1rem;
 		line-height: 1.8;
 		color: var(--ink);
