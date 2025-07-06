@@ -378,6 +378,87 @@ tags:
         Ok(PageHeader { title, path })
     }
 
+    /// Creates a new, empty folder.
+    #[instrument(skip(self))]
+    pub fn create_new_folder(&self, parent_dir: String, folder_name: String) -> Result<()> {
+        let path = Path::new(&parent_dir).join(folder_name.trim());
+        if path.exists() {
+            return Err(ChroniclerError::FileAlreadyExists(path));
+        }
+        fs::create_dir_all(path)?;
+        // The file watcher will pick up this change and trigger a global index update.
+        Ok(())
+    }
+
+    /// Renames a file or folder and intelligently updates the index.
+    #[instrument(skip(self))]
+    pub fn rename_path(&mut self, old_path: PathBuf, new_name: String) -> Result<()> {
+        let parent = old_path
+            .parent()
+            .ok_or_else(|| ChroniclerError::InvalidPath(old_path.clone()))?;
+        let mut new_path = parent.join(new_name.trim());
+
+        // For files, ensure the .md extension is preserved or added.
+        if old_path.is_file() {
+            if !new_path.to_string_lossy().to_lowercase().ends_with(".md") {
+                let stem = path_to_stem_string(&new_path);
+                new_path.set_file_name(format!("{}.md", stem));
+            }
+        }
+
+        if new_path.exists() {
+            return Err(ChroniclerError::FileAlreadyExists(new_path));
+        }
+
+        fs::rename(&old_path, &new_path)?;
+
+        // The watcher will see this as a delete and a create. To avoid race conditions
+        // and ensure data integrity (especially for directories), we perform a manual,
+        // optimized update of the index in memory.
+
+        let old_path_str = old_path.to_string_lossy();
+        let new_path_str = new_path.to_string_lossy();
+        let pages_to_update: Vec<PathBuf> = self.pages.keys().cloned().collect();
+        let mut updated_pages = HashMap::new();
+
+        for path in pages_to_update {
+            // Check if the page was the renamed item itself or inside a renamed directory
+            if path.starts_with(&old_path) {
+                let new_page_path_str =
+                    path.to_string_lossy()
+                        .replacen(&*old_path_str, &new_path_str, 1);
+                let new_page_path = PathBuf::from(new_page_path_str);
+
+                if let Some(mut page) = self.pages.remove(&path) {
+                    page.path = new_page_path.clone();
+                    updated_pages.insert(new_page_path, page);
+                }
+            }
+        }
+
+        self.pages.extend(updated_pages);
+        self.rebuild_relations();
+
+        Ok(())
+    }
+
+    /// Deletes a file or folder and updates the index.
+    #[instrument(skip(self))]
+    pub fn delete_path(&mut self, path: PathBuf) -> Result<()> {
+        if path.is_dir() {
+            fs::remove_dir_all(&path)?;
+            // Remove all pages from the index that were inside this directory
+            self.pages.retain(|p, _| !p.starts_with(&path));
+        } else {
+            fs::remove_file(&path)?;
+            self.pages.remove(&path);
+        }
+
+        // A delete requires rebuilding all relationships to remove dangling links.
+        self.rebuild_relations();
+        Ok(())
+    }
+
     /// Returns a list of all directory paths in the vault.
     pub fn get_all_directory_paths(&self) -> Result<Vec<PathBuf>> {
         let root_node = self.get_file_tree()?;

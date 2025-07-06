@@ -19,6 +19,8 @@ use std::{
 use tauri::{command, AppHandle, State};
 use tracing::instrument;
 
+// --- Vault and Initialization ---
+
 /// Retrieves the stored vault path from the configuration file.
 #[command]
 #[instrument(skip(app_handle))]
@@ -38,12 +40,30 @@ pub fn initialize_vault(
     world.write().change_vault(path, app_handle)
 }
 
+// --- Data Retrieval ---
+
 /// Returns the tag index mapping tags to lists of pages that contain them.
 #[command]
 #[instrument(skip(world))]
 pub fn get_all_tags(world: State<RwLock<World>>) -> Result<Vec<(String, Vec<PathBuf>)>> {
     world.read().get_all_tags()
 }
+
+/// Returns the hierarchical file tree structure of the vault.
+#[command]
+#[instrument(skip(world))]
+pub fn get_file_tree(world: State<RwLock<World>>) -> Result<FileNode> {
+    world.read().get_file_tree()
+}
+
+/// Returns a list of all directory paths in the vault.
+#[command]
+#[instrument(skip(world))]
+pub fn get_all_directory_paths(world: State<RwLock<World>>) -> Result<Vec<PathBuf>> {
+    world.read().get_all_directory_paths()
+}
+
+// --- Page Rendering and Content ---
 
 /// Processes raw markdown content, renders it to HTML with wikilinks resolved,
 /// and returns a structured object for the frontend preview.
@@ -72,12 +92,7 @@ pub fn write_page_content(path: String, content: String) -> Result<()> {
     fs::write(path, content).map_err(Into::into)
 }
 
-/// Returns the hierarchical file tree structure of the vault.
-#[command]
-#[instrument(skip(world))]
-pub fn get_file_tree(world: State<RwLock<World>>) -> Result<FileNode> {
-    world.read().get_file_tree()
-}
+// --- File and Folder Operations ---
 
 /// Creates a new, empty markdown file and synchronously updates the index.
 #[command]
@@ -90,12 +105,35 @@ pub fn create_new_file(
     world.read().create_new_file(parent_dir, file_name)
 }
 
-/// Returns a list of all directory paths in the vault.
+/// Creates a new, empty folder. This uses a read lock on the world,
+/// but a write lock on the indexer internally.
 #[command]
 #[instrument(skip(world))]
-pub fn get_all_directory_paths(world: State<RwLock<World>>) -> Result<Vec<PathBuf>> {
-    world.read().get_all_directory_paths()
+pub fn create_new_folder(
+    world: State<RwLock<World>>,
+    parent_dir: String,
+    folder_name: String,
+) -> Result<()> {
+    world.read().create_new_folder(parent_dir, folder_name)
 }
+
+/// Renames a file or folder on disk. This uses a read lock on the world,
+/// but a write lock on the indexer internally.
+#[command]
+#[instrument(skip(world))]
+pub fn rename_path(world: State<RwLock<World>>, path: String, new_name: String) -> Result<()> {
+    world.read().rename_path(PathBuf::from(path), new_name)
+}
+
+/// Deletes a file or folder from disk. This uses a read lock on the world,
+/// but a write lock on the indexer internally.
+#[command]
+#[instrument(skip(world))]
+pub fn delete_path(world: State<RwLock<World>>, path: String) -> Result<()> {
+    world.read().delete_path(PathBuf::from(path))
+}
+
+// --- Importer ---
 
 #[command]
 #[instrument(skip(app_handle))]
@@ -116,5 +154,5 @@ pub fn import_docx_files(
     app_handle: AppHandle,
     docx_paths: Vec<PathBuf>,
 ) -> Result<Vec<PathBuf>> {
-    world.write().import_docx_files(&app_handle, docx_paths)
+    world.read().import_docx_files(&app_handle, docx_paths)
 }

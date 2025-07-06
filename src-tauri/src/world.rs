@@ -144,7 +144,7 @@ impl World {
 
     /// Converts docx files and adds them to the vault, then updates the index.
     pub fn import_docx_files(
-        &mut self,
+        &self,
         app_handle: &AppHandle,
         docx_paths: Vec<PathBuf>,
     ) -> Result<Vec<PathBuf>> {
@@ -163,6 +163,8 @@ impl World {
 
         Ok(converted_paths)
     }
+
+    // --- Data Accessors ---
 
     /// Returns all tags and the pages that reference them.
     pub fn get_all_tags(&self) -> Result<Vec<(String, Vec<PathBuf>)>> {
@@ -189,11 +191,27 @@ impl World {
             .build_page_view(path)
     }
 
+    pub fn get_all_directory_paths(&self) -> Result<Vec<PathBuf>> {
+        self.indexer.read().get_all_directory_paths()
+    }
+
+    // --- File System Operations ---
+
     pub fn create_new_file(&self, parent_dir: String, file_name: String) -> Result<PageHeader> {
         self.indexer.write().create_new_file(parent_dir, file_name)
     }
 
-    pub fn get_all_directory_paths(&self) -> Result<Vec<PathBuf>> {
-        self.indexer.read().get_all_directory_paths()
+    pub fn create_new_folder(&self, parent_dir: String, folder_name: String) -> Result<()> {
+        self.indexer
+            .write()
+            .create_new_folder(parent_dir, folder_name)
+    }
+
+    pub fn rename_path(&self, path: PathBuf, new_name: String) -> Result<()> {
+        self.indexer.write().rename_path(path, new_name)
+    }
+
+    pub fn delete_path(&self, path: PathBuf) -> Result<()> {
+        self.indexer.write().delete_path(path)
     }
 }
