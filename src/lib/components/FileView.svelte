@@ -3,7 +3,6 @@
 	import Preview from '$lib/components/Preview.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import ErrorBox from '$lib/components/ErrorBox.svelte';
-	import { onDestroy } from 'svelte';
 	import { fileViewMode, currentView, rightSidebar } from '$lib/stores';
 	import { files, isWorldLoaded } from '$lib/worldStore';
 	import { buildPageView, writePageContent, renderPagePreview } from '$lib/commands';
@@ -14,15 +13,29 @@
 
 	let pageData = $state<FullPageData | null>(null);
 	let error = $state<string | null>(null);
-	let pristineContent = $state<string | undefined>(undefined);
+	let isLoading = $state(true);
+	let pristineContent = $state('');
+
+	// State for the save indicator
+	let saveStatus: 'idle' | 'dirty' | 'saving' | 'error' = $state('idle');
+	let lastSaveTime = $state<Date | null>(null);
 	let saveTimeout: number;
 
+	// Helper to format the time for display
+	const formatTime = (date: Date | null) => {
+		if (!date) return '';
+		return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+	};
+
+	// This effect handles loading the page data whenever the `file` prop changes.
 	$effect(() => {
+		isLoading = true;
 		pageData = null;
 		error = null;
-		pristineContent = undefined;
-		// Reset backlinks when navigating to a new file
-		rightSidebar.update((state) => ({ ...state, backlinks: [] }));
+		pristineContent = '';
+		saveStatus = 'idle'; // Reset save status for the new file
+		lastSaveTime = null; // Reset last save time for the new file
+		rightSidebar.update((state) => ({ ...state, backlinks: [] })); // Reset backlinks
 
 		buildPageView(file.path)
 			.then((data) => {
@@ -34,58 +47,90 @@
 			.catch((e) => {
 				console.error('Failed to get page data:', e);
 				error = `Could not load file: ${e}`;
+			})
+			.finally(() => {
+				isLoading = false;
 			});
+
+		// Cleanup function clears all timers when the file changes or component unmounts.
+		return () => {
+			clearTimeout(saveTimeout);
+		};
 	});
 
+	// This effect handles auto-saving the content and updating the visual status indicator.
 	$effect(() => {
-		if (!pageData || pageData.raw_content === pristineContent) {
+		if (!pageData) return;
+
+		// If content is unchanged, reset status if it was dirty (e.g., from an undo action).
+		if (pageData.raw_content === pristineContent) {
+			if (saveStatus === 'dirty') saveStatus = 'idle';
 			return;
 		}
 
+		// Content has changed, so mark it as 'dirty' and prepare to save.
+		saveStatus = 'dirty';
 		clearTimeout(saveTimeout);
 		const path = file.path;
 		const contentToSave = pageData.raw_content;
 
 		saveTimeout = window.setTimeout(() => {
+			saveStatus = 'saving';
 			writePageContent(path, contentToSave)
 				.then(() => {
 					pristineContent = contentToSave;
+					saveStatus = 'idle'; // Return to idle after a successful save
+					lastSaveTime = new Date(); // Set the timestamp of the successful save
+
 					return renderPagePreview(contentToSave);
 				})
 				.then((newlyRenderedData) => {
-					if (pageData) {
-						pageData.rendered_page = newlyRenderedData;
-					}
+					if (pageData) pageData.rendered_page = newlyRenderedData;
 				})
-				.catch((e) => console.error('Failed to save or re-render content:', e));
-		}, 500);
+				.catch((e) => {
+					console.error('Failed to save or re-render content:', e);
+					saveStatus = 'error';
+				});
+		}, 500); // Debounce interval
 	});
 
+	// This effect navigates away if the current file is deleted from the vault.
 	$effect(() => {
-		// If the file is deleted or renamed, it will no longer be in the tree.
-		// In that case, navigate back to the welcome screen.
 		const tree = $files;
 		if ($isWorldLoaded && tree && !findFileInTree(tree, file.path)) {
 			console.log(`Current file ${file.path} not found in tree after update. Closing view.`);
 			currentView.set({ type: 'welcome' });
 		}
 	});
-
-	onDestroy(() => {
-		clearTimeout(saveTimeout);
-	});
 </script>
 
 <div class="file-view-container">
-	{#if error}
-		<div class="error-container">
+	{#if isLoading}
+		<div class="status-container">
+			<p>Loading...</p>
+		</div>
+	{:else if error}
+		<div class="status-container">
 			<ErrorBox title="File Error">{error}</ErrorBox>
 		</div>
 	{:else if pageData}
 		<div class="view-header">
-			<h2 class="view-title" title={file.title}>
-				{file.title}
-			</h2>
+			<div class="title-container">
+				<h2 class="view-title" title={file.title}>
+					{file.title}
+				</h2>
+				<span class="save-status {saveStatus}">
+					{#if saveStatus === 'saving'}
+						Saving...
+					{:else if saveStatus === 'error'}
+						Save failed
+					{:else if saveStatus === 'dirty'}
+						Unsaved changes
+					{:else if lastSaveTime}
+						Last saved at: {formatTime(lastSaveTime)}
+					{/if}
+				</span>
+			</div>
 
 			<div class="view-actions">
 				{#if $rightSidebar.backlinks.length > 0}
@@ -154,17 +199,47 @@
 		box-sizing: border-box;
 	}
 
+	.title-container {
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+		flex-shrink: 1;
+		flex-grow: 1;
+		overflow: hidden;
+	}
+
 	.view-title {
 		font-family: 'Uncial Antiqua', cursive;
 		color: var(--ink-light);
 		margin: 0;
 		font-size: 1.5rem;
-		flex-shrink: 1;
-		flex-grow: 1;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		padding-right: 1rem;
+	}
+
+	.save-status {
+		font-size: 0.85rem;
+		color: var(--ink-light);
+		opacity: 0;
+		transition: opacity 0.3s ease-in-out;
+		white-space: nowrap;
+	}
+
+	.save-status.saving,
+	.save-status.error,
+	.save-status.dirty,
+	.save-status.idle {
+		opacity: 1;
+	}
+
+	.save-status.error {
+		color: darkred;
+		font-weight: bold;
+	}
+
+	.save-status.dirty {
+		font-style: italic;
 	}
 
 	.view-actions {
@@ -199,8 +274,11 @@
 		flex-basis: 100%;
 	}
 
-	.error-container {
+	.status-container {
 		padding: 2rem;
 		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 </style>
