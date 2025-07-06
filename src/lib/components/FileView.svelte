@@ -7,7 +7,7 @@
 	import { fileViewMode, currentView, rightSidebar } from '$lib/stores';
 	import { files, isWorldLoaded } from '$lib/worldStore';
 	import { buildPageView, writePageContent, renderPagePreview } from '$lib/commands';
-	import type { PageHeader, FullPageData, RenderedPage } from '$lib/bindings';
+	import type { PageHeader, FullPageData } from '$lib/bindings';
 	import { findFileInTree } from '$lib/utils';
 
 	let { file } = $props<{ file: PageHeader }>();
