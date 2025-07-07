@@ -1,4 +1,4 @@
-import { currentView, appStatus } from "$lib/stores";
+import { currentView, appStatus, fileViewMode } from "$lib/stores";
 import type { PageHeader, TagMap } from "$lib/bindings";
 import type { ViewState } from "$lib/stores";
 // Import all commands under a 'commands' namespace to prevent naming conflicts.
@@ -57,12 +57,16 @@ export async function initializeVault(path: string) {
 }
 
 /**
- * Creates a new file, then navigates the main view to that file.
+ * Creates a new file, refreshes the world state, then navigates the main view to that file.
  */
 export async function createFile(parentDir: string, name: string) {
     try {
         const newPage = await commands.createNewFile(parentDir, name);
+        // Manually trigger a refresh to ensure the frontend's file tree is up-to-date.
+        await world.initialize();
+        // Now that the frontend state is fresh, we can safely navigate to the new file.
         currentView.set({ type: "file", data: newPage });
+        fileViewMode.set("split");
         return newPage;
     } catch (e) {
         console.error("Failed to create file:", e);

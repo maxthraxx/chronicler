@@ -1,9 +1,13 @@
 <script lang="ts">
+    import { autofocus } from "$lib/domActions";
     let { content = $bindable() } = $props<{ content?: string }>();
 </script>
 
 <div class="editor-wrapper">
-    <textarea bind:value={content} placeholder="Let your story unfold..."
+    <textarea
+        use:autofocus
+        bind:value={content}
+        placeholder="Let your story unfold..."
     ></textarea>
 </div>
 
