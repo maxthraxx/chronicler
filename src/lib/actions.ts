@@ -5,6 +5,8 @@ import type { ViewState } from "$lib/stores";
 import * as commands from "./commands";
 import { getTitleFromPath } from "./utils";
 import { world } from "./worldStore";
+import TextInputModal from "./components/TextInputModal.svelte";
+import { openModal, closeModal } from "./modalStore";
 
 /**
  * Navigates to the tag index view for the selected tag.
@@ -109,4 +111,34 @@ export async function createFolder(parentDir: string, name: string) {
         alert(`Error: ${e}`);
         throw e;
     }
+}
+
+/**
+ * Opens a modal to prompt the user for a name, then creates a new file or folder.
+ * @param itemType The type of item to create ('file' or 'folder').
+ * @param parentDir The directory in which to create the item.
+ */
+export function promptAndCreateItem(
+    itemType: "file" | "folder",
+    parentDir: string,
+) {
+    const isFile = itemType === "file";
+
+    openModal({
+        component: TextInputModal,
+        props: {
+            title: `New ${isFile ? "Page" : "Folder"}`,
+            label: `Enter the name for the new ${isFile ? "page" : "folder"}:`,
+            buttonText: "Create",
+            onClose: closeModal,
+            onSubmit: (name: string) => {
+                if (isFile) {
+                    createFile(parentDir, name);
+                } else {
+                    createFolder(parentDir, name);
+                }
+                closeModal();
+            },
+        },
+    });
 }

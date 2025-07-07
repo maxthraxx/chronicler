@@ -1,7 +1,7 @@
 import type { FileNode } from "$lib/bindings";
 import type { ContextMenuItem } from "$lib/types";
 import { openModal, closeModal } from "$lib/modalStore";
-import { renamePath, deletePath, createFile, createFolder } from "$lib/actions";
+import { renamePath, deletePath, promptAndCreateItem } from "$lib/actions";
 
 // Import modal components that can be triggered from the context menu
 import TextInputModal from "./components/TextInputModal.svelte";
@@ -59,39 +59,11 @@ export function getContextMenuActions(node: FileNode): ContextMenuItem[] {
         actions.push({ isSeparator: true });
         actions.push({
             label: "New File...",
-            handler: () => {
-                openModal({
-                    component: TextInputModal,
-                    props: {
-                        title: "New File",
-                        label: "Enter the name for the new file:",
-                        buttonText: "Create",
-                        onClose: closeModal,
-                        onSubmit: (name: string) => {
-                            createFile(node.path, name);
-                            closeModal();
-                        },
-                    },
-                });
-            },
+            handler: () => promptAndCreateItem("file", node.path),
         });
         actions.push({
             label: "New Folder...",
-            handler: () => {
-                openModal({
-                    component: TextInputModal,
-                    props: {
-                        title: "New Folder",
-                        label: "Enter the name for the new folder:",
-                        buttonText: "Create",
-                        onClose: closeModal,
-                        onSubmit: (name: string) => {
-                            createFolder(node.path, name);
-                            closeModal();
-                        },
-                    },
-                });
-            },
+            handler: () => promptAndCreateItem("folder", node.path),
         });
     }
 

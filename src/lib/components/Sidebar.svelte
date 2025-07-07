@@ -1,12 +1,11 @@
 <script lang="ts">
     import { appStatus, resetAllStores } from "$lib/stores";
     import { world, tags, vaultPath } from "$lib/worldStore";
-    import { createFile, createFolder } from "$lib/actions";
+    import { promptAndCreateItem } from "$lib/actions";
     import { openModal, closeModal } from "$lib/modalStore";
     import FileExplorer from "./FileExplorer.svelte";
     import TagList from "./TagList.svelte";
     import SettingsModal from "./SettingsModal.svelte";
-    import TextInputModal from "./TextInputModal.svelte";
     import Button from "./Button.svelte";
     import SearchInput from "./SearchInput.svelte";
 
@@ -31,41 +30,13 @@
 
     function showCreateFile() {
         if ($vaultPath) {
-            openModal({
-                component: TextInputModal,
-                props: {
-                    title: "New Page",
-                    label: "Enter the name for the new page:",
-                    buttonText: "Create",
-                    onClose: closeModal,
-                    onSubmit: (name: string) => {
-                        createFile($vaultPath as string, name);
-                        closeModal();
-                    },
-                },
-            });
-        } else {
-            alert("Could not determine the vault path. Cannot create file.");
+            promptAndCreateItem("file", $vaultPath);
         }
     }
 
     function showCreateFolder() {
         if ($vaultPath) {
-            openModal({
-                component: TextInputModal,
-                props: {
-                    title: "New Folder",
-                    label: "Enter the name for the new folder:",
-                    buttonText: "Create",
-                    onClose: closeModal,
-                    onSubmit: (name: string) => {
-                        createFolder($vaultPath as string, name);
-                        closeModal();
-                    },
-                },
-            });
-        } else {
-            alert("Could not determine the vault path. Cannot create folder.");
+            promptAndCreateItem("folder", $vaultPath);
         }
     }
 
