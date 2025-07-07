@@ -16,7 +16,7 @@
 </script>
 
 <div class="file-node">
-    {#if node.children}
+    {#if node.is_directory}
         <div
             class="directory"
             onclick={() => (expanded = !expanded)}
@@ -31,9 +31,9 @@
             <span class="icon">{expanded ? "▼" : "►"}</span>
             <span>{node.name}</span>
         </div>
-        {#if expanded}
+        {#if expanded && node.children}
             <div class="children">
-                {#each node.children as child}
+                {#each node.children as child (child.path)}
                     <FileTree node={child} {onContextMenu} />
                 {/each}
             </div>

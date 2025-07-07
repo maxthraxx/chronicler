@@ -10,6 +10,7 @@ export interface PageHeader {
 export interface FileNode {
     name: string;
     path: string; // In Rust this is PathBuf
+    is_directory: boolean;
     children?: FileNode[];
 }
 

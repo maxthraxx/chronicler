@@ -44,23 +44,28 @@ export function filterFileTree(
     if (!node) return null;
     const lowerCaseTerm = term.toLowerCase();
 
-    // If it's a file, check if its name matches the search term.
-    if (!node.children) {
-        return node.name.toLowerCase().includes(lowerCaseTerm) ? node : null;
+    if (node.is_directory) {
+        // It's a directory. Filter its children.
+        // node.children will be an array (possibly empty)
+        const filteredChildren = (node.children || [])
+            .map((child) => filterFileTree(child, term))
+            .filter((child): child is FileNode => child !== null);
+
+        // Keep the directory if its name matches OR it has children that match.
+        if (
+            node.name.toLowerCase().includes(lowerCaseTerm) ||
+            filteredChildren.length > 0
+        ) {
+            return { ...node, children: filteredChildren };
+        }
+    } else {
+        // It's a file. Check if its name matches.
+        if (node.name.toLowerCase().includes(lowerCaseTerm)) {
+            return node;
+        }
     }
 
-    // If it's a directory, filter its children recursively.
-    const filteredChildren = node.children
-        .map((child) => filterFileTree(child, term))
-        .filter((child): child is FileNode => child !== null); // Keep only non-null results
-
-    // A directory should be kept if its name matches or if it has any children left after filtering.
-    if (
-        node.name.toLowerCase().includes(lowerCaseTerm) ||
-        filteredChildren.length > 0
-    ) {
-        return { ...node, children: filteredChildren };
-    }
-
+    // If we get here, it's a directory that doesn't match and has no matching children,
+    // or a file that doesn't match.
     return null;
 }

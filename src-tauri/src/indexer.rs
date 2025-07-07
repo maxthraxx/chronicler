@@ -288,53 +288,49 @@ impl Indexer {
     }
 
     /// Recursively builds the file tree structure.
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(path, name))]
     fn build_tree_recursive(path: &Path, name: &str) -> Result<FileNode> {
-        let mut children = Vec::new();
+        let is_directory = path.is_dir();
+        let mut children = if is_directory { Some(Vec::new()) } else { None };
 
-        if path.is_dir() {
-            for entry in fs::read_dir(path)? {
-                let entry = entry?;
-                let path = entry.path();
+        if is_directory {
+            if let Some(children_vec) = children.as_mut() {
+                for entry in fs::read_dir(path)? {
+                    let entry = entry?;
+                    let child_path = entry.path();
 
-                if let Some(file_name) = path.file_name().and_then(|n| n.to_str()) {
-                    // Skip hidden files
-                    if file_name.starts_with('.') {
-                        continue;
-                    }
+                    if let Some(file_name) = child_path.file_name().and_then(|n| n.to_str()) {
+                        // Skip hidden files
+                        if file_name.starts_with('.') {
+                            continue;
+                        }
 
-                    if path.is_dir() {
-                        children.push(Self::build_tree_recursive(&path, file_name)?);
-                    } else if is_markdown_file(&path) {
-                        let display_name = path_to_stem_string(&path);
-                        children.push(FileNode {
-                            name: display_name,
-                            path: path.clone(),
-                            children: None,
-                        });
+                        // We only care about directories and markdown files.
+                        if child_path.is_dir() || is_markdown_file(&child_path) {
+                            children_vec.push(Self::build_tree_recursive(&child_path, file_name)?);
+                        }
                     }
                 }
+
+                // Sort children: directories first, then files, alphabetically
+                children_vec.sort_by(|a, b| {
+                    a.is_directory
+                        .cmp(&b.is_directory)
+                        .reverse()
+                        .then_with(|| a.name.cmp(&b.name))
+                });
             }
         }
 
-        // Sort children: directories first, then files, alphabetically within each group
-        children.sort_by(|a, b| {
-            let a_is_dir = a.children.is_some();
-            let b_is_dir = b.children.is_some();
-            a_is_dir
-                .cmp(&b_is_dir)
-                .reverse()
-                .then_with(|| a.name.cmp(&b.name))
-        });
-
         Ok(FileNode {
-            name: name.to_string(),
-            path: path.to_path_buf(),
-            children: if children.is_empty() {
-                None
+            name: if is_directory {
+                name.to_string()
             } else {
-                Some(children)
+                path_to_stem_string(path)
             },
+            path: path.to_path_buf(),
+            is_directory,
+            children,
         })
     }
 
@@ -473,7 +469,7 @@ tags:
     fn collect_dirs_recursive(node: &FileNode, dirs: &mut Vec<PathBuf>) {
         if let Some(children) = &node.children {
             for child in children {
-                if child.children.is_some() {
+                if child.is_directory {
                     dirs.push(child.path.clone());
                     Self::collect_dirs_recursive(child, dirs);
                 }
