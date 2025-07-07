@@ -8,6 +8,7 @@
     import Sidebar from "$lib/components/Sidebar.svelte";
     import ModalManager from "$lib/components/ModalManager.svelte";
     import {
+        SIDEBAR_INITIAL_WIDTH,
         SIDEBAR_MIN_WIDTH,
         SIDEBAR_MAX_WIDTH,
         SIDEBAR_KEYBOARD_RESIZE_STEP,
@@ -15,7 +16,7 @@
     import "../app.css";
 
     let { children } = $props();
-    let sidebarWidth = $state(300);
+    let sidebarWidth = $state(SIDEBAR_INITIAL_WIDTH);
     let isResizing = $state(false);
     let errorMessage = $state<string | null>(null);
 
