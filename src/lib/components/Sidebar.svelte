@@ -1,7 +1,7 @@
 <script lang="ts">
     import { appStatus, resetAllStores } from "$lib/stores";
     import { world, tags, vaultPath } from "$lib/worldStore";
-    import { createFile } from "$lib/actions";
+    import { createFile, createFolder } from "$lib/actions";
     import { openModal, closeModal } from "$lib/modalStore";
     import FileExplorer from "./FileExplorer.svelte";
     import TagList from "./TagList.svelte";
@@ -49,6 +49,26 @@
         }
     }
 
+    function showCreateFolder() {
+        if ($vaultPath) {
+            openModal({
+                component: TextInputModal,
+                props: {
+                    title: "New Folder",
+                    label: "Enter the name for the new folder:",
+                    buttonText: "Create",
+                    onClose: closeModal,
+                    onSubmit: (name: string) => {
+                        createFolder($vaultPath as string, name);
+                        closeModal();
+                    },
+                },
+            });
+        } else {
+            alert("Could not determine the vault path. Cannot create folder.");
+        }
+    }
+
     const filteredTags = $derived(
         $tags.filter(([tag]) =>
             tag.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -93,11 +113,19 @@
     <div class="sidebar-footer">
         <Button
             size="small"
-            class="new-page-button"
+            class="new-path-button"
             title="New Page"
             onclick={showCreateFile}
         >
             + New Page
+        </Button>
+        <Button
+            size="small"
+            class="new-path-button"
+            title="New Folder"
+            onclick={showCreateFolder}
+        >
+            + New Folder
         </Button>
         <Button variant="ghost" title="Settings" onclick={showSettings}>
             ⚙️
@@ -161,7 +189,7 @@
         gap: 0.5rem;
     }
     /* Use :global() to apply styles to a class passed to a child component */
-    .sidebar-footer :global(.new-page-button) {
+    .sidebar-footer :global(.new-path-button) {
         flex-grow: 1;
     }
 </style>
