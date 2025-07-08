@@ -117,7 +117,7 @@
                         {#each data.tags as tag (tag)}
                             <button
                                 class="tag-link"
-                                onclick={() => navigateToTag(tag, $tags)}
+                                onclick={() => navigateToTag(tag)}
                             >
                                 #{tag}
                             </button>

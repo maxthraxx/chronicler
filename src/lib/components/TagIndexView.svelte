@@ -1,23 +1,25 @@
 <script lang="ts">
-    import { currentView } from "$lib/stores";
-    import type { PageHeader } from "$lib/bindings";
-    import type { TagIndexData } from "$lib/stores";
+    import { tags } from "$lib/worldStore";
+    import { navigateToPage } from "$lib/actions";
 
-    let { data } = $props<{ data: TagIndexData }>();
+    let { name } = $props<{ name: string }>();
 
-    // Clicking a file link in this view switches back to the file view.
-    function openFile(file: PageHeader) {
-        currentView.set({ type: "file", data: file });
-    }
+    const pages = $derived.by(() => {
+        const tagData = $tags.find(([tagName]) => tagName === name);
+        return tagData ? tagData[1] : []; // Return the pages array or an empty array
+    });
 </script>
 
 <div class="tag-index-wrapper">
-    <h2>Index for <span class="tag-highlight">#{data.name}</span></h2>
+    <h2>Index for <span class="tag-highlight">#{name}</span></h2>
 
     <ul class="page-link-list">
-        {#each data.pages as page (page.path)}
+        {#each pages as page (page.path)}
             <li>
-                <button class="link-button" onclick={() => openFile(page)}>
+                <button
+                    class="link-button"
+                    onclick={() => navigateToPage(page)}
+                >
                     {page.title}
                 </button>
             </li>

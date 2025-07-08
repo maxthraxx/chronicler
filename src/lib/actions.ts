@@ -1,6 +1,5 @@
 import { currentView, appStatus, fileViewMode } from "$lib/stores";
 import type { PageHeader, TagMap } from "$lib/bindings";
-import type { ViewState } from "$lib/stores";
 // Import all commands under a 'commands' namespace to prevent naming conflicts.
 import * as commands from "./commands";
 import { getTitleFromPath } from "./utils";
@@ -45,31 +44,9 @@ export function handleLinkClick(event: Event) {
  * Navigates to the tag index view for the selected tag.
  *
  * @param tagName The name of the tag to navigate to.
- * @param allTags The complete map of all tags and their associated page paths.
  */
-export function navigateToTag(tagName: string, allTags: TagMap) {
-    const tagData = allTags.find(([name]) => name === tagName);
-
-    if (!tagData) {
-        console.warn(`No data found for tag: ${tagName}`);
-        return;
-    }
-
-    const pagePaths = tagData[1];
-    const pages: PageHeader[] = pagePaths.map((path) => ({
-        path,
-        title: getTitleFromPath(path),
-    }));
-
-    const newView: ViewState = {
-        type: "tag",
-        data: {
-            name: tagName,
-            pages: pages,
-        },
-    };
-
-    currentView.set(newView);
+export function navigateToTag(tagName: string) {
+    currentView.set({ type: "tag", tagName });
 }
 
 /**

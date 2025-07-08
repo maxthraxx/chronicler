@@ -3,12 +3,12 @@
 //! These commands bridge the frontend (Svelte/JavaScript) and backend (Rust) functionality.
 //! All commands are async-capable and automatically manage thread safety via Tauri's State system.
 
-use crate::models::FullPageData;
+use crate::models::{FullPageData, PageHeader};
 use crate::{
     config,
     error::Result,
     importer,
-    models::{FileNode, PageHeader, RenderedPage},
+    models::{FileNode, RenderedPage},
     world::World,
 };
 use parking_lot::RwLock;
@@ -45,7 +45,7 @@ pub fn initialize_vault(
 /// Returns the tag index mapping tags to lists of pages that contain them.
 #[command]
 #[instrument(skip(world))]
-pub fn get_all_tags(world: State<RwLock<World>>) -> Result<Vec<(String, Vec<PathBuf>)>> {
+pub fn get_all_tags(world: State<RwLock<World>>) -> Result<Vec<(String, Vec<PageHeader>)>> {
     world.read().get_all_tags()
 }
 

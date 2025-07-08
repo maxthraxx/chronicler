@@ -14,7 +14,7 @@ export interface FileNode {
     children?: FileNode[];
 }
 
-export type TagMap = [string, string[]][];
+export type TagMap = [string, PageHeader[]][];
 
 export interface RenderedPage {
     processed_frontmatter: any; // This is a JSON object

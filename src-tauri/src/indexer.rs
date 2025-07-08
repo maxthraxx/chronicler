@@ -240,7 +240,7 @@ impl Indexer {
 
     /// Returns all tags and the pages that reference them.
     #[instrument(level = "debug", skip(self))]
-    pub fn get_all_tags(&self) -> Result<Vec<(String, Vec<PathBuf>)>> {
+    pub fn get_all_tags(&self) -> Result<Vec<(String, Vec<PageHeader>)>> {
         // Collect all tags and their associated page references first
         let mut tags: Vec<_> = self
             .tags
@@ -249,21 +249,23 @@ impl Indexer {
                 // Get all pages for this tag in one go
                 let mut pages: Vec<_> = paths
                     .iter()
-                    .filter_map(|path| self.pages.get(path))
+                    .filter_map(|path| {
+                        self.pages.get(path).map(|p| PageHeader {
+                            path: p.path.clone(),
+                            title: p.title.clone(),
+                        })
+                    })
                     .collect();
 
                 // Sort pages by title (case-insensitive)
                 pages.sort_by_key(|page| page.title.to_lowercase());
 
-                // Extract just the paths in sorted order
-                let sorted_paths = pages.into_iter().map(|page| page.path.clone()).collect();
-
-                (tag.clone(), sorted_paths)
+                (tag.clone(), pages)
             })
             .collect();
 
         // Sort tags by name
-        tags.sort();
+        tags.sort_by(|a, b| a.0.cmp(&b.0));
 
         Ok(tags)
     }

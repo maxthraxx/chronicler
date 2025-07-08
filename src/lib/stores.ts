@@ -17,19 +17,11 @@ export type AppStatus = "selecting_vault" | "loading" | "ready" | "error";
 export const appStatus = writable<AppStatus>("selecting_vault");
 
 /**
- * A type for the data needed to render the tag index page.
- */
-export type TagIndexData = {
-    name: string;
-    pages: PageHeader[];
-};
-
-/**
  * A union type to represent the possible states of the main view.
  */
 export type ViewState =
     | { type: "welcome" }
-    | { type: "tag"; data: TagIndexData }
+    | { type: "tag"; tagName: string }
     | { type: "file"; data: PageHeader | null };
 
 /**

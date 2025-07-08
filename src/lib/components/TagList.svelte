@@ -1,7 +1,6 @@
 <script lang="ts">
     import { navigateToTag } from "$lib/actions";
     import type { TagMap } from "$lib/bindings";
-    import { tags as allTagsStore } from "$lib/worldStore";
 
     let { tags } = $props<{ tags: TagMap }>();
 </script>
@@ -12,9 +11,8 @@
         {#each tags as [tag, pages] (tag)}
             <div
                 class="tag-group"
-                onclick={() => navigateToTag(tag, $allTagsStore)}
-                onkeydown={(e) =>
-                    e.key === "Enter" && navigateToTag(tag, $allTagsStore)}
+                onclick={() => navigateToTag(tag)}
+                onkeydown={(e) => e.key === "Enter" && navigateToTag(tag)}
                 role="button"
                 tabindex="0"
             >

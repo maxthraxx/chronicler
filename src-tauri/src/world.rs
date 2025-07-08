@@ -167,7 +167,7 @@ impl World {
     // --- Data Accessors ---
 
     /// Returns all tags and the pages that reference them.
-    pub fn get_all_tags(&self) -> Result<Vec<(String, Vec<PathBuf>)>> {
+    pub fn get_all_tags(&self) -> Result<Vec<(String, Vec<PageHeader>)>> {
         self.indexer.read().get_all_tags()
     }
 
