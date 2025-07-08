@@ -41,7 +41,7 @@
 
 <style>
     .right-sidebar {
-        width: 280px; /* Fixed width for the right sidebar */
+        width: 200px; /* Fixed width for the right sidebar */
         height: 100%;
         background-color: rgba(0, 0, 0, 0.03);
         border-left: 1px solid var(--border-color);
