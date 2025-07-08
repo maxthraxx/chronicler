@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { tags } from "$lib/worldStore";
     import { navigateToTag } from "$lib/actions";
     import ErrorBox from "./ErrorBox.svelte";
 
