@@ -4,6 +4,7 @@
     import Infobox from "$lib/components/Infobox.svelte";
     import Button from "$lib/components/Button.svelte";
     import ErrorBox from "$lib/components/ErrorBox.svelte";
+    import SaveStatus from "$lib/components/SaveStatus.svelte";
     import { fileViewMode, currentView, rightSidebar } from "$lib/stores";
     import { files, isWorldLoaded, vaultPath } from "$lib/worldStore";
     import {
@@ -28,14 +29,6 @@
     let saveStatus: "idle" | "dirty" | "saving" | "error" = $state("idle");
     let lastSaveTime = $state<Date | null>(null);
     let saveTimeout: number;
-
-    function formatTime(date: Date | null) {
-        if (!date) return "";
-        return date.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    }
 
     // This effect handles loading the page data whenever the `file` prop changes.
     $effect(() => {
@@ -160,17 +153,7 @@
                 <h2 class="view-title" title={file.title}>
                     {file.title}
                 </h2>
-                <span class="save-status {saveStatus}">
-                    {#if saveStatus === "saving"}
-                        Saving...
-                    {:else if saveStatus === "error"}
-                        Save failed
-                    {:else if saveStatus === "dirty"}
-                        Unsaved changes
-                    {:else if lastSaveTime}
-                        Last saved at: {formatTime(lastSaveTime)}
-                    {/if}
-                </span>
+                <SaveStatus status={saveStatus} {lastSaveTime} />
             </div>
 
             <div class="view-actions">
@@ -292,26 +275,6 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-    }
-    .save-status {
-        font-size: 0.85rem;
-        color: var(--ink-light);
-        opacity: 0;
-        transition: opacity 0.3s ease-in-out;
-        white-space: nowrap;
-    }
-    .save-status.saving,
-    .save-status.error,
-    .save-status.dirty,
-    .save-status.idle {
-        opacity: 1;
-    }
-    .save-status.error {
-        color: darkred;
-        font-weight: bold;
-    }
-    .save-status.dirty {
-        font-style: italic;
     }
     .view-actions {
         display: flex;
