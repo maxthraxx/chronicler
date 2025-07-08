@@ -55,68 +55,75 @@
 </script>
 
 <div class="infobox">
-    {#if imageUrl && !imageError}
-        <img
-            src={imageUrl}
-            alt={data?.title || "Infobox image"}
-            class="infobox-image"
-            onerror={() => (imageError = true)}
-        />
-    {/if}
-
-    {#if imageError}
-        <ErrorBox title="Image Error"
-            >Could not load image: "{data?.image}"</ErrorBox
-        >
-    {/if}
-
-    {#if data?.error}
-        <ErrorBox title="YAML Parse Error">
-            {data.details || data.error}
-        </ErrorBox>
-    {/if}
-
-    {#if data?.infobox}
-        <h4>{data.infobox}</h4>
-    {/if}
-
-    <dl>
-        {#each filteredData as [key, value]}
-            <dt>{key}</dt>
-            <dd>
-                {#if Array.isArray(value)}
-                    <ul>
-                        {#each value as item}
-                            <li>{@html item}</li>
-                        {/each}
-                    </ul>
-                {:else}
-                    {@html value}
-                {/if}
-            </dd>
-        {:else}
-            {#if data && !data.error && filteredData.length === 0 && (!data.tags || data.tags.length === 0)}
-                <div class="no-fields-message">
-                    No additional fields to display.
+    <div class="infobox-content-wrapper">
+        <div class="infobox-left">
+            {#if imageUrl && !imageError}
+                <div class="image-container">
+                    <img
+                        src={imageUrl}
+                        alt={data?.title || "Infobox image"}
+                        class="infobox-image"
+                        onerror={() => (imageError = true)}
+                    />
                 </div>
             {/if}
-        {/each}
 
-        <!-- Section for rendering tags -->
-        {#if data?.tags && Array.isArray(data.tags) && data.tags.length > 0}
-            <dt>Tags</dt>
-            <dd class="tag-container">
-                {#each data.tags as tag (tag)}
-                    <button
-                        class="tag-link"
-                        onclick={() => navigateToTag(tag, $tags)}
-                    >
-                        #{tag}
-                    </button>
+            {#if imageError}
+                <ErrorBox title="Image Error">
+                    Could not load image: "{data?.image}"
+                </ErrorBox>
+            {/if}
+        </div>
+
+        <div class="infobox-right">
+            {#if data?.error}
+                <ErrorBox title="YAML Parse Error">
+                    {data.details || data.error}
+                </ErrorBox>
+            {/if}
+
+            {#if data?.infobox}
+                <h4>{data.infobox}</h4>
+            {/if}
+
+            <dl>
+                {#each filteredData as [key, value]}
+                    <dt>{key}</dt>
+                    <dd>
+                        {#if Array.isArray(value)}
+                            <ul>
+                                {#each value as item}
+                                    <li>{@html item}</li>
+                                {/each}
+                            </ul>
+                        {:else}
+                            {@html value}
+                        {/if}
+                    </dd>
+                {:else}
+                    {#if data && !data.error && filteredData.length === 0 && (!data.tags || data.tags.length === 0)}
+                        <div class="no-fields-message">
+                            No additional fields to display.
+                        </div>
+                    {/if}
                 {/each}
-            </dd>
-        {/if}
-    </dl>
+
+                {#if data?.tags && Array.isArray(data.tags) && data.tags.length > 0}
+                    <dt>Tags</dt>
+                    <dd class="tag-container">
+                        {#each data.tags as tag (tag)}
+                            <button
+                                class="tag-link"
+                                onclick={() => navigateToTag(tag, $tags)}
+                            >
+                                #{tag}
+                            </button>
+                        {/each}
+                    </dd>
+                {/if}
+            </dl>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -128,11 +135,33 @@
         margin-bottom: 2rem;
         font-size: 0.9rem;
     }
-    .infobox-image {
-        width: 100%;
-        border-radius: 4px;
-        margin-bottom: 1rem;
+    .infobox-content-wrapper {
+        display: flex;
+        gap: 1.5rem; /* This creates the space between the image column and the data column */
+    }
+    .infobox-left {
+        flex: 0 0 270px; /* flex-grow: 0, flex-shrink: 0, flex-basis: 270px */
+    }
+    .infobox-right {
+        flex: 1; /* Allow this column to grow and fill the remaining space */
+        min-width: 0; /* Prevents text overflow issues in flex containers */
+    }
+    .image-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%; /* Max width of infobox-left */
+        height: 400px;
+        background-color: var(--parchment-dark);
         border: 1px solid var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .infobox-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 2px;
     }
     .no-fields-message {
         font-style: italic;

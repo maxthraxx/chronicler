@@ -1,8 +1,9 @@
 <script lang="ts">
     import Infobox from "./Infobox.svelte";
     import { currentView } from "$lib/stores";
+    import { vaultPath } from "$lib/worldStore";
     import { convertFileSrc } from "@tauri-apps/api/core";
-    import { resolve, dirname } from "@tauri-apps/api/path";
+    import { resolve } from "@tauri-apps/api/path";
     import type { PageHeader, RenderedPage } from "$lib/bindings";
 
     let { renderedData } = $props<{ renderedData: RenderedPage | null }>();
@@ -34,18 +35,14 @@
 
     $effect(() => {
         (async () => {
-            if (
-                !renderedData?.infobox_image_path ||
-                $currentView.type !== "file" ||
-                !$currentView.data?.path
-            ) {
+            if (!renderedData?.infobox_image_path || !$vaultPath) {
                 imageUrl = null;
                 return;
             }
             try {
-                const dir = await dirname($currentView.data.path);
                 const imagePath = await resolve(
-                    dir,
+                    $vaultPath,
+                    "images",
                     renderedData.infobox_image_path,
                 );
                 imageUrl = convertFileSrc(imagePath);
