@@ -3,7 +3,6 @@
     import { navigateToTag } from "$lib/actions";
     import ErrorBox from "./ErrorBox.svelte";
 
-    // Define a more specific type for the 'data' prop for better type safety and clarity.
     type InfoboxData = {
         title?: string;
         image?: string;
@@ -14,9 +13,14 @@
         [key: string]: any; // Allow other dynamic properties from frontmatter
     };
 
-    let { data, imageUrl } = $props<{
+    let {
+        data,
+        imageUrl,
+        layout = "top",
+    } = $props<{
         data: InfoboxData | null;
         imageUrl: string | null;
+        layout?: "top" | "side";
     }>();
 
     let imageError = $state(false);
@@ -24,8 +28,6 @@
 
     $effect(() => {
         imageError = false;
-
-        // The check for null or non-object data is now even more robust with the new type.
         if (!data || typeof data !== "object") {
             filteredData = [];
             return;
@@ -54,28 +56,29 @@
     });
 </script>
 
-<div class="infobox">
+<div class="infobox" data-layout={layout}>
     <div class="infobox-content-wrapper">
-        <div class="infobox-left">
-            {#if imageUrl && !imageError}
-                <div class="image-container">
-                    <img
-                        src={imageUrl}
-                        alt={data?.title || "Infobox image"}
-                        class="infobox-image"
-                        onerror={() => (imageError = true)}
-                    />
-                </div>
-            {/if}
+        {#if imageUrl}
+            <div class="image-column">
+                {#if !imageError}
+                    <div class="image-container">
+                        <img
+                            src={imageUrl}
+                            alt={data?.title || "Infobox image"}
+                            class="infobox-image"
+                            onerror={() => (imageError = true)}
+                        />
+                    </div>
+                {/if}
 
-            {#if imageError}
-                <ErrorBox title="Image Error">
-                    Could not load image: "{data?.image}"
-                </ErrorBox>
-            {/if}
-        </div>
-
-        <div class="infobox-right">
+                {#if imageError}
+                    <ErrorBox title="Image Error">
+                        Could not load image: "{data?.image}"
+                    </ErrorBox>
+                {/if}
+            </div>
+        {/if}
+        <div class="data-column">
             {#if data?.error}
                 <ErrorBox title="YAML Parse Error">
                     {data.details || data.error}
@@ -132,34 +135,41 @@
         border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 1rem;
-        margin-bottom: 2rem;
         font-size: 0.9rem;
     }
     .infobox-content-wrapper {
+        display: block;
+    }
+    .infobox[data-layout="side"] .infobox-content-wrapper {
         display: flex;
-        gap: 1.5rem; /* This creates the space between the image column and the data column */
+        gap: 1rem;
+        align-items: flex-start;
     }
-    .infobox-left {
-        flex: 0 0 270px; /* flex-grow: 0, flex-shrink: 0, flex-basis: 270px */
+    .infobox[data-layout="side"] .image-column {
+        flex: 0 0 270px;
+        min-width: 0;
     }
-    .infobox-right {
-        flex: 1; /* Allow this column to grow and fill the remaining space */
-        min-width: 0; /* Prevents text overflow issues in flex containers */
+    .infobox[data-layout="side"] .data-column {
+        flex: 1;
+        min-width: 0;
     }
     .image-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 100%; /* Max width of infobox-left */
-        height: 400px;
-        background-color: var(--parchment-dark);
+        width: 100%;
+        margin-bottom: 1rem;
+        background-color: rgba(0, 0, 0, 0.02);
         border: 1px solid var(--border-color);
         border-radius: 4px;
         overflow: hidden;
     }
+    .infobox[data-layout="side"] .image-container {
+        margin-bottom: 0;
+    }
     .infobox-image {
         max-width: 100%;
-        max-height: 100%;
+        max-height: 400px;
         object-fit: contain;
         border-radius: 2px;
     }
@@ -195,9 +205,17 @@
         margin: 0;
         padding-left: 1.2rem;
     }
-    :global(.infobox a) {
-        color: var(--accent-color);
+    :global(.infobox a.internal-link) {
+        color: #2563eb;
         text-decoration: none;
+        border-bottom: 1px dotted #2563eb;
+        cursor: pointer;
+    }
+    :global(.infobox span.internal-link.broken) {
+        color: #b04a4a;
+        text-decoration: none;
+        border-bottom: 1px dotted #b04a4a;
+        cursor: help;
     }
     .tag-container {
         display: flex;

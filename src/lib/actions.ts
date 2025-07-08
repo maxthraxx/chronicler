@@ -9,6 +9,39 @@ import TextInputModal from "./components/TextInputModal.svelte";
 import { openModal, closeModal } from "./modalStore";
 
 /**
+ * Navigates to a specific file page.
+ * @param page The header of the page to navigate to.
+ */
+export function navigateToPage(page: PageHeader) {
+    currentView.set({ type: "file", data: page });
+}
+
+/**
+ * An event handler to be used on rendered HTML content. It looks for clicks
+ * on internal wikilinks and navigates to the appropriate page.
+ * @param event The MouseEvent or KeyboardEvent from the user.
+ */
+export function handleLinkClick(event: Event) {
+    if (
+        event instanceof KeyboardEvent &&
+        event.key !== "Enter" &&
+        event.key !== " "
+    ) {
+        return;
+    }
+
+    const target = event.target as HTMLElement;
+    const link = target.closest("a.internal-link");
+
+    if (link && link.hasAttribute("data-path")) {
+        event.preventDefault();
+        const path = link.getAttribute("data-path")!;
+        const title = link.textContent || getTitleFromPath(path);
+        navigateToPage({ path, title });
+    }
+}
+
+/**
  * Navigates to the tag index view for the selected tag.
  *
  * @param tagName The name of the tag to navigate to.

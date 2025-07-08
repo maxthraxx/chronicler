@@ -1,18 +1,22 @@
 <script lang="ts">
     import Editor from "$lib/components/Editor.svelte";
     import Preview from "$lib/components/Preview.svelte";
+    import Infobox from "$lib/components/Infobox.svelte";
     import Button from "$lib/components/Button.svelte";
     import ErrorBox from "$lib/components/ErrorBox.svelte";
     import { fileViewMode, currentView, rightSidebar } from "$lib/stores";
-    import { files, isWorldLoaded } from "$lib/worldStore";
+    import { files, isWorldLoaded, vaultPath } from "$lib/worldStore";
     import {
         buildPageView,
         writePageContent,
         renderPagePreview,
     } from "$lib/commands";
+    import { handleLinkClick } from "$lib/actions";
     import type { PageHeader, FullPageData } from "$lib/bindings";
     import { findFileInTree } from "$lib/utils";
     import { AUTOSAVE_DEBOUNCE_MS } from "$lib/config";
+    import { convertFileSrc } from "@tauri-apps/api/core";
+    import { resolve } from "@tauri-apps/api/path";
 
     let { file } = $props<{ file: PageHeader }>();
 
@@ -20,13 +24,11 @@
     let error = $state<string | null>(null);
     let isLoading = $state(true);
     let pristineContent = $state("");
-
-    // State for the save indicator
+    let imageUrl = $state<string | null>(null);
     let saveStatus: "idle" | "dirty" | "saving" | "error" = $state("idle");
     let lastSaveTime = $state<Date | null>(null);
     let saveTimeout: number;
 
-    // Helper to format the time for display
     const formatTime = (date: Date | null) => {
         if (!date) return "";
         return date.toLocaleTimeString([], {
@@ -105,6 +107,26 @@
         }, AUTOSAVE_DEBOUNCE_MS);
     });
 
+    $effect(() => {
+        (async () => {
+            if (!pageData?.rendered_page.infobox_image_path || !$vaultPath) {
+                imageUrl = null;
+                return;
+            }
+            try {
+                const imagePath = await resolve(
+                    $vaultPath,
+                    "images",
+                    pageData.rendered_page.infobox_image_path,
+                );
+                imageUrl = convertFileSrc(imagePath);
+            } catch (e) {
+                console.error("Image Path Error:", e);
+                imageUrl = null;
+            }
+        })();
+    });
+
     // This effect navigates away if the current file is deleted from the vault.
     $effect(() => {
         const tree = $files;
@@ -115,6 +137,12 @@
             currentView.set({ type: "welcome" });
         }
     });
+
+    const hasInfoboxContent = $derived(
+        pageData?.rendered_page.processed_frontmatter &&
+            Object.keys(pageData.rendered_page.processed_frontmatter).length >
+                0,
+    );
 </script>
 
 <div class="file-view-container">
@@ -178,17 +206,45 @@
             </div>
         </div>
 
-        <div class="content-panes">
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+            class="content-panes"
+            onclick={handleLinkClick}
+            onkeydown={handleLinkClick}
+        >
             {#if $fileViewMode === "split"}
                 <div class="editor-pane">
                     <Editor bind:content={pageData.raw_content} />
                 </div>
                 <div class="preview-pane">
+                    {#if hasInfoboxContent}
+                        <div class="infobox-wrapper-top">
+                            <Infobox
+                                data={pageData.rendered_page
+                                    .processed_frontmatter}
+                                {imageUrl}
+                                layout="side"
+                            />
+                        </div>
+                    {/if}
                     <Preview renderedData={pageData.rendered_page} />
                 </div>
             {:else}
-                <div class="preview-pane full-width">
-                    <Preview renderedData={pageData.rendered_page} />
+                <div class="preview-layout">
+                    <div class="main-content-col">
+                        <Preview renderedData={pageData.rendered_page} />
+                    </div>
+
+                    {#if hasInfoboxContent}
+                        <div class="infobox-col">
+                            <Infobox
+                                data={pageData.rendered_page
+                                    .processed_frontmatter}
+                                {imageUrl}
+                                layout="top"
+                            />
+                        </div>
+                    {/if}
                 </div>
             {/if}
         </div>
@@ -203,7 +259,6 @@
         width: 100%;
         height: 100%;
     }
-
     .view-header {
         position: absolute;
         top: 0;
@@ -221,7 +276,6 @@
         height: 60px;
         box-sizing: border-box;
     }
-
     .title-container {
         display: flex;
         align-items: baseline;
@@ -230,7 +284,6 @@
         flex-grow: 1;
         overflow: hidden;
     }
-
     .view-title {
         font-family: "Uncial Antiqua", cursive;
         color: var(--ink-light);
@@ -240,7 +293,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
     .save-status {
         font-size: 0.85rem;
         color: var(--ink-light);
@@ -248,29 +300,24 @@
         transition: opacity 0.3s ease-in-out;
         white-space: nowrap;
     }
-
     .save-status.saving,
     .save-status.error,
     .save-status.dirty,
     .save-status.idle {
         opacity: 1;
     }
-
     .save-status.error {
         color: darkred;
         font-weight: bold;
     }
-
     .save-status.dirty {
         font-style: italic;
     }
-
     .view-actions {
         display: flex;
         gap: 0.5rem;
         flex-shrink: 0;
     }
-
     .content-panes {
         display: flex;
         flex-grow: 1;
@@ -279,7 +326,23 @@
         box-sizing: border-box;
         overflow: hidden;
     }
-
+    .preview-layout {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        gap: 2rem;
+    }
+    .main-content-col {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        min-width: 0;
+    }
+    .infobox-col {
+        flex: 0 0 320px;
+        overflow-y: auto;
+        padding: 2rem 2rem 2rem 0;
+    }
     .editor-pane,
     .preview-pane {
         flex: 1;
@@ -288,15 +351,12 @@
         height: 100%;
         box-sizing: border-box;
     }
-
     .editor-pane {
         border-right: 1px solid var(--border-color);
     }
-
-    .preview-pane.full-width {
-        flex-basis: 100%;
+    .infobox-wrapper-top {
+        margin-bottom: 2rem;
     }
-
     .status-container {
         padding: 2rem;
         width: 100%;

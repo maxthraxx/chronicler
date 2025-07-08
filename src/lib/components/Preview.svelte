@@ -1,82 +1,18 @@
 <script lang="ts">
-    import Infobox from "./Infobox.svelte";
-    import { currentView } from "$lib/stores";
-    import { vaultPath } from "$lib/worldStore";
-    import { convertFileSrc } from "@tauri-apps/api/core";
-    import { resolve } from "@tauri-apps/api/path";
-    import type { PageHeader, RenderedPage } from "$lib/bindings";
+    import type { RenderedPage } from "$lib/bindings";
 
     let { renderedData } = $props<{ renderedData: RenderedPage | null }>();
-    let imageUrl = $state<string | null>(null);
-
-    function handleLinkClick(event: Event) {
-        // For keyboard events, only activate the link on "Enter" or "Space"
-        if (
-            event instanceof KeyboardEvent &&
-            event.key !== "Enter" &&
-            event.key !== " "
-        ) {
-            return; // Do nothing, allowing default behavior (like tabbing)
-        }
-
-        const target = event.target as HTMLElement;
-        const link = target.closest("a.internal-link");
-
-        if (link && link.hasAttribute("data-path")) {
-            event.preventDefault();
-            const path = link.getAttribute("data-path")!;
-            const targetPage: PageHeader = {
-                path: path,
-                title: link.textContent || "Unknown Page",
-            };
-            currentView.set({ type: "file", data: targetPage });
-        }
-    }
-
-    $effect(() => {
-        (async () => {
-            if (!renderedData?.infobox_image_path || !$vaultPath) {
-                imageUrl = null;
-                return;
-            }
-            try {
-                const imagePath = await resolve(
-                    $vaultPath,
-                    "images",
-                    renderedData.infobox_image_path,
-                );
-                imageUrl = convertFileSrc(imagePath);
-            } catch (e) {
-                console.error("Image Path Error:", e);
-                imageUrl = null;
-            }
-        })();
-    });
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
-<div
-    class="preview-wrapper"
-    onclick={handleLinkClick}
-    onkeydown={handleLinkClick}
-    role="document"
-    tabindex="0"
->
+<div class="preview-content" role="document" tabindex="0">
     {#if renderedData}
-        <Infobox data={renderedData.processed_frontmatter} {imageUrl} />
-        <div class="preview-content">
-            {@html renderedData.rendered_html}
-        </div>
+        {@html renderedData.rendered_html}
     {/if}
 </div>
 
 <style>
-    .preview-wrapper {
-        height: 100%;
-    }
     .preview-content {
-        flex-grow: 1;
-        overflow-y: auto;
         line-height: 1.7;
     }
     .preview-content :global(h1),
@@ -94,13 +30,13 @@
     .preview-content :global(h3 + p) {
         margin-top: 0;
     }
-    .preview-wrapper :global(a.internal-link) {
+    .preview-content :global(a.internal-link) {
         color: #2563eb;
         text-decoration: none;
         border-bottom: 1px dotted #2563eb;
         cursor: pointer;
     }
-    .preview-wrapper :global(span.internal-link.broken) {
+    .preview-content :global(span.internal-link.broken) {
         color: #b04a4a;
         text-decoration: none;
         border-bottom: 1px dotted #b04a4a;
