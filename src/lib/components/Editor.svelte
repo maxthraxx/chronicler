@@ -28,6 +28,6 @@
         line-height: 1.8;
         color: var(--ink);
         box-sizing: border-box;
-        padding-right: 1rem;
+        padding: 2em;
     }
 </style>

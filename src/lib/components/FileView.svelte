@@ -343,7 +343,6 @@
         overflow-y: auto;
         padding: 2rem 2rem 2rem 0;
     }
-    .editor-pane,
     .preview-pane {
         flex: 1;
         overflow-y: auto;
@@ -352,6 +351,10 @@
         box-sizing: border-box;
     }
     .editor-pane {
+        flex: 1;
+        overflow-y: auto;
+        height: 100%;
+        box-sizing: border-box;
         border-right: 1px solid var(--border-color);
     }
     .infobox-wrapper-top {
