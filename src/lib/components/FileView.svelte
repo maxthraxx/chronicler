@@ -29,13 +29,13 @@
     let lastSaveTime = $state<Date | null>(null);
     let saveTimeout: number;
 
-    const formatTime = (date: Date | null) => {
+    function formatTime(date: Date | null) {
         if (!date) return "";
         return date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
         });
-    };
+    }
 
     // This effect handles loading the page data whenever the `file` prop changes.
     $effect(() => {
