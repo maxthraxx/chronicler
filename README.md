@@ -79,6 +79,43 @@ Chronicler is built on three core principles:
 
 ---
 
+## 📝 Writing Pages in Markdown
+
+Chronicler stores your worldbuilding content in simple Markdown files with optional YAML frontmatter. This makes it easy to edit, version, and back up your world.
+
+### 📄 File Format
+
+Each file should be written in Markdown and **begin with a YAML frontmatter block**, like this:
+
+```markdown
+---
+title: Rivertown
+tags: [city, river, trade hub]
+image: rivertown.jpg
+---
+
+# Rivertown
+
+Rivertown is a vibrant settlement along the [[Silverflow River]], known for its colorful markets and eccentric riverfolk.
+
+## Economy
+
+The town thrives on river trade and artisanal fishing exports from [[Silverflow River|the river]].
+```
+
+### 🧠 Key Frontmatter Fields
+
+| Field     | Description |
+|-----------|-------------|
+| `title`   | The display title of the page. If omitted, the filename will be used. |
+| `tags`    | A list of tags to categorize this page. |
+| `image`   | *(Optional)* The filename of an image to be used in the infobox. |
+
+- The app will look for the image in an *images* folder within the vault root.
+- Link to other pages using `[[Page Name]]`. If the page doesn’t exist yet, Chronicler will create a placeholder.
+
+---
+
 ## ❤️ Support Chronicler's Development
 
 Chronicler is a free, open-source project driven by a passion for privacy and user ownership. It will never have subscriptions or cloud-based features that lock you in.
