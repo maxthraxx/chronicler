@@ -1,10 +1,16 @@
-![Chronicler 3](https://github.com/user-attachments/assets/f2354038-baf7-41f3-865d-24f7aca63776)
+# 🧭 Chronicler
 
-# 📘 Chronicler – A Markdown-Based Offline Worldbuilding App
+> **Your digital scriptorium – where knowledge links together.** 🧙‍♂️
 
-**Chronicler** is a free, open-source desktop app for worldbuilders, storytellers, and creative minds. It saves your notes as plain Markdown files on your computer — no subscriptions, no logins, and no internet required. Your world stays in your hands.
+**Chronicler** is a free desktop app for note-takers, storytellers, researchers, and creative minds. It saves your notes as plain Markdown files on your computer — no subscriptions, no logins, and no internet required. Your thoughts stay in your hands.
 
-❤️ [Support on Patreon](https://patreon.com/ChroniclerWorldbuilder) or [Buy Me a Coffee](https://buymeacoffee.com/chronicler) to help fund development.
+🎉 Download the [Latest Release](https://github.com/mak-kirkland/chronicler/releases)!
+
+❤️ [Support on Patreon](https://patreon.com/ChroniclerNotes) or [Buy Me a Coffee](https://buymeacoffee.com/chronicler) to help fund development.
+
+---
+
+![image](https://github.com/user-attachments/assets/6786c1fd-755b-428c-8bab-65503212c4bf)
 
 ---
 
@@ -12,96 +18,89 @@
 
 ### ✍️ Writing & Markdown
 
-- Uses simple **Markdown files and folders**, like Obsidian
+- Uses simple **Markdown files and folders**
 - Clean editor with **auto-save** and **live preview**
 
 ### 🔗 Linking & Organization
 
 - **Tags** with **hierarchies**
 - Internal **[[wikilinks]]** with autocomplete
-- **Backlinks** to see where pages are referenced
-- Smart **auto-indexing** and **link updates** on rename  
+- **Backlinks** to trace relationships between ideas
+- Smart **auto-indexing** and **link updates** on rename
 
 ### 📇 Templates & Infoboxes
 
-- Add structure with optional **infoboxes** (e.g., characters, places, items)
+- Add structure with optional **infoboxes** (e.g., people, places, topics)
 - Define your own reusable **templates**
 
 ### 🗂️ Hierarchies & Categorization
 
-- Multiple ways to access the same note (e.g., by faction and by location)
-- Smart indexing supports flexible categorization
+- Access the same note through multiple paths (e.g., by tag, topic or filesystem location)
+- Smart indexing supports flexible organization
 
 ### 🖼️ Media Support
 
 - Embed local images via `![[images/file.jpg]]`
 - Drag-and-drop support
 
+### 📥 Importing from Word
+
+Chronicler supports importing `.docx` files directly, making it easy to bring your existing notes into the app.
+
+- Converts Word formatting into clean **Markdown**
+- Preserves headings, lists, bold/italic text, and links
+- Works great for writers and worldbuilders migrating old content
+- Once imported, content is fully editable and linkable like any other page
+
 ### 🔐 Private & Offline
 
-- 100% offline; **no cloud**, no vendor lock-in
-- Files are just **Markdown + YAML**, readable forever
+- 100% offline — **no cloud**, no vendor lock-in
+- Files are just **Markdown + YAML**, portable and future-proof
 
 ---
 
 ## 🧭 Philosophy
 
-> Your world. Your files. Your rules.
+> Your notes. Your files. Your rules.
 
-Chronicler is made for creators who believe in **ownership**, **privacy**, and **freedom**. It helps you build your world your way — free from platform restrictions.  
+Chronicler is built on three core principles:
 
----
-
-![image](https://github.com/user-attachments/assets/bfc318e9-62eb-4968-8aa9-453c481465b4)
-
-## 🧙‍♂️ Patreon Pitch
-
-Imagine a worldbuilding app that doesn't gatekeep your imagination.
-
-**Chronicler** is a labor of love — a tool that helps storytellers **write, link, and explore** their worlds without limits.
-
-### Why Support?
-
-- No subscriptions
-- No cloud dependency
-- Total creative ownership
-
-Your support funds:
-
-- Core dev time (Rust + Svelte)
-- UX and feature design
-- Cross-platform builds
-
-### 🎁 Patreon Tiers
-
-- **€3/month** — *Scribe*: Support development
-- **€7/month** — *Archivist*: Vote on features
-- **€15/month** — *Loremaster*: Early builds, Discord access, help shape direction
-
-👉 [Join on Patreon](https://patreon.com/ChroniclerWorldbuilder) or [Buy Me a Coffee](https://buymeacoffee.com/chronicler) to help fund development.
+- **Ownership**: Your data is stored in plain text files on your local machine. You are not locked into a proprietary format or cloud service.
+- **Privacy**: The app works 100% offline. What you write is for your eyes only.
+- **Flexibility**: A simple, powerful set of tools for linking ideas, designed to adapt to your way of thinking.
 
 ---
 
-## 📫 Contact
+## 🚀 Getting Started
 
-- GitHub Issues: Feedback, bugs, requests
-- Email: [mak.kirkland@proton.me](mailto:mak.kirkland@proton.me)
-- Discord: (Coming soon!)
-
----
-
-## 🤝 Contributing
-
-The project is early-stage and contributions are welcome!
-
-- UX/UI design
-- Cross-platform testing
-- Feature requests and feedback
+- **Download the latest release**: Head to the [Releases Page](https://github.com/mak-kirkland/chronicler/releases) and download the installer for your operating system (Windows, macOS, Linux).
+- **Create a Vault**: A "vault" is the folder on your computer where Chronicler will store all your notes. You can create a new folder or select an existing one.
+- **Start Writing!**: Create your first note and start linking your ideas.
 
 ---
 
-## 🚀 Tech Stack
+## ❤️ Support Chronicler's Development
+
+Chronicler is a free, open-source project driven by a passion for privacy and user ownership. It will never have subscriptions or cloud-based features that lock you in.
+
+Your financial support directly funds development time, helping to build new features, fix bugs, and design a better user experience.
+
+- 👉 [Join on Patreon](https://patreon.com/ChroniclerNotes) to vote on features.
+
+- 👉 [Buy Me a Coffee](https://buymeacoffee.com/chronicler) for a one-time donation.
+
+---
+
+## 🛠️ Tech Stack
 
 - **Frontend**: Svelte 5
 - **Backend**: Rust
-- **Packaging**: Tauri v2 for native performance
+- **Packaging**: Tauri 2.0
+
+---
+
+## 📫 Get in Touch
+
+- Bugs & Feature Requests: Please open an issue on [GitHub Issues](https://github.com/mak-kirkland/chronicler/issues)
+- Email: [mak.kirkland@proton.me](mailto:mak.kirkland@proton.me)
+- Discord: *(Coming soon!)*
