@@ -12,14 +12,9 @@
         [key: string]: any; // Allow other dynamic properties from frontmatter
     };
 
-    let {
-        data,
-        imageUrl,
-        layout = "top",
-    } = $props<{
+    let { data, imageUrl } = $props<{
         data: InfoboxData | null;
         imageUrl: string | null;
-        layout?: "top" | "side";
     }>();
 
     let imageError = $state(false);
@@ -55,7 +50,7 @@
     });
 </script>
 
-<div class="infobox" data-layout={layout}>
+<div class="infobox">
     <div class="infobox-content-wrapper">
         {#if imageUrl}
             <div class="image-column">
@@ -135,22 +130,11 @@
         border-radius: 8px;
         padding: 1rem;
         font-size: 0.9rem;
+        container-type: inline-size;
     }
     .infobox-content-wrapper {
+        /* Defaults to a stacked layout */
         display: block;
-    }
-    .infobox[data-layout="side"] .infobox-content-wrapper {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    .infobox[data-layout="side"] .image-column {
-        flex: 0 0 270px;
-        min-width: 0;
-    }
-    .infobox[data-layout="side"] .data-column {
-        flex: 1;
-        min-width: 0;
     }
     .image-container {
         display: flex;
@@ -162,9 +146,6 @@
         border: 1px solid var(--border-color);
         border-radius: 4px;
         overflow: hidden;
-    }
-    .infobox[data-layout="side"] .image-container {
-        margin-bottom: 0;
     }
     .infobox-image {
         max-width: 100%;
@@ -238,5 +219,25 @@
         outline: none;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    /* --- Container Query for responsive layout --- */
+    /* When the infobox container is wider than 480px, switch to a side-by-side layout */
+    @container (width > 480px) {
+        .infobox-content-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        .image-column {
+            flex: 0 0 270px;
+            min-width: 0;
+        }
+        .data-column {
+            flex: 1;
+            min-width: 0;
+        }
+        .image-container {
+            margin-bottom: 0;
+        }
     }
 </style>

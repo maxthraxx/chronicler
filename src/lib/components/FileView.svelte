@@ -206,7 +206,6 @@
                                 data={pageData.rendered_page
                                     .processed_frontmatter}
                                 {imageUrl}
-                                layout="side"
                             />
                         </div>
                     {/if}
@@ -224,7 +223,6 @@
                                 data={pageData.rendered_page
                                     .processed_frontmatter}
                                 {imageUrl}
-                                layout="top"
                             />
                         </div>
                     {/if}
