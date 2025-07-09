@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.1.3-alpha] - 2025-07-09
+
+### ✨ Added
+
+- **Infobox Images**: The infobox can now display the image defined by the YAML frontmatter.
+
+### 🔄 Changed
+
+- **Dynamic Infobox Layout**: The infobox is now responsive and changes its position based on the context. It appears at the top of the page in split view and on the right-hand side in preview-only mode. The layout also adapts for screens narrower than 480px.
+- **Simplified Tag Data**: Refactored tag data handling by updating the backend to return data in the desired format, and updating the frontend to consistently use the single unified tag store derived from the global world state.
+- **Backlinks Sidebar**: The width of the backlinks sidebar has been reduced from 280px to 200px.
+- **Editor Scrollbar**: The editor's scrollbar is now flush with the side of the window for a cleaner look.
+
+---
+
 ## [v0.1.2-alpha] - 2025-07-08
 
 ### ✨ Added
