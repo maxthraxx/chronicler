@@ -415,11 +415,9 @@ tags:
         let mut new_path = parent.join(new_name.trim());
 
         // For files, ensure the .md extension is preserved or added.
-        if old_path.is_file() {
-            if !new_path.to_string_lossy().to_lowercase().ends_with(".md") {
-                let stem = path_to_stem_string(&new_path);
-                new_path.set_file_name(format!("{}.md", stem));
-            }
+        if old_path.is_file() && !new_path.to_string_lossy().to_lowercase().ends_with(".md") {
+            let stem = path_to_stem_string(&new_path);
+            new_path.set_file_name(format!("{}.md", stem));
         }
 
         if new_path.exists() {
