@@ -84,7 +84,25 @@ impl Indexer {
                 Ok(page) => {
                     self.pages.insert(path.to_path_buf(), page);
                 }
-                Err(e) => warn!("Failed to parse file {:?}: {}", path, e),
+
+                // If a file has malformed frontmatter, instead of just skipping it,
+                // we create a default Page object. This ensures the file is still
+                // "known" to the index and can be opened in the app to be fixed.
+                Err(e) => {
+                    warn!(
+                        "Failed to parse file {:?}, creating a default entry: {}",
+                        path, e
+                    );
+                    let default_page = Page {
+                        path: path.to_path_buf(),
+                        title: path_to_stem_string(path),
+                        tags: HashSet::new(),
+                        links: Vec::new(),
+                        backlinks: HashSet::new(),
+                        frontmatter: serde_json::Value::Null,
+                    };
+                    self.pages.insert(path.to_path_buf(), default_page);
+                }
             }
         }
 

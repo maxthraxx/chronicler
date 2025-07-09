@@ -28,7 +28,22 @@ impl Renderer {
     pub fn render_page_preview(&self, content: &str) -> Result<RenderedPage> {
         // 1. Separate frontmatter from the body
         let (frontmatter_str, body) = parser::extract_frontmatter(content);
-        let mut frontmatter_json = parser::parse_frontmatter(frontmatter_str, Path::new(""))?;
+
+        // Instead of returning a hard error with `?`, we match on the result.
+        // If parsing fails, we create a special JSON object with error details.
+        let mut frontmatter_json = match parser::parse_frontmatter(frontmatter_str, Path::new("")) {
+            Ok(fm) => fm,
+            Err(e) => {
+                // The frontend's Infobox component knows how to display this error object.
+                let mut error_map = serde_json::Map::new();
+                error_map.insert(
+                    "error".to_string(),
+                    Value::String("YAML Parse Error".to_string()),
+                );
+                error_map.insert("details".to_string(), Value::String(e.to_string()));
+                Value::Object(error_map)
+            }
+        };
 
         // 2. Extract the raw image path *before* any processing.
         let infobox_image_path = if let Value::Object(map) = &frontmatter_json {
