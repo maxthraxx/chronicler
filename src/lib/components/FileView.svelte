@@ -1,7 +1,6 @@
 <script lang="ts">
     import Editor from "$lib/components/Editor.svelte";
     import Preview from "$lib/components/Preview.svelte";
-    import Infobox from "$lib/components/Infobox.svelte";
     import Button from "$lib/components/Button.svelte";
     import ErrorBox from "$lib/components/ErrorBox.svelte";
     import SaveStatus from "$lib/components/SaveStatus.svelte";
@@ -200,32 +199,25 @@
                     <Editor bind:content={pageData.raw_content} />
                 </div>
                 <div class="preview-pane">
-                    {#if hasInfoboxContent}
-                        <div class="infobox-wrapper-top">
-                            <Infobox
-                                data={pageData.rendered_page
-                                    .processed_frontmatter}
-                                {imageUrl}
-                            />
-                        </div>
-                    {/if}
-                    <Preview renderedData={pageData.rendered_page} />
+                    <Preview
+                        renderedData={pageData.rendered_page}
+                        infoboxData={hasInfoboxContent
+                            ? pageData.rendered_page.processed_frontmatter
+                            : null}
+                        {imageUrl}
+                        mode="split"
+                    />
                 </div>
             {:else}
-                <div class="preview-layout">
-                    <div class="main-content-col">
-                        <Preview renderedData={pageData.rendered_page} />
-                    </div>
-
-                    {#if hasInfoboxContent}
-                        <div class="infobox-col">
-                            <Infobox
-                                data={pageData.rendered_page
-                                    .processed_frontmatter}
-                                {imageUrl}
-                            />
-                        </div>
-                    {/if}
+                <div class="unified-preview-pane">
+                    <Preview
+                        renderedData={pageData.rendered_page}
+                        infoboxData={hasInfoboxContent
+                            ? pageData.rendered_page.processed_frontmatter
+                            : null}
+                        {imageUrl}
+                        mode="unified"
+                    />
                 </div>
             {/if}
         </div>
@@ -287,22 +279,11 @@
         box-sizing: border-box;
         overflow: hidden;
     }
-    .preview-layout {
-        display: flex;
-        width: 100%;
-        height: 100%;
-        gap: 2rem;
-    }
-    .main-content-col {
+    .unified-preview-pane {
         flex: 1;
         overflow-y: auto;
         padding: 2rem;
         min-width: 0;
-    }
-    .infobox-col {
-        flex: 0 0 320px;
-        overflow-y: auto;
-        padding: 2rem 2rem 2rem 0;
     }
     .preview-pane {
         flex: 1;
@@ -317,9 +298,6 @@
         height: 100%;
         box-sizing: border-box;
         border-right: 1px solid var(--border-color);
-    }
-    .infobox-wrapper-top {
-        margin-bottom: 2rem;
     }
     .status-container {
         padding: 2rem;

@@ -1,11 +1,33 @@
 <script lang="ts">
     import type { RenderedPage } from "$lib/bindings";
+    import Infobox from "./Infobox.svelte";
 
-    let { renderedData } = $props<{ renderedData: RenderedPage | null }>();
+    // The type for the infobox data is complex, so we can use `any` here.
+    // It's the `processed_frontmatter` object from the Rust backend.
+    type InfoboxData = any;
+
+    let {
+        renderedData,
+        infoboxData = null,
+        imageUrl = null,
+        mode = "unified",
+    } = $props<{
+        renderedData: RenderedPage | null;
+        infoboxData?: InfoboxData | null;
+        imageUrl?: string | null;
+        mode?: "split" | "unified";
+    }>();
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
 <div class="preview-content" role="document" tabindex="0">
+    {#if infoboxData}
+        <!-- A class is added based on the mode to control the layout -->
+        <div class="infobox-wrapper mode-{mode}">
+            <Infobox data={infoboxData} {imageUrl} />
+        </div>
+    {/if}
+
     {#if renderedData}
         {@html renderedData.rendered_html}
     {/if}
@@ -15,6 +37,31 @@
     .preview-content {
         line-height: 1.7;
     }
+
+    /* Layout for the unified, single-pane view */
+    .infobox-wrapper.mode-unified {
+        float: right;
+        width: 100%;
+        max-width: 320px;
+        margin-left: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Layout for the split-pane view */
+    .infobox-wrapper.mode-split {
+        margin-bottom: 2rem;
+    }
+
+    /* On smaller screens, always stack the infobox on top */
+    @media (max-width: 800px) {
+        .infobox-wrapper.mode-unified {
+            float: none;
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+        }
+    }
+
     .preview-content :global(h1),
     .preview-content :global(h2),
     .preview-content :global(h3) {
