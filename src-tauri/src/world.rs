@@ -4,7 +4,7 @@
 
 use crate::{
     config,
-    error::Result,
+    error::{ChroniclerError, Result},
     importer,
     indexer::Indexer,
     models::{FileNode, FullPageData, PageHeader, RenderedPage},
@@ -184,6 +184,14 @@ impl World {
             .render_page_preview(content)
     }
 
+    /// Renders a string of pure Markdown to a `RenderedPage` object.
+    /// This bypasses all wikilink and frontmatter processing.
+    pub fn render_markdown(&self, markdown: &str) -> Result<RenderedPage> {
+        self.renderer
+            .as_ref()
+            .ok_or(ChroniclerError::VaultNotInitialized)?
+            .render_markdown(markdown)
+    }
     pub fn build_page_view(&self, path: &str) -> Result<FullPageData> {
         self.renderer
             .as_ref()

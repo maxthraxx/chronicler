@@ -78,6 +78,14 @@ export const renderPagePreview = (content: string) =>
     invoke<RenderedPage>("render_page_preview", { content });
 
 /**
+ * Renders pure markdown content (no wikilink resolution, or YAML frontmatter)
+ * @param content The raw markdown content to render.
+ * @returns A promise that resolves to the rendered page data.
+ */
+export const renderMarkdown = (content: string) =>
+    invoke<RenderedPage>("render_markdown", { content });
+
+/**
  * Creates a new, empty markdown file.
  * @param parentDir The directory where the new file should be created.
  * @param fileName The name for the new file.

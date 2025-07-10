@@ -6,6 +6,7 @@
     import FileExplorer from "./FileExplorer.svelte";
     import TagList from "./TagList.svelte";
     import SettingsModal from "./SettingsModal.svelte";
+    import HelpModal from "./HelpModal.svelte";
     import Button from "./Button.svelte";
     import SearchInput from "./SearchInput.svelte";
 
@@ -38,6 +39,15 @@
         if ($vaultPath) {
             promptAndCreateItem("folder", $vaultPath);
         }
+    }
+
+    function showHelp() {
+        openModal({
+            component: HelpModal,
+            props: {
+                onClose: closeModal,
+            },
+        });
     }
 
     const filteredTags = $derived(
@@ -98,6 +108,9 @@
         >
             + New Folder
         </Button>
+
+        <Button variant="ghost" title="Help" onclick={showHelp}>?</Button>
+
         <Button variant="ghost" title="Settings" onclick={showSettings}>
             ⚙️
         </Button>
@@ -162,5 +175,14 @@
     /* Use :global() to apply styles to a class passed to a child component */
     .sidebar-footer :global(.new-path-button) {
         flex-grow: 1;
+    }
+    .sidebar-footer {
+        gap: 0.25rem;
+    }
+    .sidebar-footer > :global(button.ghost) {
+        flex-shrink: 0;
+        width: 38px; /* Give a fixed width */
+        font-size: 1.2rem;
+        font-weight: bold;
     }
 </style>

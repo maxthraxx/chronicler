@@ -96,15 +96,39 @@
         font-style: italic;
         color: var(--ink-light);
     }
-    .preview-content :global(code) {
+    /* For inline code: `like this` */
+    .preview-content :global(:not(pre) > code) {
         background-color: rgba(0, 0, 0, 0.05);
         padding: 0.2em 0.4em;
         border-radius: 3px;
     }
+    /* For the fenced code block container (```) */
     .preview-content :global(pre) {
         background-color: rgba(0, 0, 0, 0.05);
         padding: 1em;
         border-radius: 4px;
         overflow-x: auto;
+    }
+    /* For the code *inside* the fenced block (removes the extra background) */
+    .preview-content :global(pre > code) {
+        background-color: transparent;
+        padding: 0;
+    }
+    .preview-content :global(table) {
+        width: 100%;
+        border-collapse: collapse;
+        margin-block: 1.5em;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    .preview-content :global(th),
+    .preview-content :global(td) {
+        border: 1px solid var(--border-color);
+        padding: 0.6em 0.8em;
+        text-align: left;
+    }
+    .preview-content :global(th) {
+        background-color: rgba(0, 0, 0, 0.03);
+        font-weight: bold;
     }
 </style>

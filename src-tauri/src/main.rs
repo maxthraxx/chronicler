@@ -64,6 +64,7 @@ fn main() {
             commands::is_pandoc_installed,
             commands::download_pandoc,
             commands::import_docx_files,
+            commands::render_markdown,
         ])
         .run(tauri::generate_context!())
         .expect(r#"error while running tauri application"#);

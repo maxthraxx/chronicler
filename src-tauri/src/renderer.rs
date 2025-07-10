@@ -67,10 +67,13 @@ impl Renderer {
             }
         }
 
-        // 4. Render the main body content to HTML
-        let rendered_html = self.render_markdown_to_html(body);
+        // 4. Convert wikilinks
+        let processed_markdown = self.render_wikilinks_in_string(body);
 
-        // 5. Return the complete structure with the new image path field.
+        // 5. Render the main body content to HTML
+        let rendered_html = self.render_markdown_to_html(&processed_markdown);
+
+        // 6. Return the complete structure with the new image path field.
         Ok(RenderedPage {
             processed_frontmatter: frontmatter_json,
             rendered_html,
@@ -100,23 +103,33 @@ impl Renderer {
             })
             .to_string()
     }
-
-    /// Renders a full Markdown string to an HTML string.
+    /// Renders a full Markdown string to an HTML string using pulldown-cmark.
+    /// This function handles only standard Markdown syntax and does not process
+    /// any custom syntax like wikilinks.
     fn render_markdown_to_html(&self, markdown: &str) -> String {
-        let processed_markdown = self.render_wikilinks_in_string(markdown);
-
         let mut options = Options::empty();
         options.insert(Options::ENABLE_STRIKETHROUGH);
         options.insert(Options::ENABLE_TABLES);
         options.insert(Options::ENABLE_FOOTNOTES);
 
-        let parser = Parser::new_ext(&processed_markdown, options);
+        let parser = Parser::new_ext(markdown, options);
         let mut html_output = String::new();
         html::push_html(&mut html_output, parser);
 
         html_output
     }
 
+    /// Renders a string of pure Markdown to a `RenderedPage` object containing only HTML.
+    /// This command is used for rendering content that should not have wikilinks processed,
+    /// such as the help file.
+    pub fn render_markdown(&self, markdown: &str) -> Result<RenderedPage> {
+        let rendered_html = self.render_markdown_to_html(markdown);
+        Ok(RenderedPage {
+            processed_frontmatter: serde_json::Value::Null,
+            rendered_html,
+            infobox_image_path: None,
+        })
+    }
     pub fn build_page_view(&self, path: &str) -> Result<FullPageData> {
         let raw_content = fs::read_to_string(path)?;
         let rendered_page = self.render_page_preview(&raw_content)?;

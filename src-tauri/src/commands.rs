@@ -92,6 +92,16 @@ pub fn write_page_content(path: String, content: String) -> Result<()> {
     fs::write(path, content).map_err(Into::into)
 }
 
+/// Renders a string of pure Markdown to a `RenderedPage` object containing only HTML.
+/// This command does not process wikilinks or frontmatter, making it suitable
+/// for rendering content like the help file where `[[wikilink]]` syntax needs to be
+/// displayed literally.
+#[command]
+#[instrument(skip(content, world))]
+pub fn render_markdown(content: String, world: State<RwLock<World>>) -> Result<RenderedPage> {
+    world.read().render_markdown(&content)
+}
+
 // --- File and Folder Operations ---
 
 /// Creates a new, empty markdown file and synchronously updates the index.
