@@ -8,7 +8,7 @@ Chronicler also supports `[[wikilinks]]` for easy linking between pages — just
 
 ---
 
-## 📄 File Structure
+## 📄 File Format
 
 Each page is a Markdown `.md` file. You can optionally begin the file with a YAML frontmatter block like this:
 

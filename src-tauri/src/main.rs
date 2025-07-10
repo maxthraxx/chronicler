@@ -41,6 +41,7 @@ fn main() {
     setup_tracing(&args);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             // The World is wrapped in an RwLock to allow concurrent reads.
