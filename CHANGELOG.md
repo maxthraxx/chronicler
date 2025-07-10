@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.1.5-alpha] - 2025-07-10
+
+### ✨ Added
+
+- **Automatic Updates**: Chronicler now checks for updates when the application starts, allowing users to easily download and install the latest version.
+
+### 🔄 Changed
+
+- **Welcome Page**: Added a footer to the welcome page informing the user that Chronicler is still in early (but active) development, and providing links for those who wish to support the project either by donation, reporting bugs, or requesting features.
+
+---
+
 ## [v0.1.4-alpha] - 2025-07-10
 
 ### ✨ Added
