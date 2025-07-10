@@ -192,6 +192,8 @@ impl World {
             .ok_or(ChroniclerError::VaultNotInitialized)?
             .render_markdown(markdown)
     }
+
+    /// Fetches and renders all data required for the main file view.
     pub fn build_page_view(&self, path: &str) -> Result<FullPageData> {
         self.renderer
             .as_ref()
@@ -199,6 +201,7 @@ impl World {
             .build_page_view(path)
     }
 
+    /// Returns a list of all directory paths in the vault.
     pub fn get_all_directory_paths(&self) -> Result<Vec<PathBuf>> {
         self.indexer.read().get_all_directory_paths()
     }

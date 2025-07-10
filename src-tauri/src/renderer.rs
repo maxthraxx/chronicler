@@ -130,6 +130,10 @@ impl Renderer {
             infobox_image_path: None,
         })
     }
+
+    /// Fetches all data for a given page path and returns a `FullPageData`
+    /// object suitable for displaying in the main file view. This includes
+    /// raw content, rendered content, and backlink information.
     pub fn build_page_view(&self, path: &str) -> Result<FullPageData> {
         let raw_content = fs::read_to_string(path)?;
         let rendered_page = self.render_page_preview(&raw_content)?;
