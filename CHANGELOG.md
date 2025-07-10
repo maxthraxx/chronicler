@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.1.4-alpha] - 2025-07-10
+
+### ✨ Added
+
+- **Help Page**:  Added a button that opens a help page with instructions on writing Markdown and YAML frontmatter. It explains how to format content, use tags, and create links between pages.
+
+### 🔄 Changed
+
+- **Infobox Location**: Moved the infobox into the Preview component. This simplifies the FileView and ensures the infobox scrolls naturally with the rest of the page.
+
+### 🐞 Fixed
+
+- **Malformed YAML**: Fixed an issue where invalid YAML frontmatter would cause the entire page to fail rendering.
+
+---
+
 ## [v0.1.3-alpha] - 2025-07-09
 
 ### ✨ Added
