@@ -2,9 +2,11 @@
 
 > **Your digital scriptorium – where knowledge links together.** 🧙‍♂️
 
+![Latest Release](https://img.shields.io/github/v/release/mak-kirkland/chronicler?label=release)
+
 **Chronicler** is a free desktop app for note-takers, storytellers, researchers, and creative minds. It saves your notes as plain Markdown files on your computer — no subscriptions, no logins, and no internet required. Your thoughts stay in your hands.
 
-🎉 Download the [Latest Release](https://github.com/mak-kirkland/chronicler/releases)!
+🎉 Download the [Latest Release](https://github.com/mak-kirkland/chronicler/releases/latest)!
 
 ❤️ [Support on Patreon](https://patreon.com/ChroniclerNotes) or [Buy Me a Coffee](https://buymeacoffee.com/chronicler) to help fund development.
 
@@ -85,7 +87,7 @@ Chronicler stores your worldbuilding content in simple Markdown files with optio
 
 ### 📄 File Format
 
-Each file should be written in Markdown and **begin with a YAML frontmatter block**, like this:
+Each page is a Markdown `.md` file. You can optionally begin the file with a YAML frontmatter block like this:
 
 ```markdown
 ---
@@ -96,23 +98,33 @@ image: rivertown.jpg
 
 # Rivertown
 
-Rivertown is a vibrant settlement along the [[Silverflow River]], known for its colorful markets and eccentric riverfolk.
+**Rivertown** is a vibrant settlement along the [[Silverflow River]].
 
 ## Economy
 
-The town thrives on river trade and artisanal fishing exports from [[Silverflow River|the river]].
+The town thrives on river trade and fishing exports from [[Silverflow River|Silverflow]].
 ```
 
-### 🧠 Key Frontmatter Fields
+---
 
-| Field     | Description |
-|-----------|-------------|
-| `title`   | The display title of the page. If omitted, the filename will be used. |
-| `tags`    | A list of tags to categorize this page. |
-| `image`   | *(Optional)* The filename of an image to be used in the infobox. |
+### 🧠 Frontmatter Fields
 
-- The app will look for the image in an *images* folder within the vault root.
-- Link to other pages using `[[Page Name]]`. If the page doesn’t exist yet, Chronicler will create a placeholder.
+All frontmatter is optional — use it if it's helpful for you! Chronicler won't enforce any structure, so you're free to customize as much as you like.
+
+However, three fields have special behavior:
+
+| Field   | Description |
+|---------|-------------|
+| `title` | The display title for the page. If omitted, the filename is used. |
+| `tags`  | A list of tags to categorize the page. |
+| `image` | The filename of an image (e.g., `rivertown.jpg`) used in the infobox. |
+
+**Notes**:
+- You can define whatever fields you like, and as many as you like.
+- Tags can also be anything you choose.
+- Images must be placed in an `images` folder inside your vault root.
+  For example, if your vault is at `C:\Users\Frank\World`, your image should go in `C:\Users\Frank\World\images\`.
+- Use `[[Page Name]]` to link to another page. If the page doesn’t exist yet, Chronicler will create a placeholder for it.
 
 ---
 
