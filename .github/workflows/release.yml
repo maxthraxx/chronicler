@@ -74,6 +74,9 @@ jobs:
               env:
                   # This token is provided by GitHub Actions for authentication.
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # Sign the app with personal tauri key
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
               with:
                   # Pass the target triple to the build command
                   args: --target ${{ matrix.target }}

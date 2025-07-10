@@ -166,3 +166,17 @@ pub fn import_docx_files(
 ) -> Result<Vec<PathBuf>> {
     world.read().import_docx_files(&app_handle, docx_paths)
 }
+
+// This command checks for the "APPIMAGE" environment variable, which is a reliable
+// way to determine if the application is running as an AppImage on Linux.
+#[command]
+#[instrument]
+pub fn get_linux_install_type() -> String {
+    // The APPIMAGE env var is set by the AppImage runtime.
+    if std::env::var("APPIMAGE").is_ok() {
+        "appimage".to_string()
+    } else {
+        // This indicates it's likely a .deb, .rpm, or other system-managed package.
+        "other".to_string()
+    }
+}

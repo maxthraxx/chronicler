@@ -1,5 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { browser } from "$app/environment";
+    import { checkForAppUpdates } from "$lib/updater";
     import { appStatus, resetAllStores } from "$lib/stores";
     import { world } from "$lib/worldStore";
     import { initializeVault } from "$lib/actions";
@@ -21,6 +23,7 @@
     let errorMessage = $state<string | null>(null);
 
     onMount(async () => {
+        // --- Initialize Vault ---
         errorMessage = null;
         try {
             const path = await getVaultPath();
@@ -41,6 +44,9 @@
         try {
             await initializeVault(path);
             await world.initialize();
+
+            // After the app is ready, check for updates in the background.
+            checkForAppUpdates();
         } catch (e: any) {
             errorMessage = e.message;
             $appStatus = "error";

@@ -41,6 +41,9 @@ fn main() {
     setup_tracing(&args);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
@@ -66,6 +69,7 @@ fn main() {
             commands::download_pandoc,
             commands::import_docx_files,
             commands::render_markdown,
+            commands::get_linux_install_type,
         ])
         .run(tauri::generate_context!())
         .expect(r#"error while running tauri application"#);

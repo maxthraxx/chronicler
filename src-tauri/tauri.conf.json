@@ -13,8 +13,7 @@
         "windows": [
             {
                 "title": "Chronicler",
-                "width": 800,
-                "height": 600
+                "maximized": true
             }
         ],
         "security": {
@@ -26,6 +25,7 @@
         }
     },
     "bundle": {
+        "createUpdaterArtifacts": true,
         "active": true,
         "targets": "all",
         "icon": [
@@ -35,5 +35,15 @@
             "icons/icon.icns",
             "icons/icon.ico"
         ]
+    },
+    "plugins": {
+        "updater": {
+            "active": true,
+            "endpoints": [
+                "https://github.com/mak-kirkland/chronicler/releases/latest/download/latest.json"
+            ],
+            "dialog": false,
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJENTI4NzU5NDVFODNCRDAKUldUUU8raEZXWWRTTFd5R3RxU3hqVHFiV2s0Z3dTMVZqcE5ZTnQwOGxWcTJKN2U4MGVlYzV4cmoK"
+        }
     }
 }

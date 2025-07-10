@@ -138,3 +138,14 @@ export const downloadPandoc = () => invoke<void>("download_pandoc");
  */
 export const importDocxFiles = (docxPaths: string[]) =>
     invoke<string[]>("import_docx_files", { docxPaths });
+
+// --- System Commands ---
+
+/**
+ * A command that checks for the "APPIMAGE" environment variable on Linux
+ * to determine the installation method.
+ * @returns {Promise<string>} A promise that resolves to either "appimage" or "other".
+ */
+export function getLinuxInstallType(): Promise<string> {
+    return invoke("get_linux_install_type");
+}
