@@ -2,7 +2,7 @@
 
 > **Your digital scriptorium – where knowledge links together.** 🧙‍♂️
 
-![Latest Release](https://img.shields.io/github/v/release/mak-kirkland/chronicler?label=release)
+[![Latest Release](https://img.shields.io/github/v/release/mak-kirkland/chronicler?label=release)](https://github.com/mak-kirkland/chronicler/releases/latest)
 
 **Chronicler** is a free desktop app for note-takers, storytellers, researchers, and creative minds. It saves your notes as plain Markdown files on your computer — no subscriptions, no logins, and no internet required. Your thoughts stay in your hands.
 
