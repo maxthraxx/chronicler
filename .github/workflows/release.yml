@@ -111,7 +111,13 @@ jobs:
 
                       macOS will remember your choice, and you won’t need to do this again.
 
-                      > Alternatively, you can allow the app manually via **System Settings → Privacy & Security** after the first launch attempt.
+                      **Alternative Method:**
+
+                      If the right-click method doesn't work, you can manually remove the quarantine attribute. Open the Terminal app and run the following command:
+
+                      ```sh
+                      xattr -d com.apple.quarantine /Applications/chronicler.app
+
                       Let me know if you hit any issues!
 
                   # Set to 'true' if you want to create a draft release instead of a published one.
