@@ -1,10 +1,14 @@
 <script lang="ts">
     import { rightSidebar, currentView } from "$lib/stores";
-    import type { PageHeader } from "$lib/bindings";
+    import type { Backlink } from "$lib/bindings";
 
-    function handleLinkClick(file: PageHeader) {
+    function handleLinkClick(file: Backlink) {
         // When a backlink is clicked, navigate to that file.
-        currentView.set({ type: "file", data: file });
+        // We need to convert the Backlink to a PageHeader for navigation.
+        currentView.set({
+            type: "file",
+            data: { title: file.title, path: file.path },
+        });
     }
 
     function closePanel() {
@@ -28,7 +32,12 @@
                             class="link-button"
                             onclick={() => handleLinkClick(link)}
                         >
-                            {link.title}
+                            <span>{link.title}</span>
+                            {#if link.count > 1}
+                                <span class="reference-count"
+                                    >({link.count})</span
+                                >
+                            {/if}
                         </button>
                     </li>
                 {/each}
@@ -87,6 +96,17 @@
     /* Target the global helper class within this component */
     .sidebar-content :global(.link-button) {
         font-size: 0.95rem;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        align-items: baseline;
+    }
+    .reference-count {
+        font-size: 0.8em;
+        color: var(--ink-light);
+        font-style: italic;
+        padding-left: 0.5rem;
+        flex-shrink: 0;
     }
     .no-results {
         font-style: italic;

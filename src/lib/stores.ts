@@ -4,7 +4,7 @@
  */
 
 import { writable, type Writable, get, derived } from "svelte/store";
-import type { PageHeader } from "./bindings";
+import type { PageHeader, Backlink } from "./bindings";
 
 // --- Application Status & View Management ---
 
@@ -41,7 +41,7 @@ export const fileViewMode: Writable<"preview" | "split"> = writable("preview");
 
 interface RightSidebarState {
     isVisible: boolean;
-    backlinks: PageHeader[];
+    backlinks: Backlink[];
 }
 
 const initialRightSidebarState: RightSidebarState = {

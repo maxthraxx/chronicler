@@ -29,10 +29,15 @@ export interface RenderedPage {
 	rendered_html: string;
 }
 
-// The corresponding TypeScript interface for the new backend struct.
-// It contains everything needed to render the FileView.
+export interface Backlink {
+	title: string;
+	path: string;
+	count: number;
+}
+
+// Contains everything needed to render the FileView.
 export interface FullPageData {
 	raw_content: string;
 	rendered_page: RenderedPage;
-	backlinks: PageHeader[];
+	backlinks: Backlink[];
 }

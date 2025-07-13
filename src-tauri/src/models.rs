@@ -76,6 +76,14 @@ pub struct PageHeader {
     pub path: PathBuf,
 }
 
+/// A lightweight representation of a backlink, including the reference count.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Backlink {
+    pub title: String,
+    pub path: PathBuf,
+    pub count: usize,
+}
+
 /// A structure containing the fully processed data for a page, ready for frontend display.
 #[derive(Debug, Serialize, Clone)]
 pub struct RenderedPage {
@@ -92,6 +100,5 @@ pub struct RenderedPage {
 pub struct FullPageData {
     pub raw_content: String,
     pub rendered_page: RenderedPage,
-    // We send backlink data as PageHeaders so the frontend has both the path and title.
-    pub backlinks: Vec<PageHeader>,
+    pub backlinks: Vec<Backlink>,
 }

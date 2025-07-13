@@ -1,7 +1,7 @@
 //! Markdown and Wikilink rendering engine.
 
 use crate::error::ChroniclerError;
-use crate::models::{FullPageData, PageHeader};
+use crate::models::{Backlink, FullPageData};
 use crate::wikilink::WIKILINK_RE;
 use crate::{error::Result, indexer::Indexer, models::RenderedPage, parser};
 use parking_lot::RwLock;
@@ -137,16 +137,29 @@ impl Renderer {
             .get(page_path)
             .ok_or(ChroniclerError::FileNotFound(page_path.to_path_buf()))?;
 
-        let backlinks = page
+        let mut backlinks: Vec<Backlink> = page
             .backlinks
             .iter()
             .filter_map(|backlink_path| {
-                indexer.pages.get(backlink_path).map(|p| PageHeader {
-                    title: p.title.clone(),
-                    path: p.path.clone(),
+                indexer.pages.get(backlink_path).map(|p| {
+                    // Get the count of links from the source (backlink_path) to the target (page_path)
+                    let count = indexer
+                        .link_graph
+                        .get(backlink_path)
+                        .and_then(|targets| targets.get(page_path))
+                        .map_or(0, |links| links.len());
+
+                    Backlink {
+                        title: p.title.clone(),
+                        path: p.path.clone(),
+                        count,
+                    }
                 })
             })
             .collect();
+
+        // Sort backlinks alphabetically by title (case-insensitive)
+        backlinks.sort_by(|a, b| a.title.to_lowercase().cmp(&b.title.to_lowercase()));
 
         Ok(FullPageData {
             raw_content,
