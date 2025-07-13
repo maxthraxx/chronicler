@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { checkForAppUpdates } from "$lib/updater";
-    import { appStatus, resetAllStores } from "$lib/stores";
+    import { appStatus, resetAllStores } from "$lib/viewStores";
     import { world } from "$lib/worldStore";
     import { initializeVault } from "$lib/actions";
     import { getVaultPath } from "$lib/commands";

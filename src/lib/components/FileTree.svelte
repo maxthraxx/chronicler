@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { FileNode, PageHeader } from "$lib/bindings";
     import type { ContextMenuHandler } from "$lib/types";
-    import { currentView } from "$lib/stores";
+    import { currentView } from "$lib/viewStores";
     import FileTree from "./FileTree.svelte";
 
     let { node, onContextMenu } = $props<{

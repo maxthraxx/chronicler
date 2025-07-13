@@ -9,7 +9,7 @@
         currentView,
         rightSidebar,
         navigation,
-    } from "$lib/stores";
+    } from "$lib/viewStores";
     import { files, isWorldLoaded } from "$lib/worldStore";
     import {
         buildPageView,

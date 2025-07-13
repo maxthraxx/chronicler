@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { currentView, fileViewMode, rightSidebar } from "$lib/stores";
+    import { currentView, fileViewMode, rightSidebar } from "$lib/viewStores";
     import TagIndexView from "$lib/components/TagIndexView.svelte";
     import FileView from "$lib/components/FileView.svelte";
     import BacklinksPanel from "$lib/components/BacklinksPanel.svelte";

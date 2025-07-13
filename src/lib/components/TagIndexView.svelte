@@ -1,7 +1,7 @@
 <script lang="ts">
     import { tags } from "$lib/worldStore";
     import { navigateToPage } from "$lib/actions";
-    import { navigation } from "$lib/stores";
+    import { navigation } from "$lib/viewStores";
     import Button from "$lib/components/Button.svelte";
 
     let { name } = $props<{ name: string }>();

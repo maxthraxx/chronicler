@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { rightSidebar, currentView } from "$lib/stores";
+    import { rightSidebar, currentView } from "$lib/viewStores";
     import type { Backlink } from "$lib/bindings";
 
     function handleLinkClick(file: Backlink) {

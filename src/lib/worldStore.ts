@@ -9,7 +9,7 @@
  * - Centralized error handling for data loading.
  * - A clear lifecycle (initialize, destroy) for managing the vault session.
  *
- * For UI-specific state (like view modes or modal visibility), see `stores.ts`.
+ * For UI-specific state (like view modes or modal visibility), see `viewStores.ts`.
  */
 
 import { writable, derived } from "svelte/store";

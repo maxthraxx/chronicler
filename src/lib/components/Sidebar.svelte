@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { appStatus, resetAllStores } from "$lib/stores";
+    import { appStatus, resetAllStores } from "$lib/viewStores";
     import { world, tags, vaultPath } from "$lib/worldStore";
     import { promptAndCreateItem } from "$lib/actions";
     import { openModal, closeModal } from "$lib/modalStore";

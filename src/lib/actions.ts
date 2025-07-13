@@ -5,7 +5,7 @@
  * operations like file creation or navigation are handled consistently.
  */
 
-import { currentView, appStatus, fileViewMode } from "./stores";
+import { currentView, appStatus, fileViewMode } from "./viewStores";
 import type { PageHeader } from "./bindings";
 // Import all commands under a 'commands' namespace to prevent naming conflicts.
 import * as commands from "./commands";
