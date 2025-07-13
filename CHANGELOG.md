@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.1.7-alpha] - 2025-07-13
+
+### ✨ Added
+
+- **Automatic Link Updating**: When you rename a file from within Chronicler, all wikilinks pointing to that file in your vault will now be updated automatically.
+
+### 🔄 Changed
+
+- **Improved Backlinks Panel**: Backlinks are now sorted alphabetically and display a reference count in parentheses if a page links to the current page more than once (e.g., `(3)`).
+- **Version Display**: The current application version is now visible in the Settings modal and the update notification window.
+- **Page Template**: The default template for new pages now uses a YAML array for tags, which is more user-friendly.
+- **macOS Instructions**: The installation instructions for macOS users have been updated to be more robust.
+
+---
+
 ## [v0.1.6-alpha] - 2025-07-12
 
 ### ✨ Added
