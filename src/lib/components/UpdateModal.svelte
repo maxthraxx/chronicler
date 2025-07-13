@@ -1,20 +1,28 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import type { Update } from "@tauri-apps/plugin-updater";
+    import { getVersion } from "@tauri-apps/api/app";
     import { installUpdate, openReleasePage } from "$lib/updater";
     import Modal from "$lib/components/Modal.svelte";
 
-    let {
-        update,
-        manualUpdateRequired,
-        onClose,
-    }: {
+    let { update, manualUpdateRequired, onClose } = $props<{
         update: Update;
         manualUpdateRequired: boolean;
         onClose: () => void;
-    } = $props();
+    }>();
 
     let isUpdating = $state(false);
     let installError = $state<string | null>(null);
+    let currentVersion = $state<string | null>(null);
+
+    // Fetch the current app version when the component is mounted
+    onMount(async () => {
+        try {
+            currentVersion = await getVersion();
+        } catch (e) {
+            console.error("Failed to get current app version:", e);
+        }
+    });
 
     async function handleInstallClick() {
         isUpdating = true;
@@ -36,6 +44,7 @@
         A new version of Chronicler is available: <strong
             >{update.version}</strong
         >
+        {#if currentVersion}(you have {currentVersion}){/if}.
     </p>
 
     {#if manualUpdateRequired}
