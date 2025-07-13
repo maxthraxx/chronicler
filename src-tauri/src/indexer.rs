@@ -9,7 +9,9 @@ use crate::{
     models::{FileNode, Link, Page, PageHeader},
     parser,
     utils::{is_markdown_file, path_to_stem_string},
+    wikilink::WIKILINK_RE,
 };
+use regex::Captures;
 use std::{
     collections::{HashMap, HashSet},
     fs, mem,
@@ -136,6 +138,8 @@ impl Indexer {
     /// # Arguments
     /// * `event` - The file event to process
     #[instrument(level = "debug", skip(self))]
+    // TODO: Updates and deletion should handle folder events too
+    // Currently if we delete a folder externally, the index won't update!
     pub fn handle_file_event(&mut self, event: &FileEvent) {
         match event {
             FileEvent::Created(path) => {
@@ -403,7 +407,7 @@ tags: [add, your, tags]
         Ok(())
     }
 
-    /// Renames a file or folder and intelligently updates the index.
+    /// Renames a file or folder, updates all links pointing to it, and updates the index.
     #[instrument(skip(self))]
     pub fn rename_path(&mut self, old_path: PathBuf, new_name: String) -> Result<()> {
         let parent = old_path
@@ -421,12 +425,30 @@ tags: [add, your, tags]
             return Err(ChroniclerError::FileAlreadyExists(new_path));
         }
 
+        // --- 1. Update links in other files before renaming to avoid race with file watcher ---
+        // TODO: Make this transactional
+        if old_path.is_file() {
+            if let Some(page_to_rename) = self.pages.get(&old_path) {
+                let old_name_stem = path_to_stem_string(&old_path);
+                let new_name_stem = path_to_stem_string(&new_path);
+                let backlinks = page_to_rename.backlinks.clone();
+
+                for backlink_path in backlinks {
+                    if let Err(e) =
+                        self.update_links_in_file(&backlink_path, &old_name_stem, &new_name_stem)
+                    {
+                        // TODO: Notify the user
+                        warn!("Failed to update links in file {:?}: {}", backlink_path, e);
+                    }
+                }
+            }
+        }
+
+        // --- 2. Perform the actual file system rename ---
         fs::rename(&old_path, &new_path)?;
 
-        // The watcher will see this as a delete and a create. To avoid race conditions
-        // and ensure data integrity (especially for directories), we perform a manual,
-        // optimized update of the index in memory.
-
+        // --- 3. Update the in-memory index ---
+        // This logic handles both file renames and directory renames.
         let old_path_str = old_path.to_string_lossy();
         let new_path_str = new_path.to_string_lossy();
         let pages_to_update: Vec<PathBuf> = self.pages.keys().cloned().collect();
@@ -449,6 +471,43 @@ tags: [add, your, tags]
 
         self.pages.extend(updated_pages);
         self.rebuild_relations();
+
+        Ok(())
+    }
+
+    /// Helper function to update wikilinks within a single file.
+    fn update_links_in_file(&self, file_path: &Path, old_stem: &str, new_stem: &str) -> Result<()> {
+        let content = fs::read_to_string(file_path)?;
+        let old_stem_lower = old_stem.to_lowercase();
+
+        let new_content = WIKILINK_RE.replace_all(&content, |caps: &Captures| {
+            let target = caps.get(1).map_or("", |m| m.as_str());
+            if target.to_lowercase() == old_stem_lower {
+                let section = caps.get(2).map_or("", |m| m.as_str());
+                let alias = caps.get(3).map_or("", |m| m.as_str());
+
+                let mut new_link = format!("[[{}", new_stem);
+                if !section.is_empty() {
+                    new_link.push('#');
+                    new_link.push_str(section);
+                }
+                if !alias.is_empty() {
+                    new_link.push('|');
+                    new_link.push_str(alias);
+                }
+                new_link.push_str("]]");
+                new_link
+            } else {
+                // Return the original match if the target doesn't match
+                caps.get(0).unwrap().as_str().to_string()
+            }
+        });
+
+        // Only write to the file if the content has actually changed.
+        if new_content != content {
+            info!("Updating links in file: {:?}", file_path);
+            fs::write(file_path, new_content.as_bytes())?;
+        }
 
         Ok(())
     }
@@ -655,5 +714,33 @@ Now I link to [[Page Two]]!
         assert_eq!(page2.backlinks.len(), 2);
         assert!(page2.backlinks.contains(&new_page_path));
         assert!(page2.backlinks.contains(&page3_path));
+    }
+
+    #[test]
+    fn test_rename_path_updates_links() {
+        let (_dir, page1_path, page2_path, _page3_path) = setup_test_vault();
+        let root = _dir.path();
+        let mut indexer = Indexer::new(root);
+        indexer.full_scan(root).unwrap();
+
+        // Rename "Page One.md" to "First Chapter.md"
+        let new_name = "First Chapter".to_string();
+        indexer.rename_path(page1_path.clone(), new_name).unwrap();
+
+        // Check that the link in Page Two has been updated on disk
+        let page2_content = fs::read_to_string(&page2_path).unwrap();
+        assert!(page2_content.contains("[[First Chapter]]"));
+        assert!(!page2_content.contains("[[Page One]]"));
+
+        // Check that the index has been updated
+        let new_path = root.join("First Chapter.md");
+        assert!(indexer.pages.contains_key(&new_path));
+        assert!(!indexer.pages.contains_key(&page1_path));
+        assert!(indexer
+            .link_resolver
+            .contains_key(&"first chapter".to_lowercase()));
+        assert!(!indexer
+            .link_resolver
+            .contains_key(&"page one".to_lowercase()));
     }
 }
