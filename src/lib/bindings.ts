@@ -11,24 +11,24 @@
  * for list views and navigation links.
  */
 export interface PageHeader {
-	/** The display title of the page. */
-	title: string;
-	/** The absolute path to the page file. */
-	path: string; // In Rust this is PathBuf
+    /** The display title of the page. */
+    title: string;
+    /** The absolute path to the page file. */
+    path: string; // In Rust this is PathBuf
 }
 
 /**
  * Represents a single node (a file or a directory) in the vault's file system tree.
  */
 export interface FileNode {
-	/** The display name of the file or folder. */
-	name: string;
-	/** The absolute path to the file or folder. */
-	path: string; // In Rust this is PathBuf
-	/** A boolean indicating if the node is a directory. */
-	is_directory: boolean;
-	/** An optional array of child nodes, present only for directories. */
-	children?: FileNode[];
+    /** The display name of the file or folder. */
+    name: string;
+    /** The absolute path to the file or folder. */
+    path: string; // In Rust this is PathBuf
+    /** A boolean indicating if the node is a directory. */
+    is_directory: boolean;
+    /** An optional array of child nodes, present only for directories. */
+    children?: FileNode[];
 }
 
 /**
@@ -42,10 +42,10 @@ export type TagMap = [string, PageHeader[]][];
  * Contains the processed frontmatter and rendered HTML for a page preview.
  */
 export interface RenderedPage {
-	/** The page's frontmatter, parsed as a flexible JSON object. */
-	processed_frontmatter: any;
-	/** The page's body content, fully rendered from Markdown to HTML. */
-	rendered_html: string;
+    /** The page's frontmatter, parsed as a flexible JSON object. */
+    processed_frontmatter: any;
+    /** The page's body content, fully rendered from Markdown to HTML. */
+    rendered_html: string;
 }
 
 /**
@@ -53,12 +53,12 @@ export interface RenderedPage {
  * the number of times the source page links to the target.
  */
 export interface Backlink {
-	/** The display title of the page containing the link. */
-	title: string;
-	/** The absolute path to the page containing the link. */
-	path: string;
-	/** The number of times the source page links to the current page. */
-	count: number;
+    /** The display title of the page containing the link. */
+    title: string;
+    /** The absolute path to the page containing the link. */
+    path: string;
+    /** The number of times the source page links to the current page. */
+    count: number;
 }
 
 /**
@@ -66,10 +66,10 @@ export interface Backlink {
  * render the main file view, including raw content, rendered HTML, and backlinks.
  */
 export interface FullPageData {
-	/** The raw, un-rendered Markdown content of the page. */
-	raw_content: string;
-	/** The rendered version of the page for display. */
-	rendered_page: RenderedPage;
-	/** A list of all pages that link to this page. */
-	backlinks: Backlink[];
+    /** The raw, un-rendered Markdown content of the page. */
+    raw_content: string;
+    /** The rendered version of the page for display. */
+    rendered_page: RenderedPage;
+    /** A list of all pages that link to this page. */
+    backlinks: Backlink[];
 }

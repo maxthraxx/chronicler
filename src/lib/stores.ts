@@ -74,7 +74,9 @@ function createNavigationStore() {
         const currentIdx = get(currentIndex);
 
         // If the new view is the same as the current one, do nothing.
-        if (JSON.stringify(view) === JSON.stringify(currentHistory[currentIdx])) {
+        if (
+            JSON.stringify(view) === JSON.stringify(currentHistory[currentIdx])
+        ) {
             return;
         }
 
@@ -109,7 +111,10 @@ function createNavigationStore() {
         }
     }
 
-    const canGoBack = derived(currentIndex, ($currentIndex) => $currentIndex > 0);
+    const canGoBack = derived(
+        currentIndex,
+        ($currentIndex) => $currentIndex > 0,
+    );
     const canGoForward = derived(
         [currentIndex, history],
         ([$currentIndex, $history]) => $currentIndex < $history.length - 1,
