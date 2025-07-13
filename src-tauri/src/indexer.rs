@@ -372,11 +372,8 @@ impl Indexer {
         // Create the file with some default frontmatter for a better user experience.
         let default_content = format!(
             r#"---
-title: "{}"
-tags:
-  - add
-  - your
-  - tags
+title: {}
+tags: [add, your, tags]
 ---
 
 "#,
