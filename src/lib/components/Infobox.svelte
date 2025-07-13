@@ -101,12 +101,18 @@
             {/if}
 
             <dl>
-                {#each filteredData as [key, value]}
+                <!--
+                  Add unique key to prevent error from duplicate fields in its frontmatter.
+                -->
+                {#each filteredData as [key, value], i (`${key}-${i}`)}
                     <dt>{key}</dt>
                     <dd>
                         {#if Array.isArray(value)}
                             <ul>
-                                {#each value as item}
+                                <!--
+                                  Add unique key to prevent error from duplicate values in a key
+                                -->
+                                {#each value as item, j (`${item}-${j}`)}
                                     <li>{@html item}</li>
                                 {/each}
                             </ul>
@@ -125,7 +131,10 @@
                 {#if data?.tags && Array.isArray(data.tags) && data.tags.length > 0}
                     <dt>Tags</dt>
                     <dd class="tag-container">
-                        {#each data.tags as tag (tag)}
+                        <!--
+                          Add unique key to prevent error from duplicate tags in its frontmatter.
+                        -->
+                        {#each data.tags as tag, i (`${tag}-${i}`)}
                             <button
                                 class="tag-link"
                                 onclick={() => navigateToTag(tag)}
