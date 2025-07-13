@@ -23,7 +23,7 @@
 </script>
 
 <div class="selector-container">
-    <img src="/compass.svg" alt="Compass" class="welcome-icon" />
+    <img src="/compass.png" alt="Compass" class="welcome-icon" />
     <h1 class="welcome-title">Chronicler</h1>
     <p class="welcome-text">
         Please select a folder to use as your worldbuilding vault.
@@ -40,14 +40,12 @@
         text-align: center;
         width: 100vw;
         height: 100vh;
-        background-image: url("/parchment.jpg");
-        background-size: cover;
         color: #4a3f35;
     }
     .welcome-icon {
         width: 150px;
         height: 150px;
-        opacity: 0.6;
+        opacity: 0.8;
         margin-bottom: 2rem;
     }
     .welcome-title {

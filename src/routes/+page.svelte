@@ -18,7 +18,7 @@
 {#if $currentView.type === "welcome"}
     <div class="welcome-container">
         <div class="welcome-screen">
-            <img src="/compass.svg" alt="Compass" class="welcome-icon" />
+            <img src="/compass.png" alt="Compass" class="welcome-icon" />
             <h1 class="welcome-title">Chronicler</h1>
             <p class="welcome-text">
                 Select a page from the sidebar to begin your journey.
@@ -95,7 +95,7 @@
     .welcome-icon {
         width: 150px;
         height: 150px;
-        opacity: 0.6;
+        opacity: 0.8;
         margin-bottom: 2rem;
     }
     .welcome-title {

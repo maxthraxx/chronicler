@@ -68,9 +68,7 @@
         z-index: 1000;
     }
     .modal-content {
-        background-image: url("/parchment.jpg");
         background-color: #fdf6e3;
-        background-size: cover;
         padding: 2rem;
         border-radius: 8px;
         border: 2px solid var(--border-color);

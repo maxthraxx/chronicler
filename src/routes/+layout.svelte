@@ -123,7 +123,7 @@
 {:else if $appStatus === "loading"}
     <div class="loading-screen">
         <img
-            src="/compass.svg"
+            src="/compass.png"
             alt="Compass"
             class="welcome-icon animate-spin"
         />
@@ -170,8 +170,6 @@
         text-align: center;
         width: 100vw;
         height: 100vh;
-        background-image: url("/parchment.jpg");
-        background-size: cover;
         color: var(--ink);
         padding: 2rem;
     }
@@ -198,8 +196,6 @@
         display: flex;
         height: 100vh;
         width: 100vw;
-        background-image: url("/parchment.jpg");
-        background-size: cover;
         color: var(--ink);
         font-family: "IM Fell English", serif;
     }
@@ -227,7 +223,7 @@
     .welcome-icon {
         width: 150px;
         height: 150px;
-        opacity: 0.6;
+        opacity: 0.8;
         margin-bottom: 2rem;
     }
     .welcome-title {
