@@ -14,6 +14,12 @@
     let activeTab = $state<"files" | "tags">("files");
     let searchTerm = $state("");
 
+    // When the value of activTab changes, clear the search term
+    $effect(() => {
+        activeTab;
+        searchTerm = "";
+    });
+
     function showSettings() {
         openModal({
             component: SettingsModal,
