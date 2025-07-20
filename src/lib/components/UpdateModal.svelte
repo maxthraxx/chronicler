@@ -2,6 +2,8 @@
     import { onMount } from "svelte";
     import type { Update } from "@tauri-apps/plugin-updater";
     import { getVersion } from "@tauri-apps/api/app";
+    import { readTextFile } from "@tauri-apps/plugin-fs";
+    import { resolveResource } from "@tauri-apps/api/path";
     import { installUpdate, openReleasePage } from "$lib/updater";
     import Modal from "$lib/components/Modal.svelte";
 
@@ -14,13 +16,74 @@
     let isUpdating = $state(false);
     let installError = $state<string | null>(null);
     let currentVersion = $state<string | null>(null);
+    let changelogContent = $state<string | null>(null);
 
-    // Fetch the current app version when the component is mounted
+    /**
+     * Takes the raw markdown from CHANGELOG.md and formats it to show only
+     * the relevant new entries in a clean, concise list.
+     */
+    function formatChangelog(
+        rawText: string | null,
+        version: string | null,
+    ): string | null {
+        if (!rawText || !version) return null;
+
+        // 1. Find the user's current version in the log.
+        const versionHeader = `## [v${version}`;
+        const versionIndex = rawText.indexOf(versionHeader);
+
+        // 2. Slice the text to get only the content *before* the user's version.
+        const relevantText =
+            versionIndex !== -1 ? rawText.substring(0, versionIndex) : rawText;
+
+        // 3. Find the start of the actual content, skipping the main header.
+        const contentStartIndex = relevantText.indexOf("---");
+        if (contentStartIndex === -1) return relevantText;
+
+        const content = relevantText.substring(contentStartIndex);
+
+        // 4. Process each line to reformat it.
+        return content
+            .split("\n")
+            .map((line) => {
+                const trimmedLine = line.trim();
+                // Return null for blank lines to filter them out later.
+                if (trimmedLine === "") return null;
+                // Remove separators
+                if (trimmedLine === "---") return null;
+                // Keep version headers, but remove the link part for cleanliness
+                if (trimmedLine.startsWith("## [")) {
+                    return "\n" + trimmedLine.split("]")[0] + "]";
+                }
+                // Replace markdown list items with a '+'
+                if (trimmedLine.startsWith("- ")) {
+                    return "+ " + trimmedLine.substring(2);
+                }
+                // Remove category headers (e.g., ### ✨ Added)
+                if (trimmedLine.startsWith("###")) {
+                    return null;
+                }
+                // Ignore other lines
+                return null;
+            })
+            .filter((line) => line !== null) // Remove the null (blank/ignored) lines
+            .join("\n")
+            .trim();
+    }
+
+    const formattedChangelog = $derived(
+        formatChangelog(changelogContent, currentVersion),
+    );
+
+    // Fetch the current app version and the changelog when the component is mounted
     onMount(async () => {
         try {
             currentVersion = await getVersion();
+            const resourcePath = await resolveResource("CHANGELOG.md");
+            changelogContent = await readTextFile(resourcePath);
         } catch (e) {
-            console.error("Failed to get current app version:", e);
+            console.error("Failed to get app info or changelog:", e);
+            changelogContent = "Could not load release notes.";
         }
     });
 
@@ -46,6 +109,12 @@
         >
         {#if currentVersion}(you have {currentVersion}){/if}.
     </p>
+
+    {#if formattedChangelog}
+        <div class="release-notes">
+            <div class="notes-content">{formattedChangelog}</div>
+        </div>
+    {/if}
 
     {#if manualUpdateRequired}
         <div class="manual-update-notice">
@@ -90,6 +159,21 @@
 </Modal>
 
 <style>
+    .release-notes {
+        padding: 1rem;
+        background-color: var(--parchment-mid);
+        border-radius: 6px;
+        max-height: 250px;
+        /* Enable both vertical and horizontal scrolling */
+        overflow: auto;
+        border: 1px solid var(--border-color);
+    }
+    .notes-content {
+        font-size: 0.8rem;
+        line-height: 1.7;
+        white-space: pre;
+        font-family: var(--font-mono);
+    }
     .manual-update-notice {
         background-color: var(--parchment-dark);
         border: 1px solid var(--parchment-dark);

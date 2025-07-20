@@ -79,7 +79,7 @@
         border-radius: 8px;
         border: 2px solid var(--border-color);
         width: 100%;
-        max-width: 500px;
+        max-width: 600px;
         box-shadow: 0 5px 15px var(--color-overlay-light);
         color: var(--ink);
     }

@@ -20,7 +20,7 @@
             "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost",
             "assetProtocol": {
                 "enable": true,
-                "scope": ["$APPCONFIG/*", "$HOME/**"]
+                "scope": ["$APPCONFIG/*", "$HOME/**", "$RESOURCE/**"]
             }
         }
     },
@@ -34,7 +34,10 @@
             "icons/128x128@2x.png",
             "icons/icon.icns",
             "icons/icon.ico"
-        ]
+        ],
+        "resources": {
+            "../CHANGELOG.md": "CHANGELOG.md"
+        }
     },
     "plugins": {
         "updater": {
