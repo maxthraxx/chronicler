@@ -21,6 +21,12 @@
             ]
         },
         "opener:default",
+        "updater:default",
+        "updater:allow-check",
+        "updater:allow-download-and-install",
+        "process:allow-restart",
+        "process:allow-exit",
+        "store:default",
         "fs:default",
         "fs:allow-read-text-file",
         "fs:allow-resource-read-recursive"
