@@ -143,6 +143,17 @@ pub fn delete_path(world: State<RwLock<World>>, path: String) -> Result<()> {
 
 // --- Importer ---
 
+/// Imports a list of .docx files, converting them to Markdown.
+#[command]
+#[instrument(skip(world, app_handle))]
+pub fn import_docx_files(
+    world: State<RwLock<World>>,
+    app_handle: AppHandle,
+    docx_paths: Vec<PathBuf>,
+) -> Result<Vec<PathBuf>> {
+    world.write().import_docx_files(&app_handle, docx_paths)
+}
+
 /// Checks if Pandoc is installed in the application's config directory.
 #[command]
 #[instrument(skip(app_handle))]
@@ -157,16 +168,7 @@ pub async fn download_pandoc(app_handle: AppHandle) -> Result<()> {
     importer::download_pandoc(app_handle).await
 }
 
-/// Imports a list of .docx files, converting them to Markdown.
-#[command]
-#[instrument(skip(world, app_handle))]
-pub fn import_docx_files(
-    world: State<RwLock<World>>,
-    app_handle: AppHandle,
-    docx_paths: Vec<PathBuf>,
-) -> Result<Vec<PathBuf>> {
-    world.write().import_docx_files(&app_handle, docx_paths)
-}
+// --- System ---
 
 /// Checks for the "APPIMAGE" environment variable to determine if the
 /// application is running as an AppImage on Linux.
