@@ -85,7 +85,11 @@
           -->
         {#if filteredNode && filteredNode.children && filteredNode.children.length > 0}
             {#each filteredNode.children as child (child.path)}
-                <FileTree node={child} onContextMenu={showContextMenu} />
+                <FileTree
+                    node={child}
+                    onContextMenu={showContextMenu}
+                    {searchTerm}
+                />
             {/each}
         {:else if searchTerm}
             <p class="text-muted text-center">No files found.</p>

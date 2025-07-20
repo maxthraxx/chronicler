@@ -2,17 +2,26 @@
     import type { FileNode, PageHeader } from "$lib/bindings";
     import type { ContextMenuHandler } from "$lib/types";
     import { currentView } from "$lib/viewStores";
-    import FileTree from "./FileTree.svelte";
+    import { manuallyExpandedPaths } from "$lib/explorerStore";
     import { promptAndCreateItem, moveItemToDir } from "$lib/actions";
     import { draggable, droppable } from "$lib/domActions";
+    import FileTree from "./FileTree.svelte";
     import Button from "./Button.svelte";
 
-    let { node, onContextMenu } = $props<{
+    let {
+        node,
+        onContextMenu,
+        searchTerm = "",
+    } = $props<{
         node: FileNode;
         onContextMenu: ContextMenuHandler;
+        searchTerm?: string;
     }>();
 
-    let expanded = $state(false);
+    const isSearching = $derived(!!searchTerm);
+    const isManuallyExpanded = $derived($manuallyExpandedPaths.has(node.path));
+    // A folder is expanded if we are searching OR if it's in our global set
+    const expanded = $derived(isSearching || isManuallyExpanded);
 
     function openFile(file: PageHeader) {
         currentView.set({ type: "file", data: file });
@@ -55,8 +64,9 @@
     {#if node.is_directory}
         <div
             class="directory"
-            onclick={() => (expanded = !expanded)}
-            onkeydown={(e) => e.key === "Enter" && (expanded = !expanded)}
+            onclick={() => manuallyExpandedPaths.toggle(node.path)}
+            onkeydown={(e) =>
+                e.key === "Enter" && manuallyExpandedPaths.toggle(node.path)}
             role="button"
             tabindex="0"
             oncontextmenu={(e) => {
@@ -93,7 +103,7 @@
         {#if expanded && node.children}
             <div class="children">
                 {#each node.children as child (child.path)}
-                    <FileTree node={child} {onContextMenu} />
+                    <FileTree node={child} {onContextMenu} {searchTerm} />
                 {/each}
             </div>
         {/if}
