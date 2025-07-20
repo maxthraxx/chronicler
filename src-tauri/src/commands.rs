@@ -12,10 +12,7 @@ use crate::{
     world::World,
 };
 use parking_lot::RwLock;
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::path::PathBuf;
 use tauri::{command, AppHandle, State};
 use tracing::instrument;
 
@@ -81,17 +78,6 @@ pub fn build_page_view(path: String, world: State<RwLock<World>>) -> Result<Full
     world.read().build_page_view(&path)
 }
 
-/// Writes content to a page on disk. This does not modify the World state directly,
-/// so it doesn't need a lock on the World. The file watcher will pick up the change.
-#[command]
-#[instrument]
-pub fn write_page_content(path: String, content: String) -> Result<()> {
-    if let Some(parent) = Path::new(&path).parent() {
-        fs::create_dir_all(parent)?;
-    }
-    fs::write(path, content).map_err(Into::into)
-}
-
 /// Renders a string of pure Markdown to a `RenderedPage` object containing only HTML.
 /// This command does not process wikilinks or frontmatter, making it suitable
 /// for rendering content like the help file where `[[wikilink]]` syntax needs to be
@@ -103,6 +89,18 @@ pub fn render_markdown(content: String, world: State<RwLock<World>>) -> Result<R
 }
 
 // --- File and Folder Operations ---
+
+/// Writes content to a page on disk. This does not modify the World state directly,
+/// so it doesn't need a lock on the World. The file watcher will pick up the change.
+#[command]
+#[instrument(skip(world))]
+pub fn write_page_content(
+    world: State<RwLock<World>>,
+    path: String,
+    content: String,
+) -> Result<()> {
+    world.read().write_page_content(&path, &content)
+}
 
 /// Creates a new, empty markdown file and synchronously updates the index.
 #[command]

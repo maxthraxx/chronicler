@@ -13,6 +13,7 @@ use crate::{
 };
 use parking_lot::{Mutex, RwLock};
 use std::{
+    fs,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -205,6 +206,17 @@ impl World {
     }
 
     // --- File System Operations ---
+
+    /// Writes content to a page on disk.
+    /// This method doesn't need to modify the index directly, as the file watcher
+    /// will detect the change and send an event.
+    pub fn write_page_content(&self, path: &str, content: &str) -> Result<()> {
+        let path_buf = PathBuf::from(path);
+        if let Some(parent) = path_buf.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(path_buf, content).map_err(Into::into)
+    }
 
     /// Creates a new, empty markdown file and synchronously updates the index.
     pub fn create_new_file(&self, parent_dir: String, file_name: String) -> Result<PageHeader> {
