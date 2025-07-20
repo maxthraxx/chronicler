@@ -68,7 +68,17 @@ jobs:
             - name: Sync SvelteKit
               run: pnpm svelte-kit sync
 
-            # Step 7: Build the Tauri application and create the release
+            # Step 7: Read the latest entry from the changelog file
+            - name: Read latest changelog entry
+              id: read_changelog # Give the step an ID to reference its output
+              uses: mindsers/changelog-reader-action@v2
+              with:
+                  # Use the git tag (e.g., "v0.3.0") to find the correct version
+                  version: ${{ github.ref_name }}
+                  # The path to your changelog file
+                  path: ./CHANGELOG.md
+
+            # Step 8: Build the Tauri application and create the release
             - name: Build and Release
               uses: tauri-apps/tauri-action@v0
               env:
@@ -89,7 +99,7 @@ jobs:
 
                   # An updated description for the release body with install instructions.
                   releaseBody: |
-                      See the assets below to download the latest version of Chronicler!
+                      ${{ steps.read_changelog.outputs.changes }}
 
                       ---
 
