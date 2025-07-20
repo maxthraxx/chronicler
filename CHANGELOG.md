@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.3.0-alpha] - 2025-07-19
+
+### ✨ Added
+
+- **Updater**: The update notification modal now displays a formatted changelog with notes on the latest version.
+- **Explorer**: File explorer search has been improved; directories now dynamically expand to show matching files, and the manual expansion state is remembered after a search is complete.
+- **Sidebar**: The search term in the sidebar is now automatically cleared when switching between the "Files" and "Tags" tabs.
+
+### 🔄 Changed
+
+- **Internal**: All application capabilities have been refactored into a default.json file.
+
+---
+
 ## [v0.2.0-alpha] - 2025-07-19
 
 ### ✨ Added
