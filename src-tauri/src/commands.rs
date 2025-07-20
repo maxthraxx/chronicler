@@ -112,7 +112,7 @@ pub fn create_new_file(
     parent_dir: String,
     file_name: String,
 ) -> Result<PageHeader> {
-    world.read().create_new_file(parent_dir, file_name)
+    world.write().create_new_file(parent_dir, file_name)
 }
 
 /// Creates a new, empty folder. This uses a read lock on the world,
@@ -124,7 +124,7 @@ pub fn create_new_folder(
     parent_dir: String,
     folder_name: String,
 ) -> Result<()> {
-    world.read().create_new_folder(parent_dir, folder_name)
+    world.write().create_new_folder(parent_dir, folder_name)
 }
 
 /// Renames a file or folder on disk. This uses a read lock on the world,
@@ -132,7 +132,7 @@ pub fn create_new_folder(
 #[command]
 #[instrument(skip(world))]
 pub fn rename_path(world: State<RwLock<World>>, path: String, new_name: String) -> Result<()> {
-    world.read().rename_path(PathBuf::from(path), new_name)
+    world.write().rename_path(PathBuf::from(path), new_name)
 }
 
 /// Deletes a file or folder from disk. This uses a read lock on the world,
@@ -140,7 +140,7 @@ pub fn rename_path(world: State<RwLock<World>>, path: String, new_name: String) 
 #[command]
 #[instrument(skip(world))]
 pub fn delete_path(world: State<RwLock<World>>, path: String) -> Result<()> {
-    world.read().delete_path(PathBuf::from(path))
+    world.write().delete_path(PathBuf::from(path))
 }
 
 // --- Importer ---
@@ -167,7 +167,7 @@ pub fn import_docx_files(
     app_handle: AppHandle,
     docx_paths: Vec<PathBuf>,
 ) -> Result<Vec<PathBuf>> {
-    world.read().import_docx_files(&app_handle, docx_paths)
+    world.write().import_docx_files(&app_handle, docx_paths)
 }
 
 /// Checks for the "APPIMAGE" environment variable to determine if the
