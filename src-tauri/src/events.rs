@@ -15,13 +15,19 @@ pub enum FileEvent {
     /// A new file was created in the vault.
     Created(PathBuf),
 
+    /// A new folder was created in the vault.
+    FolderCreated(PathBuf),
+
     /// An existing file was modified (content changed).
     Modified(PathBuf),
 
     /// A file was deleted from the vault.
     Deleted(PathBuf),
 
-    /// A file was renamed or moved within the vault.
+    /// A folder was deleted from the vault.
+    FolderDeleted(PathBuf),
+
+    /// A file or folder was renamed or moved within the vault.
     Renamed { from: PathBuf, to: PathBuf },
 }
 
@@ -31,8 +37,10 @@ impl FileEvent {
     pub fn path(&self) -> &PathBuf {
         match self {
             FileEvent::Created(path) => path,
+            FileEvent::FolderCreated(path) => path,
             FileEvent::Modified(path) => path,
             FileEvent::Deleted(path) => path,
+            FileEvent::FolderDeleted(path) => path,
             FileEvent::Renamed { to, .. } => to,
         }
     }
@@ -41,8 +49,10 @@ impl FileEvent {
     pub fn event_type(&self) -> &'static str {
         match self {
             FileEvent::Created(_) => "created",
+            FileEvent::FolderCreated(_) => "created",
             FileEvent::Modified(_) => "modified",
             FileEvent::Deleted(_) => "deleted",
+            FileEvent::FolderDeleted(_) => "deleted",
             FileEvent::Renamed { .. } => "renamed",
         }
     }

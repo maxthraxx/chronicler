@@ -13,7 +13,7 @@ use crate::{
 use notify_debouncer_full::{
     new_debouncer,
     notify::{
-        event::{CreateKind, ModifyKind, RenameMode},
+        event::{CreateKind, ModifyKind, RemoveKind, RenameMode},
         EventKind, RecommendedWatcher, RecursiveMode,
     },
     DebounceEventResult, DebouncedEvent, Debouncer, FileIdMap,
@@ -161,6 +161,12 @@ fn handle_debounced_events(
                 .map(|path| FileEvent::Created(path.clone()))
                 .collect::<Vec<_>>(),
 
+            EventKind::Create(CreateKind::Folder) => event
+                .paths
+                .iter()
+                .map(|path| FileEvent::FolderCreated(path.clone()))
+                .collect::<Vec<_>>(),
+
             EventKind::Modify(ModifyKind::Data(_)) | EventKind::Modify(ModifyKind::Any) => event
                 .paths
                 .iter()
@@ -168,27 +174,53 @@ fn handle_debounced_events(
                 .map(|path| FileEvent::Modified(path.clone()))
                 .collect::<Vec<_>>(),
 
-            EventKind::Remove(_) => event
+            EventKind::Remove(RemoveKind::File) => event
                 .paths
                 .iter()
                 .filter(|path| is_valid_file(path))
                 .map(|path| FileEvent::Deleted(path.clone()))
                 .collect::<Vec<_>>(),
 
-            EventKind::Modify(ModifyKind::Name(RenameMode::Both)) => {
-                // Handle rename events (from -> to)
-                if event.paths.len() == 2
-                    && is_markdown_file(&event.paths[0])
-                    && is_markdown_file(&event.paths[1])
-                {
-                    vec![FileEvent::Renamed {
-                        from: event.paths[0].clone(),
-                        to: event.paths[1].clone(),
-                    }]
-                } else {
-                    Vec::new()
+            EventKind::Remove(RemoveKind::Folder) => event
+                .paths
+                .iter()
+                .map(|path| FileEvent::FolderDeleted(path.clone()))
+                .collect::<Vec<_>>(),
+
+            EventKind::Modify(ModifyKind::Name(rename_mode)) => match rename_mode {
+                // This is a true rename within the watched directory
+                RenameMode::Both => {
+                    if event.paths.len() == 2 && is_markdown_file(&event.paths[0])
+                        || is_markdown_file(&event.paths[1])
+                    {
+                        vec![FileEvent::Renamed {
+                            from: event.paths[0].clone(),
+                            to: event.paths[1].clone(),
+                        }]
+                    } else {
+                        Vec::new()
+                    }
                 }
-            }
+
+                // This is a move OUT of the watched folder, which we treat as a deletion
+                RenameMode::From => event
+                    .paths
+                    .iter()
+                    .filter(|path| !is_temp_file(path))
+                    // This now correctly creates either a Deleted or FolderDeleted event
+                    .map(|path| {
+                        if is_markdown_file(path) {
+                            FileEvent::Deleted(path.clone())
+                        } else {
+                            FileEvent::FolderDeleted(path.clone())
+                        }
+                    })
+                    .collect(),
+
+                // We can ignore RenameMode::To (moved into folder) and RenameMode::Any,
+                // as Create events will handle the discovery of new files.
+                _ => Vec::new(),
+            },
 
             _ => Vec::new(), // Ignore other event types
         };
@@ -212,10 +244,12 @@ fn handle_debounced_events(
 /// Checks if a path points to a valid file that should be processed.
 /// This ignores temporary/lock files (like .#file.md) and non-markdown files.
 fn is_valid_file(path: &Path) -> bool {
-    let is_temp_file = path
-        .file_stem()
-        .and_then(|stem| stem.to_str())
-        .is_some_and(|s| s.starts_with(".#"));
+    !is_temp_file(path) && is_markdown_file(path)
+}
 
-    !is_temp_file && is_markdown_file(path)
+/// Checks if a path points to a temporary/lock file (like .#file.md).
+fn is_temp_file(path: &Path) -> bool {
+    path.file_stem()
+        .and_then(|stem| stem.to_str())
+        .is_some_and(|s| s.starts_with(".#"))
 }

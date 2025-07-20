@@ -138,13 +138,17 @@ impl Indexer {
     /// # Arguments
     /// * `event` - The file event to process
     #[instrument(level = "debug", skip(self))]
-    // TODO: Updates and deletion should handle folder events too
-    // Currently if we delete a folder externally, the index won't update!
     pub fn handle_file_event(&mut self, event: &FileEvent) {
         match event {
             FileEvent::Created(path) => {
                 info!("Handling file creation: {:?}", path);
                 self.update_file(path);
+            }
+            FileEvent::FolderCreated(path) => {
+                info!("Handling folder creation: {:?}", path);
+                // No action is needed on the index itself, as empty folders
+                // don't contain pages or links. The app's overall "world changed"
+                // event will trigger a UI refresh of the file tree.
             }
             FileEvent::Modified(path) => {
                 info!("Handling file modification: {:?}", path);
@@ -153,6 +157,10 @@ impl Indexer {
             FileEvent::Deleted(path) => {
                 info!("Handling file deletion: {:?}", path);
                 self.remove_file(path);
+            }
+            FileEvent::FolderDeleted(path) => {
+                info!("Handling folder deletion: {:?}", path);
+                self.remove_folder(path);
             }
             FileEvent::Renamed { from, to } => {
                 info!("Handling file rename: {:?} -> {:?}", from, to);
@@ -191,6 +199,17 @@ impl Indexer {
             // After removing the page, rebuild relations to clean up dangling links/backlinks.
             self.rebuild_relations();
         }
+    }
+
+    /// Removes a folder and all its descendant pages from the index.
+    #[instrument(level = "debug", skip(self))]
+    fn remove_folder(&mut self, path: &Path) {
+        // Retain only the pages that do NOT start with the deleted folder's path.
+        self.pages
+            .retain(|page_path, _| !page_path.starts_with(path));
+
+        // After removing pages, rebuild all relationships to clean up dangling links.
+        self.rebuild_relations();
     }
 
     /// Rebuilds all relationships (tags, graph, backlinks) from scratch.
