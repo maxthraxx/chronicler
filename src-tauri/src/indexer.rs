@@ -376,12 +376,11 @@ impl Indexer {
         // Create the file with some default frontmatter for a better user experience.
         let default_content = format!(
             r#"---
-title: {}
+title: {trimmed_name}
 tags: [add, your, tags]
 ---
 
-"#,
-            trimmed_name
+"#
         );
 
         fs::write(&path, default_content)?;
@@ -418,7 +417,7 @@ tags: [add, your, tags]
         // For files, ensure the .md extension is preserved or added.
         if old_path.is_file() && !new_path.to_string_lossy().to_lowercase().ends_with(".md") {
             let stem = path_to_stem_string(&new_path);
-            new_path.set_file_name(format!("{}.md", stem));
+            new_path.set_file_name(format!("{stem}.md"));
         }
 
         if new_path.exists() {
@@ -486,7 +485,7 @@ tags: [add, your, tags]
                 let section = caps.get(2).map_or("", |m| m.as_str());
                 let alias = caps.get(3).map_or("", |m| m.as_str());
 
-                let mut new_link = format!("[[{}", new_stem);
+                let mut new_link = format!("[[{new_stem}");
                 if !section.is_empty() {
                     new_link.push('#');
                     new_link.push_str(section);
