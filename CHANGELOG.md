@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.3.2-alpha] - 2025-07-21
+
+### ✨ Added
+
+- **Welcome Page**: Added a link to join the community on Discord in the welcome screen's footer.
+
+### 🐞 Fixed
+
+- **Linux Build**: Fixed a critical issue that caused the Linux AppImage build to fail. This also resolves compatibility problems for some Linux distributions, making the application runnable for more users.
+
+---
+
 ## [v0.3.1-alpha] - 2025-07-21
 
 ### 🔄 Changed
