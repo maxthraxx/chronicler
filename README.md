@@ -13,6 +13,10 @@
 
 ❤️ [Support on Patreon](https://patreon.com/ChroniclerNotes) or [Buy Me a Coffee](https://buymeacoffee.com/chronicler) to help fund development.
 
+💬 [Join us on Discord](https://discord.gg/cXJwcbe2b7)
+
+**Chronicler** is developed by a single independent creator (hi, that’s me! 👋) working on the project full-time. I rely entirely on donations as my **only source of income**. Its continued development is made possible thanks to the generous support of the community.
+
 ---
 
 ![image](https://github.com/user-attachments/assets/6786c1fd-755b-428c-8bab-65503212c4bf)
@@ -100,7 +104,8 @@ Chronicler is built on three core principles:
 
     > #### 🛡️ Security & Trust
     >
-    > While the initial installer is unsigned, all in-app updates are cryptographically signed by me. The built-in updater verifies this signature before installing any new version, ensuring that all future updates are authentic and have not been tampered with.
+    > While the initial installer is unsigned, all in-app updates are cryptographically signed by me. This is handled by [Tauri's built-in updater](https://tauri.app/plugin/updater), which verifies the update signature before installing it. This ensures that all future updates are authentic and have not been tampered with.
+
 
 2.  **Create a Vault**: A "vault" is the folder on your computer where Chronicler will store all your notes. You can create a new folder or select an existing one.
 
@@ -158,7 +163,7 @@ However, three fields have special behavior:
 
 ## ❤️ Support Chronicler's Development
 
-Chronicler is a free, open-source project driven by a passion for privacy and user ownership. It will never have subscriptions or cloud-based features that lock you in.
+Chronicler is a free, open-source project driven by a passion for privacy and user ownership.
 
 Your financial support directly funds development time, helping to build new features, fix bugs, and design a better user experience.
 
