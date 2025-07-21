@@ -4,6 +4,8 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/mak-kirkland/chronicler?label=release)](https://github.com/mak-kirkland/chronicler/releases/latest)
 [![Changelog](https://img.shields.io/badge/changelog-md-blue)](https://github.com/mak-kirkland/chronicler/blob/main/CHANGELOG.md)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 
 **Chronicler** is a free desktop app for note-takers, storytellers, researchers, and creative minds. It saves your notes as plain Markdown files on your computer — no subscriptions, no logins, and no internet required. Your thoughts stay in your hands.
 
@@ -179,3 +181,9 @@ Your financial support directly funds development time, helping to build new fea
 -   Bugs & Feature Requests: Please open an issue on [GitHub Issues](https://github.com/mak-kirkland/chronicler/issues)
 -   Email: [mak.kirkland@proton.me](mailto:mak.kirkland@proton.me)
 -   Discord: [Join here!](https://discord.gg/cXJwcbe2b7)
+
+---
+
+## 📜 License
+
+This project is licensed under the Creative Commons BY-NC-SA 4.0 License - see the [LICENSE](LICENSE) file for details.
