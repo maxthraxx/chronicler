@@ -101,32 +101,32 @@ jobs:
                   releaseBody: |
                       ${{ steps.read_changelog.outputs.changes }}
 
-                      ## Installation
+                      ## Installation & Notes
 
                       - **💻 Windows**: Download the `.msi` file to install.
                       - **🐧 Linux**: Download the `.AppImage` (for most distributions) or the `.deb` / `.rpm` file for your package manager.
+                      - **🍎 macOS**: Download the `aarch64.dmg` (Apple Silicon) or `x64.dmg` (Intel) file.
 
-                      ### 🍎 macOS Installation (Unsigned App)
+                      ---
 
-                      Chronicler for macOS is currently **unsigned**, which means macOS will block it the first time you try to open it. Here’s how to get it running:
+                      ### ⚠️ A Note for Windows Users
+                      When you first run the installer, Microsoft Defender may show a "Windows protected your PC" screen. This is expected because Chronicler is a new application from an independent developer and is not yet code-signed.
 
-                      #### Steps to Open the App
+                      To proceed, simply click **"More info"** and then **"Run anyway"**.
 
-                      1. **Download** the `.dmg` or `.app` file from the release below:
-                          - Use **`x64`** for Intel-based Macs (older models).
-                          - Use **`aarch64`** for Apple Silicon Macs (M1, M2, M3).
-                      2. **Move** the app into your **Applications** folder.
-                      3. **Try to open it** — you’ll see a warning saying the app is damaged or can’t be opened.
-                      4. **Open Terminal** (you can find it in Applications > Utilities).
-                      5. **Run this command** in Terminal:
+                      ### 🍎 A Note for macOS Users
+                      Chronicler for macOS is currently **unsigned**. The first time you open it, you will need to run a command in the Terminal.
 
+                      1.  **Download** the `.dmg` file and move the app to your **Applications** folder.
+                      2.  **Open the Terminal** app.
+                      3.  **Run this command**:
                           ```sh
                           sudo xattr -rd com.apple.quarantine /Applications/chronicler.app
                           ```
+                      4.  The app will now open correctly.
 
-                      6. **Try opening the app again** — it should now work as expected!
-
-                      Let me know if you hit any issues!
+                      ### 🔒 Security & Trust
+                      While the initial installer is unsigned, all in-app updates are cryptographically signed by me. The built-in updater verifies this signature before installing any new version, ensuring that all future updates are authentic and have not been tampered with.
 
                   # Set to 'true' if you want to create a draft release instead of a published one.
                   releaseDraft: true
