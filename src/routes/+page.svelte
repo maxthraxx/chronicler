@@ -31,17 +31,6 @@
                 out!
             </p>
             <p>
-                🐞 Found a bug? Have a feature request? Please <a
-                    href="https://github.com/mak-kirkland/chronicler/issues"
-                    onclick={(event) => {
-                        event.preventDefault();
-                        openUrl(
-                            "https://github.com/mak-kirkland/chronicler/issues",
-                        );
-                    }}>open an issue on GitHub.</a
-                >
-            </p>
-            <p>
                 🙏 If you find this app useful, please consider <b
                     >supporting its development</b
                 >
@@ -61,6 +50,26 @@
                         openUrl("https://buymeacoffee.com/chronicler");
                     }}>Buy Me a Coffee</a
                 >. Thanks! :)
+            </p>
+            <p>
+                💬 Join the community on <a
+                    href="https://discord.gg/cXJwcbe2b7"
+                    onclick={(event) => {
+                        event.preventDefault();
+                        openUrl("https://discord.gg/cXJwcbe2b7");
+                    }}>Discord</a
+                > to ask questions and share your work.
+            </p>
+            <p>
+                🐞 Found a bug? Have a feature request? Please <a
+                    href="https://github.com/mak-kirkland/chronicler/issues"
+                    onclick={(event) => {
+                        event.preventDefault();
+                        openUrl(
+                            "https://github.com/mak-kirkland/chronicler/issues",
+                        );
+                    }}>open an issue on GitHub.</a
+                >
             </p>
         </div>
     </div>
@@ -116,7 +125,7 @@
     }
     .welcome-footer p {
         margin: 0.5rem 0;
-        font-size: 0.9rem;
+        font-size: 1rem;
         color: var(--ink-light);
     }
     .welcome-footer a {
