@@ -152,4 +152,4 @@ Your financial support directly funds development time, helping to build new fea
 
 - Bugs & Feature Requests: Please open an issue on [GitHub Issues](https://github.com/mak-kirkland/chronicler/issues)
 - Email: [mak.kirkland@proton.me](mailto:mak.kirkland@proton.me)
-- Discord: *(Coming soon!)*
+- Discord: [Join here!](https://discord.gg/cXJwcbe2b7)
