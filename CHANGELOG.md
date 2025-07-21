@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.3.1-alpha] - 2025-07-21
+
+### 🔄 Changed
+
+- **File Watcher**: The file watcher is now more comprehensive. It correctly interprets a "Move to Trash" operation as a deletion and handles the creation and deletion of entire folders more intelligently, ensuring the file index remains consistent.
+- **Stability**: The core locking strategy for file operations was refactored to use top-level write locks, preventing potential deadlocks and race conditions under heavy use.
+- **Internal**: The application's code structure was improved for better maintainability, which will speed up future development.
+
+---
+
 ## [v0.3.0-alpha] - 2025-07-19
 
 ### ✨ Added
