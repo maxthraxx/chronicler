@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import Codemirror from "svelte-codemirror-editor";
     import { markdown } from "@codemirror/lang-markdown";
     import { EditorView } from "@codemirror/view";
@@ -11,6 +12,11 @@
     import { allFileTitles, tags } from "$lib/worldStore";
 
     let { content = $bindable() } = $props<{ content?: string }>();
+    let editor: EditorView;
+
+    onMount(() => {
+        editor.focus();
+    });
 
     /**
      * A custom CodeMirror completion source that provides suggestions for links and tags.
@@ -129,6 +135,7 @@
 
 <div class="editor-wrapper">
     <Codemirror
+        on:ready={(e) => (editor = e.detail)}
         bind:value={content}
         {extensions}
         placeholder="Let your story unfold..."
