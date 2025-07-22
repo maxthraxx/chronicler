@@ -93,7 +93,7 @@ pub fn render_markdown(content: String, world: State<RwLock<World>>) -> Result<R
 /// Writes content to a page on disk. This does not modify the World state directly,
 /// so it doesn't need a lock on the World. The file watcher will pick up the change.
 #[command]
-#[instrument(skip(world))]
+#[instrument(skip(world, content))]
 pub fn write_page_content(
     world: State<RwLock<World>>,
     path: String,
