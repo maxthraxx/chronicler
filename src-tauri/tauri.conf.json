@@ -13,7 +13,8 @@
         "windows": [
             {
                 "title": "Chronicler",
-                "maximized": true
+                "maximized": true,
+                "dragDropEnabled": false
             }
         ],
         "security": {
