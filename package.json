@@ -14,27 +14,27 @@
   "license": "MIT",
   "dependencies": {
     "@tauri-apps/api": "^2.7.0",
-    "@tauri-apps/plugin-dialog": "~2.3.0",
-    "@tauri-apps/plugin-fs": "~2.4.0",
+    "@tauri-apps/plugin-dialog": "~2.3.1",
+    "@tauri-apps/plugin-fs": "~2.4.1",
     "@tauri-apps/plugin-opener": "~2.4.0",
     "@tauri-apps/plugin-os": "~2.3.0",
-    "@tauri-apps/plugin-process": "~2",
-    "@tauri-apps/plugin-store": "~2",
-    "@tauri-apps/plugin-updater": "~2",
+    "@tauri-apps/plugin-process": "~2.3.0",
+    "@tauri-apps/plugin-store": "~2.3.0",
+    "@tauri-apps/plugin-updater": "~2.9.0",
     "js-yaml": "^4.1.0",
-    "marked": "^16.0.0"
+    "marked": "^16.1.1"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^3.0.6",
-    "@sveltejs/kit": "^2.9.0",
-    "@sveltejs/vite-plugin-svelte": "^5.0.0",
-    "@tauri-apps/cli": "^2.7.0",
+    "@sveltejs/adapter-static": "^3.0.8",
+    "@sveltejs/kit": "^2.25.1",
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@tauri-apps/cli": "^2.7.1",
     "@types/js-yaml": "^4.0.9",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0",
-    "svelte": "^5.0.0",
-    "svelte-check": "^4.0.0",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.3"
+    "svelte": "^5.36.13",
+    "svelte-check": "^4.3.0",
+    "typescript": "~5.6.3",
+    "vite": "^6.3.5"
   }
 }
