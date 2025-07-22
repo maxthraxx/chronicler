@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.4.0-alpha] - 2025-07-22
+
+### ✨ Added
+
+- **Editor**: The editor has been replaced with CodeMirror 6, which enables link and tag autocompletions.
+
+### 🐞 Fixed
+
+- **Drag and Drop**: Disabled the operating system's native drag-and-drop to ensure the HTML5 drag-and-drop feature works correctly on Windows and MacOS.
+- **Internal**: Updated Tauri and its dependencies, fixing a bug that prevented the changelog from being displayed in the update modal.
+
+### 🔄 Changed
+
+- **Internal**: Reduced log pollution by no longer logging full page content for the `write_page_content` trace, as the path is sufficient.
+
+---
+
 ## [v0.3.2-alpha] - 2025-07-21
 
 ### ✨ Added
