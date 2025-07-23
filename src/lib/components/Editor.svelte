@@ -33,7 +33,23 @@
                 options: allFiles.map((title) => ({
                     label: title,
                     type: "link",
-                    apply: `${title}]]`,
+                    // We use a custom apply function to gain full control over the completion.
+                    // This allows us to insert the text and manually place the cursor.
+                    apply: (view, completion, from, to) => {
+                        // Dispatch a transaction to the editor.
+                        view.dispatch({
+                            // Insert the selected title plus the closing brackets.
+                            changes: {
+                                from,
+                                to,
+                                insert: `${completion.label}`,
+                            },
+                            // Set the cursor position to be right after the inserted text.
+                            selection: {
+                                anchor: from + completion.label.length + 2,
+                            },
+                        });
+                    },
                 })),
                 filter: true,
             };
