@@ -111,19 +111,11 @@ jobs:
                   releaseBody: ${{ steps.read_full_changelog.outputs.changes }}
                   releaseDraft: true # It's safest to create a draft first
 
-            # Step 9: Update the public GitHub Release notes to be clean and concise
-            # This step now combines the latest changelog with helpful installation instructions.
-            - name: Update release notes for clarity
-              if: matrix.platform == 'ubuntu-22.04' # Run this step only once to avoid race conditions
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              shell: bash # Ensures this runs correctly on Windows
+            # Step 8.5: Create a file with the installation notes to avoid shell parsing errors.
+            - name: Create installation notes file
+              shell: bash
               run: |
-                  # The latest changelog entries from the previous step
-                  LATEST_CHANGES="${{ steps.read_latest_changelog.outputs.changes }}"
-
-                  # Your static installation and security notes stored in a variable
-                  INSTALL_NOTES=$(cat <<'EOF'
+                  cat > INSTALL_NOTES.md <<'EOF'
 
                   ## Installation & Notes
 
@@ -152,7 +144,21 @@ jobs:
                   ### 🛡️ Security & Trust
                   While the initial installer is unsigned, all in-app updates are cryptographically signed by me. This is handled by [Tauri's built-in updater](https://tauri.app/plugin/updater), which verifies the update signature before installing it. This ensures that all future updates are authentic and have not been tampered with.
                   EOF
-                  )
 
-                  # Combine the two parts and pass them to the GitHub CLI
-                  gh release edit ${{ github.ref_name }} --notes "$LATEST_CHANGES$INSTALL_NOTES"
+            # Step 9: Update the public GitHub Release notes using a notes file
+            - name: Update release notes for clarity
+              if: matrix.platform == 'ubuntu-22.04' # Run this step only once
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  LATEST_CHANGES: ${{ steps.read_latest_changelog.outputs.changes }}
+              shell: bash
+              run: |
+                  # Write the content from the environment variable to the final notes file.
+                  # Using an env var is safer for multi-line content.
+                  echo "$LATEST_CHANGES" > FINAL_RELEASE_NOTES.md
+
+                  # Append the static installation notes.
+                  cat INSTALL_NOTES.md >> FINAL_RELEASE_NOTES.md
+
+                  # Use the --notes-file flag to pass the content safely, avoiding shell parsing errors.
+                  gh release edit ${{ github.ref_name }} --notes-file FINAL_RELEASE_NOTES.md
