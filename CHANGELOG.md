@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.5.0-alpha] - 2025-07-24
+
+### ✨ Added
+
+- **Preview**: The infobox is now fully responsive, using a `clamp()`-based width to scale correctly on different screen resolutions.
+- **Preview**: External URLs clicked within the preview now open in the user's default web browser for convenience.
+
+### 🐞 Fixed
+
+- **CI**: Fixed a shell parsing error in the release workflow that caused the Ubuntu build to fail when updating release notes.
+
+### 🔄 Changed
+
+- **Updater**: The changelog displayed in the update modal now uses the default monospace font for better visual consistency with the rest of the application.
+
+---
+
 ## [v0.4.2-alpha] - 2025-07-24
 
 ### 🐞 Fixed
