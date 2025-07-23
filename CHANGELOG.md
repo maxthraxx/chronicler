@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.4.1-alpha] - 2025-07-23
+
+### ✨ Added
+
+- **Editor**: The editor is now automatically focused whenenever it's opened so the user can immediately start typing.
+
+### 🐞 Fixed
+
+- **Updater**: A summary of the latest changes is now properly displayed in the update modal.
+
+### 🔄 Changed
+
+- **Editor**: Refactored wikilink autocompletion logic to be simpler and more maintainable.
+
+---
+
 ## [v0.4.0-alpha] - 2025-07-22
 
 ### ✨ Added
