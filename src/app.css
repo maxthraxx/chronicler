@@ -61,9 +61,9 @@
     src: url("/fonts/Uncial-Antiqua-regular.woff2") format("woff2");
 }
 
-/* Add the rule for your new monospaced font */
+/* DejaVu Sans Mono */
 @font-face {
-    font-family: "DejaVu Sans Mono"; /* Or whatever you chose */
+    font-family: "DejaVu Sans Mono";
     font-style: normal;
     font-weight: 400;
     src: url("/fonts/DejaVu Sans Mono.woff2") format("woff2");
