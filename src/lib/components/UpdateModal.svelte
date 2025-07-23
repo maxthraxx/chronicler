@@ -2,9 +2,11 @@
     import { onMount } from "svelte";
     import type { Update } from "@tauri-apps/plugin-updater";
     import { getVersion } from "@tauri-apps/api/app";
-    import { readTextFile } from "@tauri-apps/plugin-fs";
-    import { resolveResource } from "@tauri-apps/api/path";
-    import { installUpdate, openReleasePage } from "$lib/updater";
+    import {
+        installUpdate,
+        openReleasePage,
+        formatChangelog,
+    } from "$lib/updater";
     import Modal from "$lib/components/Modal.svelte";
 
     let { update, manualUpdateRequired, onClose } = $props<{
@@ -16,74 +18,18 @@
     let isUpdating = $state(false);
     let installError = $state<string | null>(null);
     let currentVersion = $state<string | null>(null);
-    let changelogContent = $state<string | null>(null);
 
-    /**
-     * Takes the raw markdown from CHANGELOG.md and formats it to show only
-     * the relevant new entries in a clean, concise list.
-     */
-    function formatChangelog(
-        rawText: string | null,
-        version: string | null,
-    ): string | null {
-        if (!rawText || !version) return null;
-
-        // 1. Find the user's current version in the log.
-        const versionHeader = `## [v${version}`;
-        const versionIndex = rawText.indexOf(versionHeader);
-
-        // 2. Slice the text to get only the content *before* the user's version.
-        const relevantText =
-            versionIndex !== -1 ? rawText.substring(0, versionIndex) : rawText;
-
-        // 3. Find the start of the actual content, skipping the main header.
-        const contentStartIndex = relevantText.indexOf("---");
-        if (contentStartIndex === -1) return relevantText;
-
-        const content = relevantText.substring(contentStartIndex);
-
-        // 4. Process each line to reformat it.
-        return content
-            .split("\n")
-            .map((line) => {
-                const trimmedLine = line.trim();
-                // Return null for blank lines to filter them out later.
-                if (trimmedLine === "") return null;
-                // Remove separators
-                if (trimmedLine === "---") return null;
-                // Keep version headers, but remove the link part for cleanliness
-                if (trimmedLine.startsWith("## [")) {
-                    return "\n" + trimmedLine.split("]")[0] + "]";
-                }
-                // Replace markdown list items with a '+'
-                if (trimmedLine.startsWith("- ")) {
-                    return "+ " + trimmedLine.substring(2);
-                }
-                // Remove category headers (e.g., ### ✨ Added)
-                if (trimmedLine.startsWith("###")) {
-                    return null;
-                }
-                // Ignore other lines
-                return null;
-            })
-            .filter((line) => line !== null) // Remove the null (blank/ignored) lines
-            .join("\n")
-            .trim();
-    }
-
+    // The formatted changelog is derived directly from the update's body property.
     const formattedChangelog = $derived(
-        formatChangelog(changelogContent, currentVersion),
+        formatChangelog(update.body, currentVersion),
     );
 
-    // Fetch the current app version and the changelog when the component is mounted
+    // Fetch the current app version when the component is mounted.
     onMount(async () => {
         try {
             currentVersion = await getVersion();
-            const resourcePath = await resolveResource("CHANGELOG.md");
-            changelogContent = await readTextFile(resourcePath);
         } catch (e) {
-            console.error("Failed to get app info or changelog:", e);
-            changelogContent = "Could not load release notes.";
+            console.error("Failed to get app version:", e);
         }
     });
 
@@ -112,7 +58,7 @@
 
     {#if formattedChangelog}
         <div class="release-notes">
-            <div class="notes-content">{formattedChangelog}</div>
+            <div class="notes-content">{@html formattedChangelog}</div>
         </div>
     {/if}
 

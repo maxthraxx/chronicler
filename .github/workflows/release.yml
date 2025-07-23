@@ -68,9 +68,19 @@ jobs:
             - name: Sync SvelteKit
               run: pnpm svelte-kit sync
 
-            # Step 7: Read the latest entry from the changelog file
-            - name: Read latest changelog entry
-              id: read_changelog # Give the step an ID to reference its output
+            # Step 7a: Read the ENTIRE changelog for the updater's JSON file
+            - name: Read full changelog for updater
+              id: read_full_changelog
+              shell: bash # Ensures this runs correctly on Windows
+              run: |
+                  content=$(cat ./CHANGELOG.md)
+                  echo "changes<<EOF" >> $GITHUB_OUTPUT
+                  echo "$content" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            # Step 7b: Read ONLY THE LATEST entry for the public GitHub Release notes
+            - name: Read latest changelog entry for GitHub Release
+              id: read_latest_changelog
               uses: mindsers/changelog-reader-action@v2
               with:
                   # Use the git tag (e.g., "v0.3.0") to find the correct version
@@ -79,6 +89,7 @@ jobs:
                   path: ./CHANGELOG.md
 
             # Step 8: Build the Tauri application and create the release
+            # This step uses the FULL changelog to ensure `latest.json` contains all the data our app needs.
             - name: Build and Release
               uses: tauri-apps/tauri-action@v0
               env:
@@ -96,37 +107,52 @@ jobs:
 
                   # The name of the release, using the git tag directly.
                   releaseName: "Chronicler ${{ github.ref_name }}"
+                  # Use the FULL changelog here. This populates the `notes` field in the generated `latest.json`.
+                  releaseBody: ${{ steps.read_full_changelog.outputs.changes }}
+                  releaseDraft: true # It's safest to create a draft first
 
-                  # An updated description for the release body with install instructions.
-                  releaseBody: |
-                      ${{ steps.read_changelog.outputs.changes }}
+            # Step 9: Update the public GitHub Release notes to be clean and concise
+            # This step now combines the latest changelog with helpful installation instructions.
+            - name: Update release notes for clarity
+              if: matrix.platform == 'ubuntu-22.04' # Run this step only once to avoid race conditions
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              shell: bash # Ensures this runs correctly on Windows
+              run: |
+                  # The latest changelog entries from the previous step
+                  LATEST_CHANGES="${{ steps.read_latest_changelog.outputs.changes }}"
 
-                      ## Installation & Notes
+                  # Your static installation and security notes stored in a variable
+                  INSTALL_NOTES=$(cat <<'EOF'
 
-                      - **💻 Windows**: Download the `.msi` file to install.
-                      - **🐧 Linux**: Download the `.AppImage` (for most distributions) or the `.deb` / `.rpm` file for your package manager.
-                      - **🍎 macOS**: Download the `aarch64.dmg` (Apple Silicon) or `x64.dmg` (Intel) file.
+                  ## Installation & Notes
 
-                      ---
+                  - **💻 Windows**: Download the `.msi` file to install.
+                  - **🐧 Linux**: Download the `.AppImage` (for most distributions) or the `.deb` / `.rpm` file for your package manager.
+                  - **🍎 macOS**: Download the `aarch64.dmg` (Apple Silicon) or `x64.dmg` (Intel) file.
 
-                      ### ⚠️ A Note for Windows Users
-                      When you first run the installer, Microsoft Defender may show a "Windows protected your PC" screen. This is expected because Chronicler is a new application from an independent developer and is not yet code-signed.
+                  ---
 
-                      To proceed, simply click **"More info"** and then **"Run anyway"**.
+                  ### ⚠️ A Note for Windows Users
+                  When you first run the installer, Microsoft Defender may show a "Windows protected your PC" screen. This is expected because Chronicler is a new application from an independent developer and is not yet code-signed.
 
-                      ### 🍎 A Note for macOS Users
-                      Chronicler for macOS is currently **unsigned**. The first time you open it, you will need to run a command in the Terminal.
+                  To proceed, simply click **"More info"** and then **"Run anyway"**.
 
-                      1.  **Download** the `.dmg` file and move the app to your **Applications** folder.
-                      2.  **Open the Terminal** app.
-                      3.  **Run this command**:
-                          ```sh
-                          sudo xattr -rd com.apple.quarantine /Applications/chronicler.app
-                          ```
-                      4.  The app will now open correctly.
+                  ### 🍎 A Note for macOS Users
+                  Chronicler for macOS is currently **unsigned**. The first time you open it, you will need to run a command in the Terminal.
 
-                      ### 🛡️ Security & Trust
-                      While the initial installer is unsigned, all in-app updates are cryptographically signed by me. The built-in updater verifies this signature before installing any new version, ensuring that all future updates are authentic and have not been tampered with.
+                  1.  **Download** the `.dmg` file and move the app to your **Applications** folder.
+                  2.  **Open the Terminal** app.
+                  3.  **Run this command**:
+                      ```sh
+                      sudo xattr -rd com.apple.quarantine /Applications/chronicler.app
+                      ```
+                  4.  The app will now open correctly.
 
-                  # Set to 'true' if you want to create a draft release instead of a published one.
-                  releaseDraft: true
+                  ### 🛡️ Security & Trust
+                  While the initial installer is unsigned, all in-app updates are cryptographically signed by me. This is handled by [Tauri's built-in updater](https://tauri.app/plugin/updater), which verifies the update signature before installing it. This ensures that all future updates are authentic and have not been tampered with.
+                  EOF
+                  )
+
+                  # Combine the two parts and pass them to the GitHub CLI
+                  gh release edit ${{ github.ref_name }} --notes "$LATEST_CHANGES$INSTALL_NOTES"

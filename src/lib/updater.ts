@@ -66,3 +66,56 @@ export async function installUpdate(update: Update) {
     await update.downloadAndInstall();
     await relaunch();
 }
+
+/**
+ * Takes the raw markdown from the update payload (`update.body`), extracts all
+ * list items, and formats them into a single, alphabetized list,
+ * grouped by category, similar to REAPER's changelog.
+ */
+export function formatChangelog(
+    rawText: string | null,
+    version: string | null,
+): string | null {
+    if (!rawText || !version) return null;
+
+    // 1. Slice the text to get only the content *before* the user's version.
+    const versionHeader = `## [v${version}`;
+    const versionIndex = rawText.indexOf(versionHeader);
+    const relevantText =
+        versionIndex !== -1 ? rawText.substring(0, versionIndex) : rawText;
+
+    const changes: { category: string; description: string }[] = [];
+    // Regex to capture the category (in bold) and the description from a list item.
+    const lineRegex = /-\s*\*\*(.*?)\*\*:\s*(.*)/;
+
+    // 2. Parse each line to extract change items.
+    relevantText.split("\n").forEach((line) => {
+        const match = line.trim().match(lineRegex);
+        if (match) {
+            // match[1] is the category, match[2] is the description.
+            changes.push({ category: match[1], description: match[2] });
+        }
+    });
+
+    if (changes.length === 0) {
+        return "No detailed release notes available.";
+    }
+
+    // 3. Sort the changes alphabetically by category, then by description.
+    changes.sort((a, b) => {
+        if (a.category.toLowerCase() < b.category.toLowerCase()) return -1;
+        if (a.category.toLowerCase() > b.category.toLowerCase()) return 1;
+        if (a.description.toLowerCase() < b.description.toLowerCase())
+            return -1;
+        if (a.description.toLowerCase() > b.description.toLowerCase()) return 1;
+        return 0;
+    });
+
+    // 4. Format the sorted list for display.
+    return changes
+        .map(
+            (change) =>
+                `+ <strong>${change.category}</strong>: ${change.description}`,
+        )
+        .join("<br>");
+}
