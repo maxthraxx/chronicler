@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.4.2-alpha] - 2025-07-24
+
+### 🐞 Fixed
+
+- **Editor**: Fixed wikilink autocompletion to append the correct number of closing square brackets.
+
+---
+
 ## [v0.4.1-alpha] - 2025-07-23
 
 ### ✨ Added
