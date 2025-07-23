@@ -1,6 +1,8 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import type { RenderedPage } from "$lib/bindings";
     import Infobox from "./Infobox.svelte";
+    import { openUrl } from "@tauri-apps/plugin-opener";
 
     // The type for the infobox data is complex, so we can use `any` here.
     // It's the `processed_frontmatter` object from the Rust backend.
@@ -15,6 +17,29 @@
         infoboxData?: InfoboxData | null;
         mode?: "split" | "unified";
     }>();
+
+    /// Intercept links to open them using the user's default browser, rather
+    /// than navigating to them within Chronicler's webview.
+    onMount(() => {
+        const handleLinkClick = (event: MouseEvent) => {
+            // First, ensure the target is an HTMLElement
+            if (event.target instanceof HTMLElement) {
+                // Now TypeScript knows event.target has DOM methods
+                const link = event.target.closest("a");
+
+                if (link && link.href.startsWith("http")) {
+                    event.preventDefault();
+                    openUrl(link.href);
+                }
+            }
+        };
+
+        document.body.addEventListener("click", handleLinkClick);
+
+        return () => {
+            document.body.removeEventListener("click", handleLinkClick);
+        };
+    });
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
