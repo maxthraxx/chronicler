@@ -64,8 +64,7 @@
     /* Layout for the unified, single-pane view */
     .infobox-wrapper.mode-unified {
         float: right;
-        width: 100%;
-        max-width: 320px;
+        width: clamp(20rem, 20vw, 28rem);
         margin-left: 2rem;
         margin-bottom: 1rem;
     }
