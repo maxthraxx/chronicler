@@ -241,7 +241,6 @@
         justify-content: space-between;
         align-items: center;
         padding: 0 2rem;
-        background-color: var(--color-background-header);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
         border-bottom: 1px solid var(--border-color);

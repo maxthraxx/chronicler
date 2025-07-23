@@ -68,7 +68,6 @@
         align-items: center;
         padding: 0 1rem;
         height: 60px;
-        background-color: var(--color-background-header);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
         border-bottom: 1px solid var(--border-color);

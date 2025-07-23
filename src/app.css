@@ -2,7 +2,7 @@
 :root {
     /* Colors */
     --parchment: #fdf6e3;
-    --parchment-mid: #00000014;
+    --parchment-mid: #e6dcc9;
     --parchment-dark: #dcd3c3;
     --ink: #4a3f35;
     --ink-light: #6a5f55;
@@ -17,12 +17,6 @@
     --color-border-error: rgba(139, 0, 0, 0.2);
 
     /* UI Element Colors */
-    --color-background-header: rgba(
-        253,
-        246,
-        227,
-        0.85
-    ); /* parchment with blur */
     --color-overlay-subtle: rgba(0, 0, 0, 0.02);
     --color-overlay-light: rgba(0, 0, 0, 0.03);
     --color-overlay-medium: rgba(0, 0, 0, 0.05);
@@ -78,7 +72,7 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
+    background: var(--color-overlay-medium);
 }
 
 ::-webkit-scrollbar-thumb {
