@@ -33,7 +33,6 @@
     /* Typography */
     --font-family-body: "IM Fell English", serif;
     --font-family-heading: "Uncial Antiqua", cursive;
-    --font-mono: "DejaVu Sans Mono", monospace;
 }
 
 /* --- Local Font Definitions (from /static folder) --- */
@@ -59,14 +58,6 @@
     font-style: normal;
     font-weight: 400;
     src: url("/fonts/Uncial-Antiqua-regular.woff2") format("woff2");
-}
-
-/* DejaVu Sans Mono */
-@font-face {
-    font-family: "DejaVu Sans Mono";
-    font-style: normal;
-    font-weight: 400;
-    src: url("/fonts/DejaVu Sans Mono.woff2") format("woff2");
 }
 
 /* Global Styles */

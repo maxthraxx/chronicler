@@ -118,7 +118,7 @@
         font-size: 0.8rem;
         line-height: 1.7;
         white-space: pre;
-        font-family: var(--font-mono);
+        font-family: monospace;
     }
     .manual-update-notice {
         background-color: var(--parchment-dark);
