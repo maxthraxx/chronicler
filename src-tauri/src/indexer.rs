@@ -9,9 +9,7 @@ use crate::{
     models::{FileNode, Link, Page, PageHeader},
     parser,
     utils::{is_markdown_file, path_to_stem_string},
-    wikilink::WIKILINK_RE,
 };
-use regex::Captures;
 use std::{
     collections::{HashMap, HashSet},
     fs, mem,
@@ -164,8 +162,7 @@ impl Indexer {
             }
             FileEvent::Renamed { from, to } => {
                 info!("Handling file rename: {:?} -> {:?}", from, to);
-                self.remove_file(from);
-                self.update_file(to);
+                self.handle_rename(from, to);
             }
         }
     }
@@ -209,6 +206,27 @@ impl Indexer {
             .retain(|page_path, _| !page_path.starts_with(path));
 
         // After removing pages, rebuild all relationships to clean up dangling links.
+        self.rebuild_relations();
+    }
+
+    /// Handles an in-memory rename of a file or folder.
+    #[instrument(level = "debug", skip(self))]
+    fn handle_rename(&mut self, from: &Path, to: &Path) {
+        let pages_to_update: Vec<_> = self
+            .pages
+            .keys()
+            .filter(|p| p.starts_with(from))
+            .cloned()
+            .collect();
+
+        for path in pages_to_update {
+            if let Some(mut page) = self.pages.remove(&path) {
+                let relative_path = path.strip_prefix(from).unwrap();
+                let new_page_path = to.join(relative_path);
+                page.path = new_page_path.clone();
+                self.pages.insert(new_page_path, page);
+            }
+        }
         self.rebuild_relations();
     }
 
@@ -377,291 +395,6 @@ impl Indexer {
         })
     }
 
-    /// Creates a new, empty markdown file and synchronously updates the index.
-    #[instrument(skip(self))]
-    pub fn create_new_file(&mut self, parent_dir: String, file_name: String) -> Result<PageHeader> {
-        let mut path = PathBuf::from(parent_dir);
-        path.push(file_name.trim());
-        path.set_extension("md");
-
-        if path.exists() {
-            return Err(ChroniclerError::FileAlreadyExists(path));
-        }
-
-        // Use the file stem of the newly created path as the title.
-        let title = path_to_stem_string(&path);
-
-        // Create the file with some default frontmatter for a better user experience.
-        let default_content = format!(
-            r#"---
-title: {title}
-tags: [add, your, tags]
----
-
-"#
-        );
-
-        fs::write(&path, default_content)?;
-
-        // Manually and synchronously update the index for the new file before returning.
-        // This prevents the race condition where the frontend tries to access the file
-        // before the watcher has processed it.
-        self.update_file(&path);
-
-        Ok(PageHeader { title, path })
-    }
-
-    /// Creates a new, empty folder.
-    #[instrument(skip(self))]
-    pub fn create_new_folder(&self, parent_dir: String, folder_name: String) -> Result<()> {
-        let path = Path::new(&parent_dir).join(folder_name.trim());
-        if path.exists() {
-            return Err(ChroniclerError::FileAlreadyExists(path));
-        }
-        fs::create_dir_all(path)?;
-        // The file watcher will pick up this change and trigger a global index update.
-        Ok(())
-    }
-
-    /// Renames a file or folder, updates all links pointing to it, and updates the index.
-    /// This operation is transactional to prevent data loss or corruption.
-    ///
-    /// This is a complex, multi-stage operation designed for data safety:
-    /// 1.  Prepare: It calculates all required file changes in memory without touching the disk.
-    /// 2.  Transact: It performs all file system operations (backups, renames, writes) using a
-    ///     rollback mechanism. If any step fails, it automatically reverts all changes to their
-    ///     original state.
-    /// 3.  Update Index: Only after the file system transaction is successful, it updates the
-    ///     in-memory index to reflect the changes.
-    #[instrument(skip(self))]
-    pub fn rename_path(&mut self, old_path: PathBuf, new_name: String) -> Result<()> {
-        let parent = old_path
-            .parent()
-            .ok_or_else(|| ChroniclerError::InvalidPath(old_path.clone()))?;
-        let mut new_path = parent.join(new_name.trim());
-
-        // For files, ensure the .md extension is preserved or added.
-        if old_path.is_file() {
-            new_path.set_extension("md");
-        }
-
-        if new_path.exists() {
-            return Err(ChroniclerError::FileAlreadyExists(new_path));
-        }
-
-        // --- 1. Prepare Phase: Calculate all required file system changes in memory ---
-        let mut operations: HashMap<PathBuf, String> = HashMap::new();
-        if old_path.is_file() {
-            if let Some(page_to_rename) = self.pages.get(&old_path) {
-                let old_name_stem = path_to_stem_string(&old_path);
-                let new_name_stem = path_to_stem_string(&new_path);
-
-                for backlink_path in &page_to_rename.backlinks {
-                    let new_content = self.replace_wikilink_in_file(
-                        backlink_path,
-                        &old_name_stem,
-                        &new_name_stem,
-                    )?;
-                    // Only add the operation if content actually changed.
-                    if let Some(content) = new_content {
-                        operations.insert(backlink_path.clone(), content);
-                    }
-                }
-            }
-        }
-
-        // --- 2. Transaction Phase: Perform all file system changes ---
-        if let Err(e) = self.perform_rename_transaction(&old_path, &new_path, &operations) {
-            // If the transaction fails, the helper function will have already attempted a rollback.
-            // We just need to log the error and return it.
-            warn!("Rename transaction failed and was rolled back: {}", e);
-            return Err(e);
-        }
-
-        // --- 3. In-Memory Update Phase: Update the index state ---
-        let pages_to_update: Vec<_> = self
-            .pages
-            .keys()
-            .filter(|p| p.starts_with(&old_path))
-            .cloned()
-            .collect();
-
-        let mut updated_pages = HashMap::new();
-
-        for path in pages_to_update {
-            // Check if the page was the renamed item itself or inside a renamed directory
-            if let Some(mut page) = self.pages.remove(&path) {
-                // `strip_prefix` gets the part of the path that is relative to the old, renamed path.
-                let relative_path = path.strip_prefix(&old_path).unwrap();
-                // We then join this relative part to the new path to get the final destination.
-                let new_page_path = new_path.join(relative_path);
-
-                page.path = new_page_path.clone();
-                updated_pages.insert(new_page_path, page);
-            }
-        }
-
-        self.pages.extend(updated_pages);
-        self.rebuild_relations();
-
-        Ok(())
-    }
-
-    /// Performs the file system part of a rename operation transactionally.
-    ///
-    /// It uses a backup-and-replace strategy to ensure that if any operation fails, all changes
-    /// can be safely rolled back.
-    ///
-    /// # The Transaction Process:
-    /// 1.  Backup: For every file to be modified, it is first renamed to a `.bak` file.
-    /// 2.  Commit: The new content is written and the original file is moved to its new path.
-    /// 3.  Rollback: If the commit succeeds, all `.bak` files are deleted. If it fails, the
-    ///     `.bak` files are renamed back to their original names, restoring the vault to its
-    ///     original state.
-    fn perform_rename_transaction(
-        &self,
-        old_path: &Path,
-        new_path: &Path,
-        backlink_updates: &HashMap<PathBuf, String>,
-    ) -> Result<()> {
-        let mut backup_paths: Vec<(PathBuf, PathBuf)> = Vec::new();
-
-        // The core logic is wrapped in a closure. If it returns an error,
-        // we can execute the rollback logic with the collected backup
-        let result: Result<()> = (|| {
-            // --- Step 1: Backup all files that will be modified or renamed ---
-            // First, the main file/folder being renamed.
-            let old_path_bak = old_path.with_extension("md.bak");
-            fs::rename(old_path, &old_path_bak)?;
-            backup_paths.push((old_path_bak.clone(), old_path.to_path_buf()));
-
-            // Next, all the backlink files that need their content updated.
-            for path in backlink_updates.keys() {
-                let bak_path = path.with_extension("md.bak");
-                fs::rename(path, &bak_path)?;
-                backup_paths.push((bak_path, path.clone()));
-            }
-
-            // --- Step 2: Commit the changes ---
-            // Rename the main backup to its final new path.
-            fs::rename(&old_path_bak, new_path)?;
-
-            // Write the new content for all backlink files.
-            for (path, new_content) in backlink_updates {
-                fs::write(path, new_content)?;
-            }
-
-            Ok(())
-        })();
-
-        // --- Step 3: Handle result and perform cleanup or rollback ---
-        match result {
-            Ok(()) => {
-                // Success! Clean up the backup files.
-                for (bak_path, original_path) in &backup_paths {
-                    if original_path != old_path {
-                        if let Err(e) = fs::remove_file(bak_path) {
-                            warn!("Failed to clean up backup file {:?}: {}", bak_path, e);
-                        }
-                    }
-                }
-                Ok(())
-            }
-            Err(e) => {
-                // Failure! Roll back all changes.
-                warn!(
-                    "An error occurred during rename transaction, rolling back. Error: {}",
-                    e
-                );
-                for (bak_path, original_path) in backup_paths {
-                    if bak_path.exists() {
-                        if let Err(rollback_err) = fs::rename(&bak_path, &original_path) {
-                            tracing::error!(
-                                "CRITICAL: Failed to roll back {:?} to {:?}: {}",
-                                bak_path,
-                                original_path,
-                                rollback_err
-                            );
-                        }
-                    }
-                }
-                Err(e)
-            }
-        }
-    }
-
-    /// Reads a file and replaces all instances of a given wikilink.
-    ///
-    /// This function is a core part of the `rename_path` transaction. It reads the
-    /// content of a file, finds all wikilinks pointing to `old_stem`, and replaces
-    /// them with new_stem`, preserving any sections or aliases.
-    ///
-    /// # Arguments
-    /// * `file_path` - The path to the file to be read and processed.
-    /// * `old_stem` - The old name of the linked file (without extension).
-    /// * `new_stem` - The new name to replace the old one with.
-    ///
-    /// # Returns
-    /// - `Ok(Some(String))` if the file content was changed.
-    /// - `Ok(None)` if no links needed to be updated.
-    /// - `Err` if the file could not be read.
-    fn replace_wikilink_in_file(
-        &self,
-        file_path: &Path,
-        old_stem: &str,
-        new_stem: &str,
-    ) -> Result<Option<String>> {
-        let content = fs::read_to_string(file_path)?;
-        let old_stem_lower = old_stem.to_lowercase();
-
-        let new_content = WIKILINK_RE.replace_all(&content, |caps: &Captures| {
-            let target = caps.get(1).map_or("", |m| m.as_str());
-            if target.to_lowercase() == old_stem_lower {
-                let section = caps.get(2).map_or("", |m| m.as_str());
-                let alias = caps.get(3).map_or("", |m| m.as_str());
-
-                let mut new_link = format!("[[{new_stem}");
-                if !section.is_empty() {
-                    new_link.push('#');
-                    new_link.push_str(section);
-                }
-                if !alias.is_empty() {
-                    new_link.push('|');
-                    new_link.push_str(alias);
-                }
-                new_link.push_str("]]");
-                new_link
-            } else {
-                // Return the original match if the target doesn't match
-                caps.get(0).unwrap().as_str().to_string()
-            }
-        });
-
-        // Only write to the file if the content has actually changed.
-        if new_content != content {
-            Ok(Some(new_content.into_owned()))
-        } else {
-            Ok(None)
-        }
-    }
-
-    /// Deletes a file or folder and updates the index.
-    #[instrument(skip(self))]
-    pub fn delete_path(&mut self, path: PathBuf) -> Result<()> {
-        if path.is_dir() {
-            fs::remove_dir_all(&path)?;
-            // Remove all pages from the index that were inside this directory
-            self.pages.retain(|p, _| !p.starts_with(&path));
-        } else {
-            fs::remove_file(&path)?;
-            self.pages.remove(&path);
-        }
-
-        // A delete requires rebuilding all relationships to remove dangling links.
-        self.rebuild_relations();
-        Ok(())
-    }
-
     /// Returns a list of all directory paths in the vault.
     pub fn get_all_directory_paths(&self) -> Result<Vec<PathBuf>> {
         let root_node = self.get_file_tree()?;
@@ -689,8 +422,6 @@ tags: [add, your, tags]
 mod tests {
     use super::*;
     use crate::events::FileEvent;
-    #[cfg(unix)]
-    use std::os::unix::fs::PermissionsExt;
     use std::{collections::HashSet, fs, path::PathBuf};
     use tempfile::tempdir;
 
@@ -849,90 +580,5 @@ Now I link to [[Page Two]]!
         assert_eq!(page2.backlinks.len(), 2);
         assert!(page2.backlinks.contains(&new_page_path));
         assert!(page2.backlinks.contains(&page3_path));
-    }
-
-    #[test]
-    fn test_rename_path_updates_links() {
-        let (_dir, page1_path, page2_path, _page3_path) = setup_test_vault();
-        let root = _dir.path();
-        let mut indexer = Indexer::new(root);
-        indexer.full_scan(root).unwrap();
-
-        // Rename "Page One.md" to "First Chapter.md"
-        let new_name = "First Chapter".to_string();
-        indexer.rename_path(page1_path.clone(), new_name).unwrap();
-
-        // Check that the link in Page Two has been updated on disk
-        let page2_content = fs::read_to_string(&page2_path).unwrap();
-        assert!(page2_content.contains("[[First Chapter]]"));
-        assert!(!page2_content.contains("[[Page One]]"));
-
-        // Check that the index has been updated
-        let new_path = root.join("First Chapter.md");
-        assert!(indexer.pages.contains_key(&new_path));
-        assert!(!indexer.pages.contains_key(&page1_path));
-        assert!(indexer
-            .link_resolver
-            .contains_key(&"first chapter".to_lowercase()));
-        assert!(!indexer
-            .link_resolver
-            .contains_key(&"page one".to_lowercase()));
-    }
-
-    #[test]
-    #[cfg(unix)] // This test uses Unix permissions and will only run on Linux/macOS.
-    fn test_rename_path_transaction_rollback() {
-        let (_dir, page1_path, page2_path, _) = setup_test_vault();
-        let root = _dir.path();
-        let mut indexer = Indexer::new(root);
-        indexer.full_scan(root).unwrap();
-
-        let original_content1 = fs::read_to_string(&page1_path).unwrap();
-        let original_content2 = fs::read_to_string(&page2_path).unwrap();
-
-        // --- Induce Failure ---
-        // Make the directory read-only to cause the final `fs::write` to fail.
-        let readonly_perms = fs::Permissions::from_mode(0o555);
-        fs::set_permissions(root, readonly_perms).unwrap();
-
-        // --- Attempt the Rename ---
-        let new_name = "First Chapter".to_string();
-        let result = indexer.rename_path(page1_path.clone(), new_name);
-
-        // --- Make directory writable again for cleanup and asserts ---
-        let writable_perms = fs::Permissions::from_mode(0o755);
-        fs::set_permissions(_dir.path(), writable_perms).unwrap();
-
-        // --- Assertions ---
-        // 1. The operation must fail.
-        assert!(result.is_err(), "Expected the rename operation to fail");
-
-        // 2. The file system must be in its original state.
-        assert!(page1_path.exists(), "Original file should be restored");
-        assert!(page2_path.exists(), "Backlink file should be restored");
-
-        let new_path = _dir.path().join("First Chapter.md");
-        assert!(
-            !new_path.exists(),
-            "New file should not exist after rollback"
-        );
-
-        // 3. No backup files should be left over.
-        let page1_bak = page1_path.with_extension("md.bak");
-        let page2_bak = page2_path.with_extension("md.bak");
-        assert!(!page1_bak.exists(), "Backup file for page 1 should be gone");
-        assert!(!page2_bak.exists(), "Backup file for page 2 should be gone");
-
-        // 4. File content must be unchanged.
-        let final_content1 = fs::read_to_string(&page1_path).unwrap();
-        let final_content2 = fs::read_to_string(&page2_path).unwrap();
-        assert_eq!(
-            original_content1, final_content1,
-            "Content of page 1 should be rolled back"
-        );
-        assert_eq!(
-            original_content2, final_content2,
-            "Content of page 2 should be rolled back"
-        );
     }
 }

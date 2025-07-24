@@ -24,6 +24,7 @@ mod utils;
 mod watcher;
 mod wikilink;
 mod world;
+mod writer;
 
 /// Command-line arguments for Chronicler
 #[derive(Parser, Debug)]

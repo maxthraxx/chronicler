@@ -11,6 +11,7 @@ use crate::{
     models::{FileNode, FullPageData, PageHeader, RenderedPage},
     renderer::Renderer,
     watcher::Watcher,
+    writer::Writer,
 };
 use parking_lot::{Mutex, RwLock};
 use std::{
@@ -39,6 +40,8 @@ pub struct World {
     watcher: Arc<Mutex<Option<Watcher>>>,
     /// The application's Markdown renderer. Wrapped in an Arc as it is read-only after creation.
     pub renderer: Arc<Renderer>,
+    /// A component for handling all file system write operations.
+    writer: Arc<RwLock<Option<Writer>>>,
 }
 
 impl World {
@@ -58,6 +61,7 @@ impl World {
             renderer,
             // The watcher starts as None and is created when a vault is initialized.
             watcher: Arc::new(Mutex::new(None)),
+            writer: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -79,7 +83,10 @@ impl World {
         // --- 3. Subscribe to File Events ---
         let event_receiver = new_watcher.subscribe();
 
-        // --- 4. Lock and Update Shared State ---
+        // --- 4. Create File System Writer ---
+        let new_writer = Writer::new();
+
+        // --- 5. Lock and Update Shared State ---
         // The lock scope is kept as short as possible.
         {
             // The watcher is replaced. The old watcher is dropped, automatically stopping its thread.
@@ -87,9 +94,10 @@ impl World {
             *self.root_path.write() = Some(root_path.to_path_buf());
             // The fully scanned indexer replaces the old one.
             *self.indexer.write() = new_indexer_instance;
+            *self.writer.write() = Some(new_writer);
         }
 
-        // --- 5. Spawn Background Event Processing Task ---
+        // --- 6. Spawn Background Event Processing Task ---
         // The task is given its own handle to the indexer state.
         let indexer_clone = self.indexer.clone();
         // Use Tauri's async runtime instead of tokio::spawn
@@ -232,24 +240,86 @@ impl World {
 
     /// Creates a new, empty markdown file and synchronously updates the index.
     pub fn create_new_file(&self, parent_dir: String, file_name: String) -> Result<PageHeader> {
-        self.indexer.write().create_new_file(parent_dir, file_name)
+        let writer = self
+            .writer
+            .read()
+            .clone()
+            .ok_or(ChroniclerError::VaultNotInitialized)?;
+
+        let page_header = writer.create_new_file(&parent_dir, &file_name)?;
+
+        // After the file is created on disk, notify the indexer.
+        self.indexer
+            .write()
+            .handle_file_event(&FileEvent::Created(page_header.path.clone()));
+
+        Ok(page_header)
     }
 
     /// Creates a new, empty folder.
     pub fn create_new_folder(&self, parent_dir: String, folder_name: String) -> Result<()> {
+        let writer = self
+            .writer
+            .read()
+            .clone()
+            .ok_or(ChroniclerError::VaultNotInitialized)?;
+
+        let new_path = writer.create_new_folder(&parent_dir, &folder_name)?;
+
         self.indexer
             .write()
-            .create_new_folder(parent_dir, folder_name)
+            .handle_file_event(&FileEvent::FolderCreated(new_path));
+
+        Ok(())
     }
 
     /// Renames a file or folder and synchronously updates the index.
     pub fn rename_path(&self, path: PathBuf, new_name: String) -> Result<()> {
-        self.indexer.write().rename_path(path, new_name)
+        let writer = self
+            .writer
+            .read()
+            .clone()
+            .ok_or(ChroniclerError::VaultNotInitialized)?;
+
+        // Get necessary info from the indexer before performing the operation.
+        let backlinks = {
+            let index = self.indexer.read();
+            index
+                .pages
+                .get(&path)
+                .map(|p| p.backlinks.clone())
+                .unwrap_or_default()
+        };
+
+        let new_path = writer.rename_path(&path, &new_name, &backlinks)?;
+
+        // After the transaction succeeds, update the indexer's in-memory state.
+        self.indexer.write().handle_file_event(&FileEvent::Renamed {
+            from: path,
+            to: new_path,
+        });
+
+        Ok(())
     }
 
     /// Deletes a file or folder and synchronously updates the index.
     pub fn delete_path(&self, path: PathBuf) -> Result<()> {
-        self.indexer.write().delete_path(path)
+        let writer = self
+            .writer
+            .read()
+            .clone()
+            .ok_or(ChroniclerError::VaultNotInitialized)?;
+
+        writer.delete_path(&path)?;
+
+        let event = if path.is_dir() {
+            FileEvent::FolderDeleted(path)
+        } else {
+            FileEvent::Deleted(path)
+        };
+        self.indexer.write().handle_file_event(&event);
+
+        Ok(())
     }
 }
 
