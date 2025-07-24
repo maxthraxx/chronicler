@@ -8,8 +8,6 @@
 )]
 
 use clap::Parser;
-use parking_lot::RwLock;
-use tauri::Manager;
 use tracing_subscriber::{fmt::format::FmtSpan, EnvFilter};
 use world::World;
 
@@ -46,6 +44,12 @@ fn main() {
     setup_tracing(&args);
 
     tauri::Builder::default()
+        // The World state is managed directly. Its fields are
+        // individually thread-safe.  This allows for more granular
+        // locking and better performance, as read operations on one
+        // part of the state (e.g., renderer) won't block writes on
+        // another (e.g., indexer).
+        .manage(World::new())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_os::init())
@@ -53,11 +57,6 @@ fn main() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .setup(|app| {
-            // The World is wrapped in an RwLock to allow concurrent reads.
-            app.manage(RwLock::new(World::new()));
-            Ok(())
-        })
         // Register all our `#[tauri::command]` functions.
         .invoke_handler(tauri::generate_handler![
             commands::get_vault_path,

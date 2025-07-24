@@ -11,7 +11,6 @@ use crate::{
     models::{FileNode, RenderedPage},
     world::World,
 };
-use parking_lot::RwLock;
 use std::path::PathBuf;
 use tauri::{command, AppHandle, State};
 use tracing::instrument;
@@ -26,15 +25,11 @@ pub fn get_vault_path(app_handle: AppHandle) -> Result<Option<String>> {
 }
 
 /// Sets the vault path, saves it to config, and initializes the world state.
-/// This requires a write lock because it modifies the World state.
+/// This uses fine-grained locking internally instead of a single write lock on the world.
 #[command]
 #[instrument(skip(world, app_handle))]
-pub fn initialize_vault(
-    path: String,
-    world: State<RwLock<World>>,
-    app_handle: AppHandle,
-) -> Result<()> {
-    world.write().change_vault(path, app_handle)
+pub fn initialize_vault(path: String, world: State<World>, app_handle: AppHandle) -> Result<()> {
+    world.change_vault(path, app_handle)
 }
 
 // --- Data Retrieval ---
@@ -42,22 +37,22 @@ pub fn initialize_vault(
 /// Returns the tag index, mapping tags to lists of pages that contain them.
 #[command]
 #[instrument(skip(world))]
-pub fn get_all_tags(world: State<RwLock<World>>) -> Result<Vec<(String, Vec<PageHeader>)>> {
-    world.read().get_all_tags()
+pub fn get_all_tags(world: State<World>) -> Result<Vec<(String, Vec<PageHeader>)>> {
+    world.get_all_tags()
 }
 
 /// Returns the hierarchical file tree structure of the vault.
 #[command]
 #[instrument(skip(world))]
-pub fn get_file_tree(world: State<RwLock<World>>) -> Result<FileNode> {
-    world.read().get_file_tree()
+pub fn get_file_tree(world: State<World>) -> Result<FileNode> {
+    world.get_file_tree()
 }
 
 /// Returns a list of all directory paths in the vault.
 #[command]
 #[instrument(skip(world))]
-pub fn get_all_directory_paths(world: State<RwLock<World>>) -> Result<Vec<PathBuf>> {
-    world.read().get_all_directory_paths()
+pub fn get_all_directory_paths(world: State<World>) -> Result<Vec<PathBuf>> {
+    world.get_all_directory_paths()
 }
 
 // --- Page Rendering and Content ---
@@ -66,79 +61,69 @@ pub fn get_all_directory_paths(world: State<RwLock<World>>) -> Result<Vec<PathBu
 /// and returns a structured object for the frontend preview.
 #[command]
 #[instrument(skip(content, world))]
-pub fn render_page_preview(content: String, world: State<RwLock<World>>) -> Result<RenderedPage> {
-    world.read().render_page_preview(&content)
+pub fn render_page_preview(content: String, world: State<World>) -> Result<RenderedPage> {
+    world.render_page_preview(&content)
 }
 
 /// Parses the file on disk, renders the markdown to HTML, and returns a composed
 /// object containing the raw content, and the rendered preview.
 #[command]
 #[instrument(skip(world))]
-pub fn build_page_view(path: String, world: State<RwLock<World>>) -> Result<FullPageData> {
-    world.read().build_page_view(&path)
+pub fn build_page_view(path: String, world: State<World>) -> Result<FullPageData> {
+    world.build_page_view(&path)
 }
 
 /// Renders a string of pure Markdown to a `RenderedPage` object containing only HTML.
-/// This command does not process wikilinks or frontmatter, making it suitable
-/// for rendering content like the help file where `[[wikilink]]` syntax needs to be
-/// displayed literally.
+/// This command does not process wikilinks or frontmatter.
 #[command]
 #[instrument(skip(content, world))]
-pub fn render_markdown(content: String, world: State<RwLock<World>>) -> Result<RenderedPage> {
-    world.read().render_markdown(&content)
+pub fn render_markdown(content: String, world: State<World>) -> Result<RenderedPage> {
+    world.render_markdown(&content)
 }
 
 // --- File and Folder Operations ---
 
-/// Writes content to a page on disk. This does not modify the World state directly,
-/// so it doesn't need a lock on the World. The file watcher will pick up the change.
+/// Writes content to a page on disk. The file watcher will pick up the change.
 #[command]
 #[instrument(skip(world, content))]
-pub fn write_page_content(
-    world: State<RwLock<World>>,
-    path: String,
-    content: String,
-) -> Result<()> {
-    world.read().write_page_content(&path, &content)
+pub fn write_page_content(world: State<World>, path: String, content: String) -> Result<()> {
+    world.write_page_content(&path, &content)
 }
 
 /// Creates a new, empty markdown file and synchronously updates the index.
 #[command]
 #[instrument(skip(world))]
 pub fn create_new_file(
-    world: State<RwLock<World>>,
+    world: State<World>,
     parent_dir: String,
     file_name: String,
 ) -> Result<PageHeader> {
-    world.write().create_new_file(parent_dir, file_name)
+    world.create_new_file(parent_dir, file_name)
 }
 
-/// Creates a new, empty folder. This uses a read lock on the world,
-/// but a write lock on the indexer internally.
+/// Creates a new, empty folder.
 #[command]
 #[instrument(skip(world))]
 pub fn create_new_folder(
-    world: State<RwLock<World>>,
+    world: State<World>,
     parent_dir: String,
     folder_name: String,
 ) -> Result<()> {
-    world.write().create_new_folder(parent_dir, folder_name)
+    world.create_new_folder(parent_dir, folder_name)
 }
 
-/// Renames a file or folder on disk. This uses a read lock on the world,
-/// but a write lock on the indexer internally.
+/// Renames a file or folder on disk and updates the index.
 #[command]
 #[instrument(skip(world))]
-pub fn rename_path(world: State<RwLock<World>>, path: String, new_name: String) -> Result<()> {
-    world.write().rename_path(PathBuf::from(path), new_name)
+pub fn rename_path(world: State<World>, path: String, new_name: String) -> Result<()> {
+    world.rename_path(PathBuf::from(path), new_name)
 }
 
-/// Deletes a file or folder from disk. This uses a read lock on the world,
-/// but a write lock on the indexer internally.
+/// Deletes a file or folder from disk and updates the index.
 #[command]
 #[instrument(skip(world))]
-pub fn delete_path(world: State<RwLock<World>>, path: String) -> Result<()> {
-    world.write().delete_path(PathBuf::from(path))
+pub fn delete_path(world: State<World>, path: String) -> Result<()> {
+    world.delete_path(PathBuf::from(path))
 }
 
 // --- Importer ---
@@ -147,11 +132,11 @@ pub fn delete_path(world: State<RwLock<World>>, path: String) -> Result<()> {
 #[command]
 #[instrument(skip(world, app_handle))]
 pub fn import_docx_files(
-    world: State<RwLock<World>>,
+    world: State<World>,
     app_handle: AppHandle,
     docx_paths: Vec<PathBuf>,
 ) -> Result<Vec<PathBuf>> {
-    world.write().import_docx_files(&app_handle, docx_paths)
+    world.import_docx_files(&app_handle, docx_paths)
 }
 
 /// Checks if Pandoc is installed in the application's config directory.

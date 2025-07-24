@@ -5,6 +5,7 @@
 use crate::{
     config,
     error::{ChroniclerError, Result},
+    events::FileEvent,
     importer,
     indexer::Indexer,
     models::{FileNode, FullPageData, PageHeader, RenderedPage},
@@ -23,47 +24,53 @@ use tracing::{info, instrument};
 
 /// The main `World` struct containing all application subsystems and state.
 ///
-/// This struct acts as the single source of truth for the backend. It is wrapped in a `tauri::State`
-/// managed `Mutex` in `main.rs`, ensuring that all access to it from frontend commands is sequential
-/// and safe.
-#[derive(Debug, Default)]
+/// This struct acts as the single source of truth for the backend. It is managed
+/// directly by `tauri::State`. Its fields are wrapped in thread-safe containers
+/// like `Arc<RwLock<T>>` to allow for granular locking, preventing performance
+/// bottlenecks where a long write operation would block unrelated read operations.
+#[derive(Debug, Clone)]
 pub struct World {
-    /// The root directory of the worldbuilding vault.
-    root_path: Option<PathBuf>,
+    /// The root directory of the worldbuilding vault, protected for concurrent access.
+    root_path: Arc<RwLock<Option<PathBuf>>>,
     /// Thread-safe, shared access to the vault indexer.
     pub indexer: Arc<RwLock<Indexer>>,
-    /// The application's file system watcher.
-    watcher: Option<Mutex<Watcher>>,
-    /// The application's Markdown renderer.
-    pub renderer: Option<Renderer>,
+    /// The application's file system watcher. Wrapped in a Mutex to allow safe swapping
+    /// when the vault path changes.
+    watcher: Arc<Mutex<Option<Watcher>>>,
+    /// The application's Markdown renderer. Wrapped in an Arc as it is read-only after creation.
+    pub renderer: Arc<Renderer>,
 }
 
 impl World {
     /// Creates a new, uninitialized `World` instance.
+    ///
+    /// This constructor sets up the shared, thread-safe state containers. The actual
+    /// vault data is not loaded until `initialize_vault` is called.
     pub fn new() -> Self {
-        Self::default()
+        // The indexer is created empty and wrapped for concurrent access.
+        let indexer = Arc::new(RwLock::new(Indexer::default()));
+        // The renderer is initialized with a clonable handle to the indexer.
+        let renderer = Arc::new(Renderer::new(indexer.clone()));
+
+        Self {
+            root_path: Arc::new(RwLock::new(None)),
+            indexer,
+            renderer,
+            // The watcher starts as None and is created when a vault is initialized.
+            watcher: Arc::new(Mutex::new(None)),
+        }
     }
 
     /// Initializes the world by performing a full scan of the vault directory and starting
     /// the file watcher. This is an internal method called by `change_vault`.
-    fn initialize(&mut self, root_path: &Path, app_handle: AppHandle) -> Result<()> {
+    /// This function modifies the interior state via locks.
+    fn initialize(&self, root_path: &Path, app_handle: AppHandle) -> Result<()> {
         info!(path = %root_path.display(), "Initializing or changing vault.");
 
-        // If a watcher exists, its Drop implementation will stop the old thread.
-        if self.watcher.is_some() {
-            info!("Shutting down existing watcher for vault change.");
-            self.watcher = None;
-        }
-
-        self.root_path = Some(root_path.to_path_buf());
-
-        // Re-initialize the indexer and renderer
-        let new_indexer = Arc::new(RwLock::new(Indexer::new(root_path)));
-        self.renderer = Some(Renderer::new(new_indexer.clone()));
-        self.indexer = new_indexer;
-
-        // --- 1. Perform Initial Scan ---
-        self.indexer.write().full_scan(root_path)?;
+        // --- 1. Perform Initial Scan on a new Indexer instance ---
+        // This is done outside of any locks to avoid blocking other operations during the scan.
+        let mut new_indexer_instance = Indexer::new(root_path);
+        new_indexer_instance.full_scan(root_path)?;
 
         // --- 2. Start File Watcher ---
         let mut new_watcher = Watcher::new();
@@ -71,9 +78,19 @@ impl World {
 
         // --- 3. Subscribe to File Events ---
         let event_receiver = new_watcher.subscribe();
-        self.watcher = Some(Mutex::new(new_watcher));
 
-        // --- 4. Spawn Background Event Processing Task ---
+        // --- 4. Lock and Update Shared State ---
+        // The lock scope is kept as short as possible.
+        {
+            // The watcher is replaced. The old watcher is dropped, automatically stopping its thread.
+            *self.watcher.lock() = Some(new_watcher);
+            *self.root_path.write() = Some(root_path.to_path_buf());
+            // The fully scanned indexer replaces the old one.
+            *self.indexer.write() = new_indexer_instance;
+        }
+
+        // --- 5. Spawn Background Event Processing Task ---
+        // The task is given its own handle to the indexer state.
         let indexer_clone = self.indexer.clone();
         // Use Tauri's async runtime instead of tokio::spawn
         tauri::async_runtime::spawn(async move {
@@ -88,7 +105,7 @@ impl World {
     }
 
     /// Changes the vault path, saves the configuration, and re-initializes the world.
-    pub fn change_vault(&mut self, path: String, app_handle: AppHandle) -> Result<()> {
+    pub fn change_vault(&self, path: String, app_handle: AppHandle) -> Result<()> {
         // 1. Save the new path to the configuration file.
         config::set_vault_path(path.clone(), &app_handle)?;
 
@@ -109,7 +126,7 @@ impl World {
     async fn process_file_events(
         app_handle: AppHandle,
         indexer: Arc<RwLock<Indexer>>,
-        mut event_receiver: broadcast::Receiver<crate::events::FileEvent>,
+        mut event_receiver: broadcast::Receiver<FileEvent>,
     ) {
         loop {
             match event_receiver.recv().await {
@@ -149,8 +166,9 @@ impl World {
     ) -> Result<Vec<PathBuf>> {
         let output_dir = self
             .root_path
+            .read()
             .clone()
-            .ok_or(crate::error::ChroniclerError::VaultNotInitialized)?;
+            .ok_or(ChroniclerError::VaultNotInitialized)?;
 
         let converted_paths =
             importer::convert_docx_to_markdown(app_handle, docx_paths, output_dir)?;
@@ -177,27 +195,21 @@ impl World {
 
     /// Processes raw markdown content and returns the fully rendered page data.
     pub fn render_page_preview(&self, content: &str) -> Result<RenderedPage> {
-        self.renderer
-            .as_ref()
-            .ok_or(crate::error::ChroniclerError::VaultNotInitialized)?
-            .render_page_preview(content)
+        // This operation does not lock the renderer, only the indexer internally for link resolution.
+        self.renderer.render_page_preview(content)
     }
 
     /// Renders a string of pure Markdown to a `RenderedPage` object.
     /// This bypasses all wikilink and frontmatter processing.
     pub fn render_markdown(&self, markdown: &str) -> Result<RenderedPage> {
-        self.renderer
-            .as_ref()
-            .ok_or(ChroniclerError::VaultNotInitialized)?
-            .render_markdown(markdown)
+        // This is a pure function and doesn't require any state locks.
+        self.renderer.render_markdown(markdown)
     }
 
     /// Fetches and renders all data required for the main file view.
     pub fn build_page_view(&self, path: &str) -> Result<FullPageData> {
-        self.renderer
-            .as_ref()
-            .ok_or(crate::error::ChroniclerError::VaultNotInitialized)?
-            .build_page_view(path)
+        // The renderer handles its own internal locking of the indexer.
+        self.renderer.build_page_view(path)
     }
 
     /// Returns a list of all directory paths in the vault.
@@ -238,5 +250,14 @@ impl World {
     /// Deletes a file or folder and synchronously updates the index.
     pub fn delete_path(&self, path: PathBuf) -> Result<()> {
         self.indexer.write().delete_path(path)
+    }
+}
+
+/// Provides a default, empty `World` instance.
+///
+/// This implementation allows for the creation of a `World` using `World::default()`.
+impl Default for World {
+    fn default() -> Self {
+        Self::new()
     }
 }
