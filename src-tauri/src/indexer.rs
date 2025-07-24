@@ -380,22 +380,21 @@ impl Indexer {
     /// Creates a new, empty markdown file and synchronously updates the index.
     #[instrument(skip(self))]
     pub fn create_new_file(&mut self, parent_dir: String, file_name: String) -> Result<PageHeader> {
-        let trimmed_name = file_name.trim();
-        let mut clean_name = trimmed_name.to_string();
-        if !clean_name.to_lowercase().ends_with(".md") {
-            clean_name.push_str(".md");
-        }
-
-        let path = Path::new(&parent_dir).join(&clean_name);
+        let mut path = PathBuf::from(parent_dir);
+        path.push(file_name.trim());
+        path.set_extension("md");
 
         if path.exists() {
             return Err(ChroniclerError::FileAlreadyExists(path));
         }
 
+        // Use the file stem of the newly created path as the title.
+        let title = path_to_stem_string(&path);
+
         // Create the file with some default frontmatter for a better user experience.
         let default_content = format!(
             r#"---
-title: {trimmed_name}
+title: {title}
 tags: [add, your, tags]
 ---
 
@@ -409,7 +408,6 @@ tags: [add, your, tags]
         // before the watcher has processed it.
         self.update_file(&path);
 
-        let title = path_to_stem_string(&path);
         Ok(PageHeader { title, path })
     }
 
@@ -434,9 +432,8 @@ tags: [add, your, tags]
         let mut new_path = parent.join(new_name.trim());
 
         // For files, ensure the .md extension is preserved or added.
-        if old_path.is_file() && !new_path.to_string_lossy().to_lowercase().ends_with(".md") {
-            let stem = path_to_stem_string(&new_path);
-            new_path.set_file_name(format!("{stem}.md"));
+        if old_path.is_file() {
+            new_path.set_extension("md");
         }
 
         if new_path.exists() {
@@ -467,23 +464,25 @@ tags: [add, your, tags]
 
         // --- 3. Update the in-memory index ---
         // This logic handles both file renames and directory renames.
-        let old_path_str = old_path.to_string_lossy();
-        let new_path_str = new_path.to_string_lossy();
-        let pages_to_update: Vec<PathBuf> = self.pages.keys().cloned().collect();
+        let pages_to_update: Vec<_> = self
+            .pages
+            .keys()
+            .filter(|p| p.starts_with(&old_path))
+            .cloned()
+            .collect();
+
         let mut updated_pages = HashMap::new();
 
         for path in pages_to_update {
             // Check if the page was the renamed item itself or inside a renamed directory
-            if path.starts_with(&old_path) {
-                let new_page_path_str =
-                    path.to_string_lossy()
-                        .replacen(&*old_path_str, &new_path_str, 1);
-                let new_page_path = PathBuf::from(new_page_path_str);
+            if let Some(mut page) = self.pages.remove(&path) {
+                // `strip_prefix` gets the part of the path that is relative to the old, renamed path.
+                let relative_path = path.strip_prefix(&old_path).unwrap();
+                // We then join this relative part to the new path to get the final destination.
+                let new_page_path = new_path.join(relative_path);
 
-                if let Some(mut page) = self.pages.remove(&path) {
-                    page.path = new_page_path.clone();
-                    updated_pages.insert(new_page_path, page);
-                }
+                page.path = new_page_path.clone();
+                updated_pages.insert(new_page_path, page);
             }
         }
 
