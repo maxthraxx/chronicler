@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.5.1-alpha] - 2025-07-25
+
+### 🐞 Fixed
+
+- **Drag and Drop**: Fixed a critical bug that caused file and folder move operations to fail on Windows. Path construction logic is now handled exclusively by the backend to ensure cross-platform compatibility and reliable drag-and-drop functionality.
+
+### 🔄 Changed
+
+- **Performance**: Reworked the core state management to use granular locking instead of a single global lock. This significantly improves concurrency and UI responsiveness by allowing operations like rendering and file fetching to run in parallel without blocking each other.
+- **Stability**: File rename and move operations are now fully transactional. A new backup-and-rollback strategy prevents data loss or vault corruption if an operation (like updating wikilinks) is interrupted.
+- **Architecture**: The backend was refactored to improve separation of concerns. All file system write operations were moved from the `Indexer` into a new, dedicated `Writer` component, making the codebase more modular, testable, and maintainable.
+- **Internal**: Refactored backend path handling to use idiomatic, safer methods from Rust's standard library instead of manual string manipulation.
+
+---
+
 ## [v0.5.0-alpha] - 2025-07-24
 
 ### ✨ Added
