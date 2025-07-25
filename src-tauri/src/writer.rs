@@ -7,7 +7,7 @@
 use crate::{
     error::{ChroniclerError, Result},
     models::PageHeader,
-    utils::path_to_stem_string,
+    utils::file_stem_string,
     wikilink::WIKILINK_RE,
 };
 use regex::Captures;
@@ -40,7 +40,7 @@ impl Writer {
             return Err(ChroniclerError::FileAlreadyExists(path));
         }
 
-        let title = path_to_stem_string(&path);
+        let title = file_stem_string(&path);
 
         let default_content = format!(
             r#"---
@@ -139,8 +139,8 @@ tags: [add, your, tags]
         // --- 1. Prepare Phase: Calculate all required file system changes in memory ---
         let mut operations: HashMap<PathBuf, String> = HashMap::new();
         if old_path.is_file() {
-            let old_name_stem = path_to_stem_string(old_path);
-            let new_name_stem = path_to_stem_string(&new_path);
+            let old_name_stem = file_stem_string(old_path);
+            let new_name_stem = file_stem_string(&new_path);
 
             for backlink_path in backlinks {
                 let new_content =

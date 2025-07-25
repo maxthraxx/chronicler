@@ -8,7 +8,7 @@ use crate::{
     events::FileEvent,
     models::{FileNode, Link, Page, PageHeader},
     parser,
-    utils::{is_markdown_file, path_to_stem_string},
+    utils::{is_markdown_file, file_stem_string},
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -95,7 +95,7 @@ impl Indexer {
                     );
                     let default_page = Page {
                         path: path.to_path_buf(),
-                        title: path_to_stem_string(path),
+                        title: file_stem_string(path),
                         tags: HashSet::new(),
                         links: Vec::new(),
                         backlinks: HashSet::new(),
@@ -387,7 +387,7 @@ impl Indexer {
             name: if is_directory {
                 name.to_string()
             } else {
-                path_to_stem_string(path)
+                file_stem_string(path)
             },
             path: path.to_path_buf(),
             is_directory,
