@@ -71,6 +71,7 @@ fn main() {
             commands::create_new_folder,
             commands::rename_path,
             commands::delete_path,
+            commands::move_path,
             commands::get_all_directory_paths,
             commands::is_pandoc_installed,
             commands::download_pandoc,

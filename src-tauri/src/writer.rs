@@ -78,7 +78,7 @@ tags: [add, your, tags]
         Ok(())
     }
 
-    /// Renames a file or folder and transactionally updates all files that link to it.
+    /// Renames a file or folder in-place and transactionally updates all files that link to it.
     ///
     /// # Returns
     /// The new path of the renamed file or folder.
@@ -98,6 +98,40 @@ tags: [add, your, tags]
             new_path.set_extension("md");
         }
 
+        self.execute_rename_or_move(old_path, new_path, backlinks)
+    }
+
+    /// Moves a file or folder to a new directory and transactionally updates backlinks.
+    /// This function contains the platform-aware path construction logic.
+    ///
+    /// # Returns
+    /// The new path of the moved file or folder.
+    #[instrument(skip(self, backlinks))]
+    pub fn move_path(
+        &self,
+        old_path: &Path,
+        dest_dir: &Path,
+        backlinks: &HashSet<PathBuf>,
+    ) -> Result<PathBuf> {
+        let file_name = old_path
+            .file_name()
+            .ok_or_else(|| ChroniclerError::InvalidPath(old_path.to_path_buf()))?;
+
+        let new_path = dest_dir.join(file_name);
+
+        self.execute_rename_or_move(old_path, new_path, backlinks)
+    }
+
+    /// Common logic for executing a transactional rename or move operation.
+    ///
+    /// This internal function is called by both `rename_path` and `move_item`. It prepares
+    /// the operation and invokes the transactional process.
+    fn execute_rename_or_move(
+        &self,
+        old_path: &Path,
+        new_path: PathBuf,
+        backlinks: &HashSet<PathBuf>,
+    ) -> Result<PathBuf> {
         if new_path.exists() {
             return Err(ChroniclerError::FileAlreadyExists(new_path.clone()));
         }

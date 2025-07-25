@@ -176,26 +176,21 @@ export function promptAndCreateItem(
 }
 
 /**
- * Moves a file or folder to a new directory. This function handles path construction
- * and calls the backend command.
+ * Moves a file or folder to a new directory.
  * @param sourcePath The full path of the item to move.
  * @param destinationDir The full path of the target directory.
  */
-export async function moveItemToDir(
-    sourcePath: string,
-    destinationDir: string,
-) {
-    const itemName = sourcePath.split("/").pop();
-    if (!itemName) {
-        throw new Error(`Could not extract item name from path: ${sourcePath}`);
+export async function movePath(sourcePath: string, destinationDir: string) {
+    // The backend will handle checking if the source and destination are effectively the same.
+    try {
+        await commands.movePath(sourcePath, destinationDir);
+        await world.initialize(); // Refresh data to show the move in the UI.
+    } catch (e) {
+        console.error(
+            `Move failed for source '${sourcePath}' to '${destinationDir}'`,
+            e,
+        );
+        alert(`Error: ${e}`);
+        throw e;
     }
-    const newPath = `${destinationDir}/${itemName}`;
-
-    // Prevent redundant operations
-    if (sourcePath === newPath) {
-        console.warn("Source and destination are the same. No action taken.");
-        return;
-    }
-
-    await renamePath(sourcePath, newPath);
 }

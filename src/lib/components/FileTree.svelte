@@ -3,7 +3,7 @@
     import type { ContextMenuHandler } from "$lib/types";
     import { currentView } from "$lib/viewStores";
     import { manuallyExpandedPaths } from "$lib/explorerStore";
-    import { promptAndCreateItem, moveItemToDir } from "$lib/actions";
+    import { promptAndCreateItem, movePath } from "$lib/actions";
     import { draggable, droppable } from "$lib/domActions";
     import FileTree from "./FileTree.svelte";
     import Button from "./Button.svelte";
@@ -53,7 +53,7 @@
         }
 
         try {
-            await moveItemToDir(sourcePath, destinationDir);
+            await movePath(sourcePath, destinationDir);
         } catch (err) {
             console.error("The move operation failed in the UI.", err);
         }

@@ -3,7 +3,7 @@
     import { filterFileTree } from "$lib/utils";
     import type { FileNode } from "$lib/bindings";
     import { getContextMenuActions } from "$lib/contextMenuActions";
-    import { moveItemToDir } from "$lib/actions";
+    import { movePath } from "$lib/actions";
     import { droppable, autoscrollOnDrag } from "$lib/domActions";
     import { isDragging } from "$lib/dragStore";
 
@@ -46,7 +46,7 @@
         }
 
         try {
-            await moveItemToDir(sourcePath, destinationDir);
+            await movePath(sourcePath, destinationDir);
         } catch (err) {
             console.error("The root drop operation failed in the UI.", err);
         }

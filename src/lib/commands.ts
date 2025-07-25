@@ -104,7 +104,7 @@ export const createNewFolder = (parentDir: string, folderName: string) =>
     invoke<void>("create_new_folder", { parentDir, folderName });
 
 /**
- * Renames a file or folder.
+ * Renames a file or folder in-place.
  * @param path The current path of the item to rename.
  * @param newName The new name for the item.
  */
@@ -117,6 +117,16 @@ export const renamePath = (path: string, newName: string) =>
  */
 export const deletePath = (path: string) =>
     invoke<void>("delete_path", { path });
+
+/**
+ * Moves a file or folder to a new directory.
+ * This command delegates path construction to the backend, making it platform-safe.
+ * @param sourcePath The full path of the item to move.
+ * @param destDir The full path of the target directory.
+ * @returns A promise that resolves when the item has been moved.
+ */
+export const movePath = (sourcePath: string, destDir: string) =>
+    invoke<void>("move_path", { sourcePath, destDir });
 
 // --- Importer Commands ---
 

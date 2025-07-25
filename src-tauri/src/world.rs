@@ -273,7 +273,7 @@ impl World {
         Ok(())
     }
 
-    /// Renames a file or folder and synchronously updates the index.
+    /// Renames a file or folder in-place and synchronously updates the index.
     pub fn rename_path(&self, path: PathBuf, new_name: String) -> Result<()> {
         let writer = self
             .writer
@@ -296,6 +296,36 @@ impl World {
         // After the transaction succeeds, update the indexer's in-memory state.
         self.indexer.write().handle_file_event(&FileEvent::Renamed {
             from: path,
+            to: new_path,
+        });
+
+        Ok(())
+    }
+
+    /// Moves a file or folder to a new directory, updating links and the index.
+    pub fn move_path(&self, source_path: PathBuf, dest_dir: PathBuf) -> Result<()> {
+        let writer = self
+            .writer
+            .read()
+            .clone()
+            .ok_or(ChroniclerError::VaultNotInitialized)?;
+
+        // Get backlinks from the indexer *before* the move.
+        let backlinks = {
+            let index = self.indexer.read();
+            index
+                .pages
+                .get(&source_path)
+                .map(|p| p.backlinks.clone())
+                .unwrap_or_default()
+        };
+
+        // The writer performs the transactional move on the file system.
+        let new_path = writer.move_path(&source_path, &dest_dir, &backlinks)?;
+
+        // After the move succeeds, notify the indexer of the rename event.
+        self.indexer.write().handle_file_event(&FileEvent::Renamed {
+            from: source_path,
             to: new_path,
         });
 
