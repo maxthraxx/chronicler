@@ -3,9 +3,9 @@
 > **Your digital scriptorium – where knowledge links together.** 🧙‍♂️
 
 [![Latest Release](https://img.shields.io/github/v/release/mak-kirkland/chronicler?label=release)](https://github.com/mak-kirkland/chronicler/releases/latest)
-[![Changelog](https://img.shields.io/badge/changelog-md-blue)](https://github.com/mak-kirkland/chronicler/blob/main/CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/changelog-md-green)](https://github.com/mak-kirkland/chronicler/blob/main/CHANGELOG.md)
+[![Help](https://img.shields.io/badge/help-md-blue)](https://github.com/mak-kirkland/chronicler/blob/main/static/help.md)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-
 
 **Chronicler** is a free desktop app for note-takers, storytellers, researchers, and creative minds. It saves your notes as plain Markdown files on your computer — no subscriptions, no logins, and no internet required. Your thoughts stay in your hands.
 
@@ -109,55 +109,9 @@ Chronicler is built on three core principles:
 
 2.  **Create a Vault**: A "vault" is the folder on your computer where Chronicler will store all your notes. You can create a new folder or select an existing one.
 
-3.  **Start Writing!**: Create your first note and start linking your ideas.
+3.  📘 **[→ Read the Help Guide](static/help.md)**: Learn how to use Chronicler, write in Markdown, link pages, and organize your notes.
 
----
-
-## 📝 Writing Pages in Markdown
-
-Chronicler stores your worldbuilding content in simple Markdown files with optional YAML frontmatter. This makes it easy to edit, version, and back up your world.
-
-### 📄 File Format
-
-Each page is a Markdown `.md` file. You can optionally begin the file with a YAML frontmatter block like this:
-
-```markdown
----
-title: Rivertown
-tags: [city, river, trade hub]
-image: rivertown.jpg
----
-
-# Rivertown
-
-**Rivertown** is a vibrant settlement along the [[Silverflow River]].
-
-## Economy
-
-The town thrives on river trade and fishing exports from [[Silverflow River|Silverflow]].
-```
-
----
-
-### 🧠 Frontmatter Fields
-
-All frontmatter is optional — use it if it's helpful for you! Chronicler won't enforce any structure, so you're free to customize as much as you like.
-
-However, three fields have special behavior:
-
-| Field   | Description                                                        |
-| ------- | ------------------------------------------------------------------ |
-| `title` | The display title for the page. If omitted, the filename is used.  |
-| `tags`  | A list of tags to categorize the page.                             |
-| `image` | The filename of an image (e.g., `rivertown.jpg`) used in the infobox. |
-
-**Notes**:
-
--   You can define whatever fields you like, and as many as you like.
--   Tags can also be anything you choose.
--   Images must be placed in an `images` folder inside your vault root.
-    For example, if your vault is at `C:\Users\Frank\World`, your image should go in `C:\Users\Frank\World\images\`.
--   Use `[[Page Name]]` to link to another page. If the page doesn’t exist yet, Chronicler will create a placeholder for it.
+4.  **Start Writing!**: Create your first note and start linking your ideas.
 
 ---
 
