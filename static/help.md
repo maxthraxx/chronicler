@@ -1,50 +1,117 @@
-# 📝 Writing Pages in Markdown
+# 🧰 Getting Started
 
-Chronicler saves your worldbuilding notes as simple, human-readable **Markdown files**.
+Welcome to **Chronicler** — your digital scriptorium for worldbuilding, notes, and knowledge management.
 
-You can optionally add **YAML frontmatter** to include metadata like titles, tags, and images.
-
-Chronicler also supports `[[wikilinks]]` for easy linking between pages — just like in a wiki.
+Chronicler stores your notes as plain Markdown (.md) files in a folder on your computer (called a **vault**).
 
 ---
 
-## 📄 File Format
+## 📁 Vaults and Files
 
-Each page is a Markdown `.md` file. You can optionally begin the file with a YAML frontmatter block like this:
+Your **vault** is just a folder on your computer. You decide where the world is stored, e.g `C:\Users\Michael\MyWorld`.
 
-```markdown
+- ✅ Chronicler will index and render any Markdown file within the vault
+- 🔁 Changes in your file system (rename, move, delete) are instantly detected
+- 📂 You can create folders, drag-and-drop files, and organize content however you like
+
+---
+
+## ➕ Creating Pages and Folders
+
+- Click the **+ New Page** button in the bottom left sidebar, or right-click on any folder in the file explorer to create a new **page** or **folder**.
+- New pages start with a default **YAML frontmatter** block (see below)
+
+---
+
+## 📝 Writing in Markdown
+
+Chronicler uses **Markdown** to format your pages.
+
+- Use `# heading`, `## subheading`, `**bold**`, `*italic*`, `-` for bullet lists, and so on
+- Use `[[Page Name]]` wikilinks to link to another page in your vault (if the page doesn't exist, Chronicler will create a placeholder)
+
+---
+
+## 🔖 YAML Frontmatter
+
+Each page can start with an optional **YAML frontmatter** block to store metadata. This is used to generate the wiki-like "infobox" that acts as the page summary card. It's also used to add **tags** to your page (see below).
+
+```yaml
 ---
 title: Rivertown
-tags: [city, river, trade hub]
+tags: [city, trade, river]
 image: rivertown.jpg
+key: value
 ---
-
-# Rivertown
-
-**Rivertown** is a vibrant settlement along the [[Silverflow River]].
-
-## Economy
-
-The town thrives on river trade and fishing exports from [[Silverflow River|Silverflow]].
 ```
-
----
-
-## 🧠 Frontmatter Fields
-
-All frontmatter is optional — use it if it's helpful for you! Chronicler won't enforce any structure, so you're free to customize as much as you like.
-
-However, three fields have special behavior:
 
 | Field   | Description |
 |---------|-------------|
-| `title` | The display title for the page. If omitted, the filename is used. |
-| `tags`  | A list of tags to categorize the page. |
-| `image` | The filename of an image (e.g., `rivertown.jpg`) used in the infobox. |
+| `title` | Display title (otherwise filename is used) |
+| `tags`  | List of tags for categorization |
+| `image` | Image shown in the infobox (must be in `images/` folder) |
 
-### Notes:
-- You can define whatever fields you like, and as many as you like.
-- Tags can also be anything you choose.
-- Images must be placed in an `images/` folder inside your vault root.
-  For example, if your vault is at `C:\Users\Frank\World`, your image should go in `C:\Users\Frank\World\images\`.
-- Use `[[Page Name]]` to link to another page. If the page doesn’t exist yet, Chronicler will create a placeholder for it.
+All frontmatter is optional, and you can also add any custom fields you want (e.g `height`, `age`, `capital`, `population` etc. ) — Chronicler won’t enforce a strict schema.
+
+---
+
+## 🖼️ Infoboxes and Images
+
+If your frontmatter includes an `image`, it will appear in the page’s **infobox**.
+
+- Place all images inside an `images/` folder at the root of your vault
+- Example path: `vault/images/rivertown.jpg`
+
+The infobox also shows tags and custom fields if available.
+
+---
+
+## 🔗 Linking Between Pages
+
+Use `[[Page Name]]` to link to other pages in your vault.
+
+- Autocompletion helps you insert links quickly
+- You can alias links with `[[Silverflow River|Silverflow]]`
+- Backlinks are shown in the right sidebar so you can see what links *to* the current page
+- When you rename a page, **all links to it are automatically updated**
+
+---
+
+## 🏷️ Tags and Hierarchies
+
+You can tag pages using the `tags:` field in YAML frontmatter:
+
+```yaml
+tags: [city, coastal]
+```
+
+- Click on any tag to see a list of all pages with that tag
+
+---
+
+## 📥 Importing Word Docs
+
+You can import `.docx` files from Microsoft Word directly into your vault.
+
+- Go to **Settings → Import from .docx** and choose your files
+- Formatting (headings, bold, italics, links) is preserved
+- Requires Pandoc (Chronicler can download it for you automatically)
+
+---
+
+## 💡 Tips
+
+- Use folders to group related pages (e.g. `places/`, `people/`, `factions/`)
+- Pages and folders are ordered alphabetically. If you want to enforce ordering, you can number them (e.g `1_people/`, `2_places/`)
+- Use **tags** *and* folders — you can access pages in multiple ways
+
+---
+
+## ❓ Need Help?
+
+- [Join the Discord community!](https://discord.gg/cXJwcbe2b7)
+- [GitHub Issues](https://github.com/mak-kirkland/chronicler/issues) for bugs or feature requests
+
+---
+
+Happy chronicling! ✍️ - Michael
