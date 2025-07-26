@@ -5,8 +5,9 @@
  */
 
 import type { FileNode } from "./bindings";
-import { resolve } from "@tauri-apps/api/path";
+import { resolve, resolveResource } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 
 /**
  * Extracts a display-friendly title from a file path.
@@ -99,4 +100,13 @@ export async function resolveImageUrl(
         console.error(`Failed to resolve image path for "${filename}":`, e);
         return null;
     }
+}
+
+/**
+ * Reads the content of a bundled application resource file.
+ * @param filename The identifier of the resource (e.g., "help.md").
+ */
+export async function readBundledResource(filename: string): Promise<string> {
+    const resourcePath = await resolveResource(filename);
+    return await readTextFile(resourcePath);
 }

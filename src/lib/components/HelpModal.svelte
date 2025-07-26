@@ -1,10 +1,11 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { renderMarkdown } from "$lib/commands";
+    import { readBundledResource } from "$lib/utils";
     import Modal from "./Modal.svelte";
     import Preview from "./Preview.svelte";
-    import { renderMarkdown } from "$lib/commands";
-    import type { RenderedPage } from "$lib/bindings";
     import ErrorBox from "./ErrorBox.svelte";
+    import type { RenderedPage } from "$lib/bindings";
 
     let { onClose } = $props<{ onClose: () => void }>();
 
@@ -14,12 +15,8 @@
 
     onMount(async () => {
         try {
-            const response = await fetch("/help.md");
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const markdownContent = await response.text();
-
+            // Read the content directly from the bundled resource identifier.
+            const markdownContent = await readBundledResource("HELP.md");
             renderedData = await renderMarkdown(markdownContent);
         } catch (e: any) {
             console.error("Failed to load help content:", e);
@@ -31,7 +28,7 @@
 </script>
 
 <Modal title="Help" {onClose}>
-    <div class="help-content-wrapper">
+    <div class="content-wrapper">
         {#if isLoading}
             <p>Loading help...</p>
         {:else if error}
@@ -43,7 +40,7 @@
 </Modal>
 
 <style>
-    .help-content-wrapper {
+    .content-wrapper {
         max-height: 70vh;
         overflow-y: auto;
         padding-right: 1rem;

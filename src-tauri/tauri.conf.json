@@ -37,7 +37,8 @@
             "icons/icon.ico"
         ],
         "resources": {
-            "../CHANGELOG.md": "CHANGELOG.md"
+            "../CHANGELOG.md": "CHANGELOG.md",
+            "../HELP.md": "HELP.md"
         }
     },
     "plugins": {
