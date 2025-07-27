@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.5.2-alpha] - 2025-07-27
+
+### 🔄 Changed
+
+- **Writer**: Implemented atomic file writes to prevent data corruption or loss during application crashes or power failures. This was achieved by writing changes to a temporary file before renaming it, which guarantees that an operation either completes successfully or not at all.
+- **Help**: The Help page was re-written to be more user-friendly and provide additional information to new users. It was also refactored to load its content from a bundled application resource (`HELP.md`) rather than a static file.
+- **Internal**: Various code style improvements, documentation updates, and refactoring were completed to improve maintainability and readability.
+
+---
+
 ## [v0.5.1-alpha] - 2025-07-25
 
 ### 🐞 Fixed
