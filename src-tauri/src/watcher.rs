@@ -8,7 +8,7 @@ use crate::{
     config::{DEBOUNCE_INTERVAL, DEFAULT_EVENT_CHANNEL_CAPACITY},
     error::Result,
     events::FileEvent,
-    utils::is_markdown_file,
+    utils::{is_image_file, is_markdown_file},
 };
 use notify_debouncer_full::{
     new_debouncer,
@@ -190,8 +190,9 @@ fn handle_debounced_events(
             EventKind::Modify(ModifyKind::Name(rename_mode)) => match rename_mode {
                 // This is a true rename within the watched directory
                 RenameMode::Both => {
-                    if event.paths.len() == 2 && is_markdown_file(&event.paths[0])
-                        || is_markdown_file(&event.paths[1])
+                    // Check if either the source or destination is a valid file we track
+                    if event.paths.len() == 2
+                        && (is_valid_file(&event.paths[0]) || is_valid_file(&event.paths[1]))
                     {
                         vec![FileEvent::Renamed {
                             from: event.paths[0].clone(),
@@ -209,10 +210,11 @@ fn handle_debounced_events(
                     .filter(|path| !is_temp_file(path))
                     // This now correctly creates either a Deleted or FolderDeleted event
                     .map(|path| {
-                        if is_markdown_file(path) {
-                            FileEvent::Deleted(path.clone())
-                        } else {
+                        // Check if it's a directory first
+                        if path.is_dir() {
                             FileEvent::FolderDeleted(path.clone())
+                        } else {
+                            FileEvent::Deleted(path.clone())
                         }
                     })
                     .collect(),
@@ -242,9 +244,9 @@ fn handle_debounced_events(
 }
 
 /// Checks if a path points to a valid file that should be processed.
-/// This ignores temporary/lock files (like .#file.md) and non-markdown files.
+/// This ignores temporary/lock files (like .#file.md).
 fn is_valid_file(path: &Path) -> bool {
-    !is_temp_file(path) && is_markdown_file(path)
+    !is_temp_file(path) && (is_markdown_file(path) || is_image_file(path))
 }
 
 /// Checks if a path points to a temporary/lock file (like .#file.md).

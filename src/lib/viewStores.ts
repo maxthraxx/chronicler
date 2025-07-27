@@ -20,11 +20,13 @@ export const appStatus = writable<AppStatus>("selecting_vault");
 
 /**
  * A union type to represent the possible states of the main view.
+ * Added 'image' to support the new image viewer.
  */
 export type ViewState =
     | { type: "welcome" }
     | { type: "tag"; tagName: string }
-    | { type: "file"; data: PageHeader | null };
+    | { type: "file"; data: PageHeader | null }
+    | { type: "image"; data: PageHeader | null };
 
 /**
  * This store manages what is currently displayed in the main content area.

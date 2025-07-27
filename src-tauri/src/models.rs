@@ -4,6 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::path::PathBuf;
 
@@ -56,6 +57,48 @@ pub struct Page {
     pub frontmatter: serde_json::Value,
 }
 
+/// Represents the category of a node in the file system tree.
+///
+/// This provides a type-safe way to distinguish between directories and different
+/// kinds of files.
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+pub enum FileType {
+    /// A directory node that can contain other nodes.
+    Directory,
+    /// A Markdown file (`.md`), which is treated as a page.
+    Markdown,
+    /// A supported image file (e.g., `.png`, `.jpg`).
+    Image,
+}
+
+/// Implements partial ordering for `FileType`.
+///
+/// This implementation is straightforward because `FileType` has a total order;
+/// no two variants are incomparable.
+impl PartialOrd for FileType {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+/// Implements total ordering for `FileType` to define a custom sort order.
+///
+/// This implementation ensures that `Directory` variants are always considered
+/// "less than" file variants (`Markdown`, `Image`), causing them to appear
+/// first when a list of `FileNode`s is sorted.
+impl Ord for FileType {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            // A Directory is "less than" any file, so it comes first when sorting.
+            (FileType::Directory, FileType::Directory) => Ordering::Equal,
+            (FileType::Directory, _) => Ordering::Less,
+            (_, FileType::Directory) => Ordering::Greater,
+            // All other file types are considered equal in sorting rank.
+            _ => Ordering::Equal,
+        }
+    }
+}
+
 /// Represents a node in the file system tree.
 /// This is used to build a serializable representation of the vault's
 /// directory structure to display in the frontend.
@@ -63,7 +106,7 @@ pub struct Page {
 pub struct FileNode {
     pub name: String,
     pub path: PathBuf,
-    pub is_directory: bool,
+    pub file_type: FileType,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub children: Option<Vec<FileNode>>,
 }

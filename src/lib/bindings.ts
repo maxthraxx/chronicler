@@ -7,6 +7,12 @@
  */
 
 /**
+ * A specific type for the file node category. This improves type safety
+ * over using a generic string. It mirrors the `FileType` enum in Rust.
+ */
+export type FileType = "Directory" | "Markdown" | "Image";
+
+/**
  * A lightweight representation of a page, containing only the data needed
  * for list views and navigation links.
  */
@@ -25,8 +31,8 @@ export interface FileNode {
     name: string;
     /** The absolute path to the file or folder. */
     path: string; // In Rust this is PathBuf
-    /** A boolean indicating if the node is a directory. */
-    is_directory: boolean;
+    /** The type of the file node. */
+    file_type: FileType;
     /** An optional array of child nodes, present only for directories. */
     children?: FileNode[];
 }

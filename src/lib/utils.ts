@@ -10,6 +10,33 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 
 /**
+ * A helper function to check if a FileNode is a directory.
+ * @param node The FileNode to check.
+ * @returns True if the node's file_type is 'Directory'.
+ */
+export function isDirectory(node: FileNode): boolean {
+    return node.file_type === "Directory";
+}
+
+/**
+ * A helper function to check if a FileNode is a Markdown file.
+ * @param node The FileNode to check.
+ * @returns True if the node's file_type is 'Markdown'.
+ */
+export function isMarkdown(node: FileNode): boolean {
+    return node.file_type === "Markdown";
+}
+
+/**
+ * A helper function to check if a FileNode is an image file.
+ * @param node The FileNode to check.
+ * @returns True if the node's file_type is 'Image'.
+ */
+export function isImage(node: FileNode): boolean {
+    return node.file_type === "Image";
+}
+
+/**
  * Extracts a display-friendly title from a file path.
  * It gets the last part of the path (the filename) and removes the .md extension if present.
  * @param path The full path to the file.
@@ -53,7 +80,7 @@ export function filterFileTree(
     if (!node) return null;
     const lowerCaseTerm = term.toLowerCase();
 
-    if (node.is_directory) {
+    if (isDirectory(node)) {
         // It's a directory. Filter its children.
         // node.children will be an array (possibly empty)
         const filteredChildren = (node.children || [])

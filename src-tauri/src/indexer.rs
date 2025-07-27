@@ -6,9 +6,9 @@
 use crate::{
     error::{ChroniclerError, Result},
     events::FileEvent,
-    models::{FileNode, Link, Page, PageHeader},
+    models::{FileNode, FileType, Link, Page, PageHeader},
     parser,
-    utils::{is_markdown_file, file_stem_string},
+    utils::{file_stem_string, is_image_file, is_markdown_file},
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -351,10 +351,22 @@ impl Indexer {
     /// Recursively builds the file tree structure.
     #[instrument(level = "debug", skip(path, name))]
     fn build_tree_recursive(path: &Path, name: &str) -> Result<FileNode> {
-        let is_directory = path.is_dir();
-        let mut children = if is_directory { Some(Vec::new()) } else { None };
+        // Determine the file type first.
+        let file_type = if path.is_dir() {
+            FileType::Directory
+        } else if is_image_file(path) {
+            FileType::Image
+        } else {
+            FileType::Markdown
+        };
 
-        if is_directory {
+        let mut children = if file_type == FileType::Directory {
+            Some(Vec::new())
+        } else {
+            None
+        };
+
+        if file_type == FileType::Directory {
             if let Some(children_vec) = children.as_mut() {
                 for entry in fs::read_dir(path)? {
                     let entry = entry?;
@@ -365,32 +377,34 @@ impl Indexer {
                         if file_name.starts_with('.') {
                             continue;
                         }
-
-                        // We only care about directories and markdown files.
-                        if child_path.is_dir() || is_markdown_file(&child_path) {
+                        if child_path.is_dir()
+                            || is_markdown_file(&child_path)
+                            || is_image_file(&child_path)
+                        {
                             children_vec.push(Self::build_tree_recursive(&child_path, file_name)?);
                         }
                     }
                 }
 
-                // Sort children: directories first, then files, alphabetically
+                // Sort children: directories first (based on Ord impl), then alphabetically by name.
                 children_vec.sort_by(|a, b| {
-                    a.is_directory
-                        .cmp(&b.is_directory)
-                        .reverse()
+                    a.file_type
+                        .cmp(&b.file_type)
                         .then_with(|| a.name.cmp(&b.name))
                 });
             }
         }
 
+        let name = if file_type == FileType::Markdown {
+            file_stem_string(path)
+        } else {
+            name.to_string()
+        };
+
         Ok(FileNode {
-            name: if is_directory {
-                name.to_string()
-            } else {
-                file_stem_string(path)
-            },
+            name,
             path: path.to_path_buf(),
-            is_directory,
+            file_type,
             children,
         })
     }
@@ -409,7 +423,7 @@ impl Indexer {
     fn collect_dirs_recursive(node: &FileNode, dirs: &mut Vec<PathBuf>) {
         if let Some(children) = &node.children {
             for child in children {
-                if child.is_directory {
+                if child.file_type == FileType::Directory {
                     dirs.push(child.path.clone());
                     Self::collect_dirs_recursive(child, dirs);
                 }

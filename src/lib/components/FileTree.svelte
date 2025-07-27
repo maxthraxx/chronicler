@@ -7,7 +7,7 @@
     import { draggable, droppable } from "$lib/domActions";
     import FileTree from "./FileTree.svelte";
     import Button from "./Button.svelte";
-
+    import { isDirectory, isImage, isMarkdown } from "$lib/utils";
     let {
         node,
         onContextMenu,
@@ -23,17 +23,37 @@
     // A folder is expanded if we are searching OR if it's in our global set
     const expanded = $derived(isSearching || isManuallyExpanded);
 
+    /** Opens a markdown file in the main view. */
     function openFile(file: PageHeader) {
         currentView.set({ type: "file", data: file });
     }
 
+    /** Opens an image file in the main view. */
+    function openImage(file: PageHeader) {
+        currentView.set({ type: "image", data: file });
+    }
+
+    /**
+     * Handles a click on any non-directory node, routing to the correct
+     * view based on the file type. Note the capitalized enum variant names.
+     */
+    function handleNodeClick(node: FileNode) {
+        if (isMarkdown(node)) {
+            openFile({ title: node.name, path: node.path });
+        } else if (isImage(node)) {
+            openImage({ title: node.name, path: node.path });
+        }
+    }
+
     function handleNewFile(e: MouseEvent) {
-        e.stopPropagation(); // Prevent the directory from expanding/collapsing
+        e.stopPropagation();
+        // Prevent the directory from expanding/collapsing
         promptAndCreateItem("file", node.path);
     }
 
     function handleNewFolder(e: MouseEvent) {
-        e.stopPropagation(); // Prevent the directory from expanding/collapsing
+        e.stopPropagation();
+        // Prevent the directory from expanding/collapsing
         promptAndCreateItem("folder", node.path);
     }
 
@@ -42,26 +62,12 @@
         const { sourcePath } = e.detail;
         const destinationDir = node.path;
 
-        // Perform validation before calling the move action
-        if (
-            !sourcePath ||
-            sourcePath === destinationDir ||
-            destinationDir.startsWith(sourcePath + "/")
-        ) {
-            console.warn("Invalid move: Cannot move a folder into itself.");
-            return;
-        }
-
-        try {
-            await movePath(sourcePath, destinationDir);
-        } catch (err) {
-            console.error("The move operation failed in the UI.", err);
-        }
+        await movePath(sourcePath, destinationDir);
     }
 </script>
 
 <div class="file-node">
-    {#if node.is_directory}
+    {#if isDirectory(node)}
         <div
             class="directory"
             onclick={() => manuallyExpandedPaths.toggle(node.path)}
@@ -110,12 +116,11 @@
     {:else}
         <div
             class="file"
-            class:active={$currentView.type === "file" &&
+            class:active={($currentView.type === "file" ||
+                $currentView.type === "image") &&
                 $currentView.data?.path === node.path}
-            onclick={() => openFile({ title: node.name, path: node.path })}
-            onkeydown={(e) =>
-                e.key === "Enter" &&
-                openFile({ title: node.name, path: node.path })}
+            onclick={() => handleNodeClick(node)}
+            onkeydown={(e) => e.key === "Enter" && handleNodeClick(node)}
             role="button"
             tabindex="0"
             oncontextmenu={(e) => {
@@ -124,7 +129,7 @@
             }}
             use:draggable={{ path: node.path }}
         >
-            <span class="icon">📜</span>
+            <span class="icon">{isImage(node) ? "🖼️" : "📜"}</span>
             <span>{node.name}</span>
         </div>
     {/if}

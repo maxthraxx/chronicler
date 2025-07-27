@@ -2,6 +2,7 @@
     import { currentView, fileViewMode, rightSidebar } from "$lib/viewStores";
     import TagIndexView from "$lib/components/TagIndexView.svelte";
     import FileView from "$lib/components/FileView.svelte";
+    import ImageView from "$lib/components/ImageView.svelte";
     import BacklinksPanel from "$lib/components/BacklinksPanel.svelte";
     import { openUrl } from "@tauri-apps/plugin-opener";
 
@@ -77,6 +78,8 @@
     <TagIndexView name={$currentView.tagName} />
 {:else if $currentView.type === "file" && $currentView.data}
     <FileView file={$currentView.data} />
+{:else if $currentView.type === "image" && $currentView.data}
+    <ImageView data={$currentView.data} />
 {/if}
 
 {#if $rightSidebar.isVisible}
