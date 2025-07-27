@@ -1,14 +1,15 @@
 <script lang="ts">
-    import Modal from "./Modal.svelte";
-    import Button from "./Button.svelte";
-    import { open } from "@tauri-apps/plugin-dialog";
     import { getVersion } from "@tauri-apps/api/app";
-    import { world } from "$lib/worldStore";
+    import { open } from "@tauri-apps/plugin-dialog";
     import {
-        isPandocInstalled,
         downloadPandoc,
         importDocxFiles,
+        isPandocInstalled,
     } from "$lib/commands";
+    import { world } from "$lib/worldStore";
+    import Button from "./Button.svelte";
+    import ChangelogModal from "./ChangelogModal.svelte";
+    import Modal from "./Modal.svelte";
 
     let { onClose = () => {}, onChangeVault = () => {} } = $props<{
         onClose?: () => void;
@@ -19,6 +20,7 @@
     let isInstalling = $state(false);
     let importMessage = $state<string | null>(null);
     let appVersion = $state<string | null>(null);
+    let showChangelog = $state(false);
 
     $effect(() => {
         // Check for pandoc
@@ -128,9 +130,16 @@
     {#if appVersion}
         <div class="modal-footer">
             <p>Chronicler Version: {appVersion}</p>
+            <button class="link-button" onclick={() => (showChangelog = true)}>
+                View Changelog
+            </button>
         </div>
     {/if}
 </Modal>
+
+{#if showChangelog}
+    <ChangelogModal onClose={() => (showChangelog = false)} />
+{/if}
 
 <style>
     .modal-body-content {
@@ -175,5 +184,18 @@
     }
     .modal-footer p {
         margin: 0;
+    }
+    .link-button {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-top: 0.25rem;
+        color: var(--ink-light);
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    .link-button:hover {
+        color: var(--ink);
     }
 </style>
