@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.6.0-alpha] - 2025-07-28
+
+### ✨ Added
+
+- **Image Viewer**: You can now click on image files in the file explorer to open them in a full-page viewer.
+- **Changelog Modal**: A new "View Changelog" button in Settings opens a scrollable modal showing the full version history from `CHANGELOG.md`.
+
+### 🔄 Changed
+
+- **Image Errors**: Improved error handling when loading images in the infobox. If a referenced image is missing, users now see a helpful message instead of a generic "Can't load image".
+- **File Tree**: The internal file model was refactored for type safety and clarity. Files now use a `FileType` enum (`Directory`, `Markdown`, `Image`) to distinguish between nodes in the tree. This improves rendering and sorting logic.
+- **Sorting**: Custom sort order ensures that directories always appear above files in the file explorer.
+
+---
+
 ## [v0.5.2-alpha] - 2025-07-27
 
 ### 🔄 Changed
