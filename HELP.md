@@ -49,7 +49,7 @@ key: value
 |---------|-------------|
 | `title` | Display title (otherwise filename is used) |
 | `tags`  | List of tags for categorization |
-| `image` | Image shown in the infobox (must be in `images/` folder) |
+| `image` | Image shown in the infobox |
 
 All frontmatter is optional, and you can also add any custom fields you want (e.g `height`, `age`, `capital`, `population` etc. ) — Chronicler won’t enforce a strict schema.
 
@@ -57,12 +57,31 @@ All frontmatter is optional, and you can also add any custom fields you want (e.
 
 ## 🖼️ Infoboxes and Images
 
-If your frontmatter includes an `image`, it will appear in the page’s **infobox**.
+You can display an image in a page’s **infobox** by adding the `image` field to the frontmatter:
 
-- Place all images inside an `images/` folder at the root of your vault
-- Example path: `vault/images/rivertown.jpg`
+```yaml
+image: rivertown.jpg
+```
 
-The infobox also shows tags and custom fields if available.
+There are three supported ways to specify the image path:
+
+- ✅ **Relative to the `images/` folder** (recommended)
+  - `image: rivertown.jpg` → loads `vault/images/rivertown.jpg`
+  - `image: maps/northlands.png` → loads
+    `vault/images/maps/northlands.png`
+  - This method assumes you have created an `images` folder directly inside the vault root.
+
+- 🗂️ **Relative to the vault root using `../`**
+  - `image: ../factions/champions/banner.jpg` → loads
+    `vault/factions/champions/banner.jpg`
+  - Use this if you want to store images next to your Markdown files instead of inside `images/`
+
+- ⚠️ **Absolute paths** (not recommended)
+  - `image: C:/Users/Michael/Pictures/map.png`
+  - This only works on your current machine and may break if you move
+    the vault
+
+Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.svg`
 
 ---
 
