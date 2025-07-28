@@ -136,6 +136,13 @@ export const movePath = (sourcePath: string, destDir: string) =>
 export const pathExists = (path: string) =>
     invoke<boolean>("path_exists", { path });
 
+/**
+ * Opens a given path in the OS's default file explorer.
+ * @param path The absolute path to the directory or file to open.
+ */
+export const openInExplorer = (path: string) =>
+    invoke<void>("open_in_explorer", { path });
+
 // --- Importer Commands ---
 
 /**

@@ -13,6 +13,7 @@ use crate::{
 };
 use std::path::PathBuf;
 use tauri::{command, AppHandle, State};
+use tauri_plugin_opener::OpenerExt;
 use tracing::instrument;
 
 // --- Vault and Initialization ---
@@ -137,6 +138,13 @@ pub fn move_path(world: State<World>, source_path: String, dest_dir: String) -> 
 #[command]
 pub fn path_exists(path: PathBuf) -> bool {
     path.exists()
+}
+
+/// Opens the specified path in the OS's default file explorer.
+#[command]
+pub fn open_in_explorer(app_handle: AppHandle, path: String) -> Result<()> {
+    app_handle.opener().open_path(path, None::<&str>)?;
+    Ok(())
 }
 
 // --- Importer ---

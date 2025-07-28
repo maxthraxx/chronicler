@@ -76,7 +76,6 @@
             role="button"
             tabindex="0"
             oncontextmenu={(e) => {
-                e.preventDefault();
                 onContextMenu(e, node);
             }}
             use:draggable={{ path: node.path }}
@@ -124,7 +123,6 @@
             role="button"
             tabindex="0"
             oncontextmenu={(e) => {
-                e.preventDefault();
                 onContextMenu(e, node);
             }}
             use:draggable={{ path: node.path }}

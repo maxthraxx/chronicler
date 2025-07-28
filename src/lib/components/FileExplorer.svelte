@@ -23,7 +23,23 @@
     const filteredNode = $derived(filterFileTree($files, searchTerm));
 
     function showContextMenu(event: MouseEvent, node: FileNode) {
+        // Prevent the default browser context menu from appearing.
+        event.preventDefault();
+        // Stop the event from bubbling up to the container's root handler.
+        event.stopPropagation();
+        // Set the state to display our custom context menu.
         contextMenu = { x: event.clientX, y: event.clientY, node };
+    }
+
+    /**
+     * Shows the context menu for the vault's root directory.
+     * @param event The mouse event from the right-click.
+     */
+    function showRootContextMenu(event: MouseEvent) {
+        // Use the root file node from the store as the context for the menu.
+        if ($files) {
+            showContextMenu(event, $files);
+        }
     }
 
     function closeContextMenu() {
@@ -57,7 +73,7 @@
     <ContextMenu
         x={contextMenu.x}
         y={contextMenu.y}
-        actions={getContextMenuActions(contextMenu.node)}
+        actions={getContextMenuActions(contextMenu.node, $vaultPath)}
         onClose={closeContextMenu}
     />
 {/if}
@@ -77,7 +93,11 @@
     </div>
 
     <!-- The file tree is rendered below the drop zone -->
-    <div class="file-tree-container" use:autoscrollOnDrag>
+    <div
+        class="file-tree-container"
+        use:autoscrollOnDrag
+        oncontextmenu={showRootContextMenu}
+    >
         <!--
             Instead of rendering the root node, we now check if it has children
             and iterate over them directly. This hides the root and shows the

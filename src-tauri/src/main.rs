@@ -73,6 +73,7 @@ fn main() {
             commands::delete_path,
             commands::move_path,
             commands::path_exists,
+            commands::open_in_explorer,
             commands::get_all_directory_paths,
             commands::is_pandoc_installed,
             commands::download_pandoc,

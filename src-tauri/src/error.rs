@@ -10,6 +10,9 @@ pub enum ChroniclerError {
     #[error("Tauri error: {0}")]
     Tauri(#[from] tauri::Error),
 
+    #[error("Opener error: {0}")]
+    Opener(#[from] tauri_plugin_opener::Error),
+
     #[error("IO Error: {0}")]
     Io(#[from] std::io::Error),
 
