@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.6.1-alpha] - 2025-07-28
+
+### 🐞 Fixed
+
+- **Editor**: Fixed a bug where wikilink autocompletion was showing directories instead of Markdown files.
+
+---
+
 ## [v0.6.0-alpha] - 2025-07-28
 
 ### ✨ Added
