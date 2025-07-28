@@ -15,7 +15,7 @@
 import { writable, derived } from "svelte/store";
 import { listen } from "@tauri-apps/api/event";
 import { getFileTree, getAllTags, getVaultPath } from "./commands";
-import { isDirectory } from "./utils";
+import { isMarkdown } from "./utils";
 import type { FileNode, TagMap } from "./bindings";
 
 /**
@@ -147,7 +147,7 @@ export const isWorldLoaded = derived(world, ($world) => $world.isLoaded);
 function flattenFileTree(node: FileNode | null): string[] {
     if (!node) return [];
     const titles: string[] = [];
-    if (node.name && isDirectory(node)) {
+    if (node.name && isMarkdown(node)) {
         // Extract title from path, removing extension
         titles.push(node.name);
     }
