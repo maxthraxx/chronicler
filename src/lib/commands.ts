@@ -128,6 +128,14 @@ export const deletePath = (path: string) =>
 export const movePath = (sourcePath: string, destDir: string) =>
     invoke<void>("move_path", { sourcePath, destDir });
 
+/**
+ * Checks if a file or directory exists at the given path.
+ * @param path The absolute path to check.
+ * @returns A promise that resolves to true if the path exists.
+ */
+export const pathExists = (path: string) =>
+    invoke<boolean>("path_exists", { path });
+
 // --- Importer Commands ---
 
 /**

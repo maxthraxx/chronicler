@@ -19,22 +19,24 @@
     }>();
 
     let imageUrl = $state<string | null>(null);
-    let imageError = $state(false);
+    let imageError = $state<string | null>(null);
     let filteredData = $state<[string, any][]>([]);
 
     // This effect resolves the image URL
     $effect(() => {
-        imageError = false;
+        // Reset state when data changes
+        imageError = null;
         imageUrl = null;
 
         if (data?.image) {
-            resolveImageUrl($vaultPath, data.image).then((url) => {
-                if (url) {
+            resolveImageUrl($vaultPath, data.image)
+                .then((url) => {
                     imageUrl = url;
-                } else {
-                    imageError = true;
-                }
-            });
+                })
+                .catch((e: Error) => {
+                    console.error(e);
+                    imageError = e.message;
+                });
         }
     });
 
@@ -78,12 +80,12 @@
                             src={imageUrl}
                             alt={data?.title || "Infobox image"}
                             class="infobox-image"
-                            onerror={() => (imageError = true)}
+                            onerror={() => (imageError = "Invalid image")}
                         />
                     </div>
                 {:else if imageError}
                     <ErrorBox title="Image Error"
-                        >Could not load image: "{data.image}"</ErrorBox
+                        >Could not load image {data.image} : {imageError}</ErrorBox
                     >
                 {/if}
             </div>
