@@ -21,6 +21,7 @@
     import { openModal } from "$lib/modalStore";
     import DonationModal from "$lib/components/DonationModal.svelte";
     import { hideDonationPrompt, loadSettings } from "$lib/settingsStore";
+    import ErrorBox from "$lib/components/ErrorBox.svelte";
 
     let { children } = $props();
     let sidebarWidth = $state(SIDEBAR_INITIAL_WIDTH);
@@ -162,7 +163,7 @@
 {:else if $appStatus === "error"}
     <div class="loading-screen">
         <h1 class="welcome-title">Error</h1>
-        <p class="error-message">{errorMessage}</p>
+        <ErrorBox>{errorMessage}</ErrorBox>
         <button class="select-button" onclick={handleTryAgain}
             >Select a Different Folder</button
         >
@@ -202,15 +203,6 @@
         height: 100vh;
         color: var(--ink);
         padding: 2rem;
-    }
-    .error-message {
-        background-color: var(--color-background-error);
-        color: var(--color-text-error);
-        padding: 1rem;
-        border-radius: 4px;
-        margin-bottom: 2rem;
-        max-width: 600px;
-        border: 1px solid var(--color-border-error);
     }
     .select-button {
         padding: 0.75rem 1.5rem;

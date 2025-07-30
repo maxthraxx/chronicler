@@ -8,6 +8,7 @@
         formatChangelog,
     } from "$lib/updater";
     import Modal from "$lib/components/Modal.svelte";
+    import ErrorBox from "./ErrorBox.svelte";
 
     let { update, manualUpdateRequired, onClose } = $props<{
         update: Update;
@@ -78,10 +79,7 @@
         </div>
     {:else}
         {#if installError}
-            <div class="manual-update-notice">
-                <p><strong>Update Failed</strong></p>
-                <p class="text-sm">{installError}</p>
-            </div>
+            <ErrorBox title="Update Failed">{installError}</ErrorBox>
         {/if}
         <div class="button-group">
             <button
