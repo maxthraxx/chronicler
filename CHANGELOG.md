@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.7.0-alpha] - 2025-07-30
+
+### ✨ Added
+
+- **Context Menu**: Added a new "Open in Explorer" option to the context menu to allow users to open folders in the OS's default file manager.
+- **Context Menu**: Right-clicking the empty space now shows context menu options for the vault root.
+
+### 🔄 Changed
+
+- **Context Menu**: The menu is now context-aware, hiding actions like "Rename" and "Delete" for the vault root. The underlying event handling was also refactored to be more robust and maintainable.
+- **UI**: Standardized the appearance of buttons and error messages throughout the application by replacing custom styles with the unified Button and ErrorBox components for better consistency.
+
+---
+
 ## [v0.6.1-alpha] - 2025-07-28
 
 ### 🐞 Fixed
