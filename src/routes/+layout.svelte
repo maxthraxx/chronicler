@@ -256,7 +256,7 @@
         font-family: var(--font-family-heading);
         font-size: 4rem;
         margin-bottom: 1rem;
-        color: var(--ink-light);
+        color: var(--ink-heading);
     }
     .animate-spin {
         animation: spin 2s linear infinite;

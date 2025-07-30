@@ -270,7 +270,7 @@
     }
     .view-title {
         font-family: var(--font-family-heading);
-        color: var(--ink-light);
+        color: var(--ink-heading);
         margin: 0;
         font-size: 1.5rem;
         white-space: nowrap;

@@ -144,7 +144,7 @@
         font-family: var(--font-family-heading);
         margin: 0;
         font-size: 2rem;
-        color: var(--ink-light);
+        color: var(--ink-heading);
     }
     .tab-navigation {
         display: flex;

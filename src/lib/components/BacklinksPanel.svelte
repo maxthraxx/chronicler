@@ -66,8 +66,6 @@
         border-bottom: 1px solid var(--border-color);
     }
     h3 {
-        font-family: var(--font-family-heading);
-        color: var(--ink-light);
         margin: 0;
         font-size: 1.2rem;
     }

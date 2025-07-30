@@ -82,9 +82,6 @@
         box-shadow: 0 5px 15px var(--color-overlay-light);
         color: var(--ink);
     }
-    .modal-content:focus {
-        outline: 2px solid var(--accent-color);
-    }
     .modal-header {
         display: flex;
         justify-content: space-between;
@@ -94,9 +91,7 @@
         margin-bottom: 1rem;
     }
     .modal-header h3 {
-        font-family: var(--font-family-heading);
         font-size: 1.5rem;
-        color: var(--ink-light);
         margin: 0;
     }
     .close-btn {

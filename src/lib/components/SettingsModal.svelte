@@ -174,9 +174,7 @@
         padding-bottom: 0;
     }
     h4 {
-        font-family: var(--font-family-heading);
         margin: 0;
-        color: var(--ink-light);
     }
     .setting-item p {
         margin: 0;

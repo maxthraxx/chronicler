@@ -10,6 +10,7 @@
     --parchment-dark: #dcd3c3;
     --ink: #4a3f35;
     --ink-light: #6a5f55;
+    --ink-heading: var(--ink-light);
     --border-color: #d3c7b3;
     --accent-color: var(--parchment-dark);
 
@@ -118,6 +119,20 @@
 }
 
 /* Global Styles */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-family-heading);
+    color: var(
+        --ink-heading,
+        var(--ink-light)
+    ); /* Fallback to --ink-light if --ink-heading isn't defined */
+}
+
 body,
 html {
     margin: 0;

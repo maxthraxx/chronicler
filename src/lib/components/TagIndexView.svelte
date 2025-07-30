@@ -82,8 +82,6 @@
         display: flex;
     }
     h2 {
-        font-family: var(--font-family-heading);
-        color: var(--ink-light);
         border-bottom: none;
         padding-bottom: 0;
         margin: 0;
