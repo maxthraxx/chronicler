@@ -149,8 +149,10 @@ html {
 
 /* --- Global Helper Classes --- */
 
-/* A reusable class for elements that should look and act like links */
-.link-button {
+/* A reusable class for elements that should look and act like links,
+   and the global style for all real <a> tags. */
+.link-button,
+a[href] {
     background: none;
     border: none;
     padding: 0;
@@ -161,8 +163,10 @@ html {
     border-bottom: 1px dotted var(--color-text-link);
     text-align: left;
 }
+
 .link-button:hover,
-.link-button:focus {
+.link-button:focus,
+a[href]:hover {
     text-decoration: underline;
     outline: none;
 }
