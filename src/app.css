@@ -52,6 +52,13 @@
     --color-overlay-dark: rgba(255, 255, 255, 0.07);
 }
 
+[data-theme="burgundy"] {
+    /* Keep the base parchment colors */
+    --accent-color: #8c2d2d; /* A deep burgundy for accents */
+    --ink-heading: #8c2d2d; /* Deep Burgundy */
+    --font-family-heading: "Cinzel", cursive;
+}
+
 /* --- Sci-Fi Hologram Theme --- */
 [data-theme="hologram"] {
     --font-family-body: "Hologram Body", serif;
@@ -116,6 +123,13 @@
     font-style: normal;
     font-weight: 400;
     src: url("/fonts/IBM-Plex-Mono-regular.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Cinzel";
+    font-style: normal;
+    font-weight: 700; /* This font looks best in bold */
+    src: url("/fonts/Cinzel Bold.woff2") format("woff2");
 }
 
 /* Global Styles */

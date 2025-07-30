@@ -111,6 +111,7 @@
             >
                 <option value="light">Parchment & Ink</option>
                 <option value="dark">Slate & Chalk (Dark)</option>
+                <option value="burgundy">Parchment & Wine</option>
                 <option value="hologram">Sci-Fi Hologram</option>
             </select>
         </div>
