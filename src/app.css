@@ -1,5 +1,9 @@
-/* --- Root Variables --- */
+/* --- Root Variables (Default Light Theme) --- */
 :root {
+    /* Typography */
+    --font-family-body: "IM Fell English", serif;
+    --font-family-heading: "Uncial Antiqua", cursive;
+
     /* Colors */
     --parchment: #fdf6e3;
     --parchment-mid: #e6dcc9;
@@ -23,10 +27,53 @@
     --color-overlay-dark: rgba(0, 0, 0, 0.07);
     --color-overlay-resizer: rgba(0, 0, 0, 0.125);
     --color-overlay-resizer-hover: rgba(0, 0, 0, 0.25);
+}
 
-    /* Typography */
-    --font-family-body: "IM Fell English", serif;
-    --font-family-heading: "Uncial Antiqua", cursive;
+/* --- Dark Mode Theme --- */
+[data-theme="dark"] {
+    --parchment: #2a2a2e; /* Dark slate background */
+    --parchment-mid: #3a3a3e;
+    --parchment-dark: #4a4a4e;
+    --ink: #e0e0e0; /* Light chalk text */
+    --ink-light: #a0a0a0;
+    --border-color: #444448;
+    --accent-color: var(--parchment-dark);
+
+    --color-text-link: #60a5fa; /* Lighter blue for links */
+    --color-text-link-broken: #fca5a5; /* Lighter red */
+    --color-text-error: #ef4444; /* Bright red */
+    --color-background-error: rgba(239, 68, 68, 0.1);
+    --color-border-error: rgba(239, 68, 68, 0.2);
+
+    --color-overlay-subtle: rgba(255, 255, 255, 0.02);
+    --color-overlay-light: rgba(255, 255, 255, 0.03);
+    --color-overlay-medium: rgba(255, 255, 255, 0.05);
+    --color-overlay-dark: rgba(255, 255, 255, 0.07);
+}
+
+/* --- Sci-Fi Hologram Theme --- */
+[data-theme="hologram"] {
+    --font-family-body: "Hologram Body", serif;
+    --font-family-heading: "Hologram Heading", cursive;
+
+    --parchment: #020a1f; /* Deep space blue */
+    --parchment-mid: #0d275a;
+    --parchment-dark: #1a3a7a;
+    --ink: #00fbfd; /* Glowing cyan */
+    --ink-light: #00a8aa;
+    --border-color: #1a568c;
+    --accent-color: var(--parchment-dark);
+
+    --color-text-link: #39ff14; /* Neon green */
+    --color-text-link-broken: #fffb00; /* Deep amber */
+    --color-text-error: #ff5555; /* Glowing red */
+    --color-background-error: rgba(255, 85, 85, 0.1);
+    --color-border-error: rgba(255, 85, 85, 0.2);
+
+    --color-overlay-subtle: rgba(0, 251, 253, 0.03);
+    --color-overlay-light: rgba(0, 251, 253, 0.05);
+    --color-overlay-medium: rgba(0, 251, 253, 0.07);
+    --color-overlay-dark: rgba(0, 251, 253, 0.1);
 }
 
 /* --- Local Font Definitions (from /static folder) --- */
@@ -52,6 +99,22 @@
     font-style: normal;
     font-weight: 400;
     src: url("/fonts/Uncial-Antiqua-regular.woff2") format("woff2");
+}
+
+/* Hologram heading */
+@font-face {
+    font-family: "Hologram Heading";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/fonts/Orbitron Regular.woff2") format("woff2");
+}
+
+/* Hologram body */
+@font-face {
+    font-family: "Hologram Body";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/fonts/IBM-Plex-Mono-regular.woff2") format("woff2");
 }
 
 /* Global Styles */

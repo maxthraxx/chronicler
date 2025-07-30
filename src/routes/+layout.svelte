@@ -20,7 +20,11 @@
     import { getCurrentWindow } from "@tauri-apps/api/window";
     import { openModal } from "$lib/modalStore";
     import DonationModal from "$lib/components/DonationModal.svelte";
-    import { hideDonationPrompt, loadSettings } from "$lib/settingsStore";
+    import {
+        hideDonationPrompt,
+        loadSettings,
+        theme,
+    } from "$lib/settingsStore";
     import ErrorBox from "$lib/components/ErrorBox.svelte";
     import Button from "$lib/components/Button.svelte";
 
@@ -71,6 +75,17 @@
                 };
             }
         })();
+    });
+
+    // This reactive effect will run whenever the theme store's value changes.
+    $effect(() => {
+        const currentTheme = $theme;
+
+        // Set the data-theme attribute on the root <html> element.
+        // This causes the correct block of CSS variables to be applied.
+        if (typeof document !== "undefined") {
+            document.documentElement.setAttribute("data-theme", currentTheme);
+        }
     });
 
     /**

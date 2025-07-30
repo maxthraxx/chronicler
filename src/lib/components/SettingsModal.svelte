@@ -7,6 +7,7 @@
         isPandocInstalled,
     } from "$lib/commands";
     import { world } from "$lib/worldStore";
+    import { theme, setTheme, type Theme } from "$lib/settingsStore";
     import Button from "./Button.svelte";
     import ChangelogModal from "./ChangelogModal.svelte";
     import Modal from "./Modal.svelte";
@@ -101,6 +102,20 @@
 <Modal title="Settings" {onClose}>
     <div class="modal-body-content">
         <div class="setting-item">
+            <h4>Theme</h4>
+            <p>Change the appearance of the application.</p>
+            <select
+                class="theme-select"
+                value={$theme}
+                onchange={(e) => setTheme(e.currentTarget.value as Theme)}
+            >
+                <option value="light">Parchment & Ink</option>
+                <option value="dark">Slate & Chalk (Dark)</option>
+                <option value="hologram">Sci-Fi Hologram</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
             <h4>Change Vault</h4>
             <p>Change the root folder for your notes.</p>
             <Button onclick={onChangeVault}>Change Vault Folder</Button>
@@ -184,6 +199,17 @@
     }
     .modal-footer p {
         margin: 0;
+    }
+    .theme-select {
+        background-color: var(--parchment-mid);
+        color: var(--ink);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.5rem;
+        font-family: inherit;
+        font-size: 1rem;
+        width: 100%;
+        cursor: pointer;
     }
     .link-button {
         background: none;
