@@ -22,6 +22,7 @@
     import DonationModal from "$lib/components/DonationModal.svelte";
     import { hideDonationPrompt, loadSettings } from "$lib/settingsStore";
     import ErrorBox from "$lib/components/ErrorBox.svelte";
+    import Button from "$lib/components/Button.svelte";
 
     let { children } = $props();
     let sidebarWidth = $state(SIDEBAR_INITIAL_WIDTH);
@@ -164,9 +165,7 @@
     <div class="loading-screen">
         <h1 class="welcome-title">Error</h1>
         <ErrorBox>{errorMessage}</ErrorBox>
-        <button class="select-button" onclick={handleTryAgain}
-            >Select a Different Folder</button
-        >
+        <Button onclick={handleTryAgain}>Select a Different Folder</Button>
     </div>
 {:else if $appStatus === "ready"}
     <div class="chronicler-app" style="--sidebar-width: {sidebarWidth}px">
@@ -203,16 +202,6 @@
         height: 100vh;
         color: var(--ink);
         padding: 2rem;
-    }
-    .select-button {
-        padding: 0.75rem 1.5rem;
-        background-color: var(--accent-color);
-        color: var(--parchment);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        cursor: pointer;
-        font-family: var(--font-family-body);
-        font-size: 1.1rem;
     }
     .chronicler-app {
         display: flex;

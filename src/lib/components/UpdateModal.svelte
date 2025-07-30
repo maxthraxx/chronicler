@@ -9,6 +9,7 @@
     } from "$lib/updater";
     import Modal from "$lib/components/Modal.svelte";
     import ErrorBox from "./ErrorBox.svelte";
+    import Button from "./Button.svelte";
 
     let { update, manualUpdateRequired, onClose } = $props<{
         update: Update;
@@ -72,22 +73,20 @@
             </p>
         </div>
         <div class="button-group">
-            <button class="button-secondary" onclick={onClose}>Later</button>
-            <button class="button-primary" onclick={openReleasePage}
-                >Go to Downloads</button
-            >
+            <Button onclick={onClose}>Later</Button>
+            <Button onclick={openReleasePage}>Go to Downloads</Button>
         </div>
     {:else}
         {#if installError}
             <ErrorBox title="Update Failed">{installError}</ErrorBox>
         {/if}
         <div class="button-group">
-            <button
+            <Button
                 class="button-secondary"
                 onclick={onClose}
-                disabled={isUpdating}>Later</button
+                disabled={isUpdating}>Later</Button
             >
-            <button
+            <Button
                 class="button-primary"
                 onclick={handleInstallClick}
                 disabled={isUpdating}
@@ -97,7 +96,7 @@
                 {:else}
                     <span>Install & Relaunch</span>
                 {/if}
-            </button>
+            </Button>
         </div>
     {/if}
 </Modal>
