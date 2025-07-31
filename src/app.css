@@ -112,7 +112,7 @@
 
 /* --- Local Font Definitions (from /static folder) --- */
 
-/* IM Fell English */
+/* Old style printing */
 @font-face {
     font-family: "IM Fell English";
     font-style: normal;
@@ -127,7 +127,7 @@
     src: url("/fonts/IM-Fell-English-italic.woff2") format("woff2");
 }
 
-/* Uncial Antiqua */
+/* Decorative script */
 @font-face {
     font-family: "Uncial Antiqua";
     font-style: normal;
@@ -151,6 +151,7 @@
     src: url("/fonts/IBM-Plex-Mono-regular.woff2") format("woff2");
 }
 
+/* Roman header */
 @font-face {
     font-family: "Cinzel";
     font-style: normal;
