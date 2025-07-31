@@ -19,7 +19,11 @@
 
 ---
 
-![image](https://github.com/user-attachments/assets/6786c1fd-755b-428c-8bab-65503212c4bf)
+<img width="948" height="493" alt="Wine" src="https://github.com/user-attachments/assets/e8704700-f4ae-4793-9b91-523e0c0dccf2" />
+
+---
+
+<img width="950" height="492" alt="Hologram" src="https://github.com/user-attachments/assets/3b31d808-4525-4347-874b-ee8f0a96584c" />
 
 ---
 
