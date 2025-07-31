@@ -59,6 +59,32 @@
     --font-family-heading: "Cinzel", cursive;
 }
 
+[data-theme="slate-and-gold"] {
+    /* Dark theme */
+    --parchment: #2a2a2e; /* Dark slate background */
+    --parchment-mid: #3a3a3e;
+    --parchment-dark: #4a4a4e;
+    --ink: #e0e0e0; /* Light chalk text */
+    --ink-light: #a0a0a0;
+    --border-color: #444448;
+
+    --color-text-link: #60a5fa; /* Lighter blue for links */
+    --color-text-link-broken: #fca5a5; /* Lighter red */
+    --color-text-error: #ef4444; /* Bright red */
+    --color-background-error: rgba(239, 68, 68, 0.1);
+    --color-border-error: rgba(239, 68, 68, 0.2);
+
+    --color-overlay-subtle: rgba(255, 255, 255, 0.02);
+    --color-overlay-light: rgba(255, 255, 255, 0.03);
+    --color-overlay-medium: rgba(255, 255, 255, 0.05);
+    --color-overlay-dark: rgba(255, 255, 255, 0.07);
+
+    /* Gold theme */
+    --font-family-heading: "Cinzel", cursive;
+    --ink-heading: #c5b358; /* A warm, desaturated gold */
+    --color-accent-primary: #c5b358;
+}
+
 /* --- Sci-Fi Hologram Theme --- */
 [data-theme="hologram"] {
     --font-family-body: "Hologram Body", serif;
