@@ -182,7 +182,7 @@ tags: [add, your, tags]
 
         // --- 2. Transaction Phase: Perform all file system changes ---
         if let Err(e) = self.perform_rename_transaction(old_path, &new_path, &backlink_updates) {
-            warn!("Rename transaction failed and was rolled back: {}", e);
+            warn!("Rename transaction failed and will be rolled back: {}", e);
             // The transaction function handles its own rollback.
             return Err(e);
         }
@@ -207,6 +207,7 @@ tags: [add, your, tags]
         // If any of these fail, we need to roll back the primary rename.
         for (path, new_content) in backlink_updates {
             if let Err(e) = atomic_write(path, new_content) {
+                // TODO: need to rollback the backlink_updates too
                 warn!(
                     "Failed to write backlink file {:?}, rolling back main rename. Error: {}",
                     path, e
@@ -222,7 +223,7 @@ tags: [add, your, tags]
                     );
                 }
                 // Return the original error that caused the rollback.
-                return Err(e.into());
+                return Err(e);
             }
         }
 
