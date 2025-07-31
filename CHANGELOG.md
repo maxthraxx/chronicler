@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.8.0-alpha] - 2025-07-31
+
+### ✨ Added
+
+- **Themes**: A theme switcher has been implemented, allowing users to switch between multiple built-in themes ("Parchment & Wine", "Slate & Gold", etc.) from the Settings modal. The chosen theme is persisted across application sessions.
+
+### 🔄 Changed
+
+- **Styling**: The application's styling has been significantly refactored for consistency and scalability.
+- **Preview**: The main content preview has been refactored to use a modern Flexbox layout, fixing a visual bug where heading borders would render underneath the infobox.
+
+---
+
 ## [v0.7.0-alpha] - 2025-07-30
 
 ### ✨ Added
