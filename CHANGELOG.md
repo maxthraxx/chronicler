@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.8.1-alpha] - 2025-08-02
+
+### 🔄 Changed
+
+- **Renderer**: Wikilink rendering has been overhauled for more intuitive, context-aware behavior. Links are now correctly processed inside block-level code (fenced and indented) but are ignored inside inline code snippets. This fixes a bug where links in code blocks were previously rendered incorrectly as literal html.
+- **Styling**: The application's CSS color system has been refactored to use semantic variable names (e.g., `--color-background-primary` instead of `--parchment`), improving theme consistency and maintainability.
+
+---
+
 ## [v0.8.0-alpha] - 2025-07-31
 
 ### ✨ Added
