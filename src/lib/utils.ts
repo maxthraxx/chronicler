@@ -137,6 +137,14 @@ export async function resolveImageUrl(
  * @param filename The identifier of the resource (e.g., "help.md").
  */
 export async function readBundledResource(filename: string): Promise<string> {
-    const resourcePath = await resolveResource(filename);
-    return await readTextFile(resourcePath);
+    try {
+        const resourcePath = await resolveResource(filename);
+        if (!resourcePath) {
+            throw new Error(`Could not resolve path for resource: ${filename}`);
+        }
+        return await readTextFile(resourcePath);
+    } catch (e) {
+        console.error("Error in readBundledResource:", e);
+        throw new Error(`Failed to read resource '${filename}': ${e}`);
+    }
 }
