@@ -124,7 +124,9 @@ tags: [add, your, tags]
         let mut new_path = parent.join(new_name.trim());
 
         if old_path.is_file() {
-            new_path.set_extension("md");
+            if let Some(ext) = old_path.extension() {
+                new_path.set_extension(ext);
+            }
         }
 
         self.execute_rename_or_move(old_path, new_path, backlinks)
