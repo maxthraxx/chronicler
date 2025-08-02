@@ -5,7 +5,7 @@ use crate::models::{Backlink, FullPageData};
 use crate::wikilink::WIKILINK_RE;
 use crate::{error::Result, indexer::Indexer, models::RenderedPage, parser};
 use parking_lot::RwLock;
-use pulldown_cmark::{html, Options, Parser};
+use pulldown_cmark::{html, Event, Options, Parser};
 use regex::Captures;
 use serde_json::Value;
 use std::fs;
@@ -60,13 +60,10 @@ impl Renderer {
             }
         }
 
-        // 3. Convert wikilinks in the main body
-        let processed_markdown = self.render_wikilinks_in_string(body);
+        // 3. Render the main body content to HTML, correctly handling wikilinks.
+        let rendered_html = self.render_body_to_html(body);
 
-        // 4. Render the main body content to HTML
-        let rendered_html = self.render_markdown_to_html(&processed_markdown);
-
-        // 5. Return the complete structure.
+        // 4. Return the complete structure.
         Ok(RenderedPage {
             processed_frontmatter: frontmatter_json,
             rendered_html,
@@ -95,6 +92,144 @@ impl Renderer {
             })
             .to_string()
     }
+
+    /// Renders Markdown body content to HTML, processing custom wikilinks.
+    ///
+    /// ## Behavior
+    ///
+    /// This function implements a specific set of rules for rendering `[[wikilinks]]`:
+    ///
+    /// 1.  **Block-Level Code**: Wikilinks ARE processed inside fenced (```) and indented code blocks.
+    /// 2.  **Inline Code**: Wikilinks are NOT processed inside inline (` `) code and the literal `[[...]]` syntax is preserved.
+    /// 3.  **All Other Text**: Wikilinks are processed as normal.
+    ///
+    /// ## Implementation Details
+    ///
+    /// The `pulldown-cmark` parser emits a stream of events. A key challenge is that it may
+    /// fragment text, for example, sending `[[wikilink]]` as three separate `Text` events:
+    /// `Text("[[")`, `Text("wikilink")`, and `Text("]]")`.
+    ///
+    /// To solve this, we use a **text-buffering** (or coalescing) strategy:
+    /// - We loop through the events from the parser.
+    /// - `Text` events are collected into a temporary `text_buffer`.
+    /// - Any non-`Text` event triggers a "flush" of the buffer. Flushing involves running the
+    ///   wikilink replacement logic on the entire buffered string.
+    ///
+    /// This approach works because of how `pulldown-cmark` creates events:
+    /// - The content of **block-level code** is made of `Text` events, so it gets buffered and processed.
+    /// - **Inline code** is a single, discrete `Event::Code`, not `Text`. This event triggers a buffer
+    ///   flush and is then passed through, so its content is never processed for wikilinks.
+    ///
+    fn render_body_to_html(&self, markdown: &str) -> String {
+        // --- 1. Initial Setup ---
+
+        // Standard pulldown-cmark options to enable features like tables and strikethrough.
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_STRIKETHROUGH);
+        options.insert(Options::ENABLE_TABLES);
+        options.insert(Options::ENABLE_FOOTNOTES);
+
+        // Create the event stream parser from the raw Markdown string.
+        let parser = Parser::new_ext(markdown, options);
+
+        // This closure is a helper for building the final HTML for a found wikilink.
+        // It's defined once here to be reused later. It checks if the link exists
+        // and creates either a valid <a> tag or a "broken link" <span> tag.
+        let indexer = self.indexer.read();
+        let build_link_html = |caps: &Captures| -> String {
+            let target = caps.get(1).map_or("", |m| m.as_str()).trim();
+            let alias = caps.get(3).map(|m| m.as_str().trim()).unwrap_or(target);
+            let normalized_target = target.to_lowercase();
+
+            if let Some(path) = indexer.link_resolver.get(&normalized_target) {
+                format!(
+                    "<a href=\"#\" class=\"internal-link\" data-path=\"{}\">{}</a>",
+                    path.to_string_lossy(),
+                    alias
+                )
+            } else {
+                format!("<span class=\"internal-link broken\">{}</span>", alias)
+            }
+        };
+
+        // `new_events` will store our final, modified list of events after processing.
+        let mut new_events = Vec::new();
+        // `text_buffer` will temporarily store the content of consecutive `Text` events.
+        let mut text_buffer = String::new();
+
+        // --- 2. The Flushing Closure ---
+
+        // This closure contains the logic to process the contents of `text_buffer`.
+        // It's called whenever we need to "flush" the text we've gathered.
+        let flush_text_buffer = |buffer: &mut String, events: &mut Vec<Event>| {
+            // If the buffer is empty, there's nothing to do.
+            if buffer.is_empty() {
+                return;
+            }
+
+            // Find all wikilink matches in the entire buffered string.
+            let matches: Vec<_> = WIKILINK_RE.find_iter(buffer).collect();
+
+            // If there are no wikilinks, just push the whole buffer as a single `Text` event.
+            if matches.is_empty() {
+                events.push(Event::Text(buffer.clone().into()));
+            } else {
+                // If we found wikilinks, we need to reconstruct the text around them.
+                let mut last_end = 0;
+                for mat in matches {
+                    // 1. Push the plain text *before* the wikilink.
+                    if mat.start() > last_end {
+                        events.push(Event::Text(
+                            buffer[last_end..mat.start()].to_string().into(),
+                        ));
+                    }
+                    // 2. Build the HTML for the wikilink itself and push it as an `Html` event.
+                    if let Some(caps) = WIKILINK_RE.captures(mat.as_str()) {
+                        let html_link = build_link_html(&caps);
+                        events.push(Event::Html(html_link.into()));
+                    }
+                    // 3. Update our position to the end of the current wikilink match.
+                    last_end = mat.end();
+                }
+                // 4. After the loop, push any remaining plain text *after* the last wikilink.
+                if last_end < buffer.len() {
+                    events.push(Event::Text(buffer[last_end..].to_string().into()));
+                }
+            }
+            // Reset the buffer so it's ready for the next block of text.
+            buffer.clear();
+        };
+
+        // --- 3. The Main Event Loop ---
+
+        for event in parser {
+            match event {
+                // If the event is text, add it to our buffer. Don't process it yet.
+                Event::Text(text) => {
+                    text_buffer.push_str(&text);
+                }
+                // If the event is *anything else* (a start tag, end tag, code event, etc.),
+                // it signals the end of our consecutive text block.
+                _ => {
+                    // So, first, we flush the text buffer we've built up.
+                    flush_text_buffer(&mut text_buffer, &mut new_events);
+                    // Then, we push the non-text event that triggered the flush.
+                    new_events.push(event);
+                }
+            }
+        }
+        // It's possible for the markdown to end with text, leaving content in the buffer.
+        // This final flush ensures that last bit of text gets processed.
+        flush_text_buffer(&mut text_buffer, &mut new_events);
+
+        // --- 4. Final HTML Rendering ---
+
+        // Render our new, modified stream of events into the final HTML string.
+        let mut html_output = String::new();
+        html::push_html(&mut html_output, new_events.into_iter());
+        html_output
+    }
+
     /// Renders a full Markdown string to an HTML string using pulldown-cmark.
     /// This function handles only standard Markdown syntax and does not process
     /// any custom syntax like wikilinks.
@@ -283,6 +418,41 @@ mod tests {
 
         // The wikilink syntax should be preserved inside the code block
         let expected_html = "<h1>Help File</h1>\n<p>This is how you write a wikilink: <code>[[Page Name]]</code>.</p>\n";
+        assert_eq!(result.rendered_html, expected_html);
+    }
+
+    #[test]
+    fn test_wikilinks_in_code_blocks_are_processed() {
+        let (renderer, page1_path) = setup_renderer();
+
+        // This content covers all three code block scenarios.
+        // A blank line is now correctly placed before the indented code block.
+        let content = r#"
+Case 1: Indented with 4 spaces
+
+    [[Page One]]
+
+Case 2: Fenced with backticks
+
+```
+[[Page One]]
+```
+
+Case 3: Inline with single backticks `[[Page One]]`.
+
+A normal link for comparison: [[Page One]].
+"#;
+
+        let result = renderer.render_page_preview(content).unwrap();
+        let expected_path_str = page1_path.to_string_lossy();
+
+        // The expected HTML now asserts that wikilinks ARE rendered inside
+        // indented and fenced code blocks, but NOT inside inline code.
+        let expected_html = format!(
+            "<p>Case 1: Indented with 4 spaces</p>\n<pre><code><a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a>\n</code></pre>\n<p>Case 2: Fenced with backticks</p>\n<pre><code><a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a>\n</code></pre>\n<p>Case 3: Inline with single backticks <code>[[Page One]]</code>.</p>\n<p>A normal link for comparison: <a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a>.</p>\n",
+            expected_path_str
+        );
+
         assert_eq!(result.rendered_html, expected_html);
     }
 }
