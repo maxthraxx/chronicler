@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.8.2-alpha] - 2025-08-03
+
+### 🐞 Fixed
+
+- **Writer**: Fixed a critical bug where renaming a file could lead to an invalid path in the indexer. The rename handler now correctly differentiates between file and folder operations to ensure path integrity.
+- **Writer**: Improved the stability of file renames by making the entire operation, including all backlink updates, fully transactional. This prevents the vault from entering an inconsistent state if an update is interrupted.
+- **Writer**: Renaming files with non-markdown extensions (e.g., `.jpg`, `.png`) now correctly preserves their original file extension instead of incorrectly changing it to `.md`.
+- **Infobox**: Improved image loading diagnostics. Error messages for failed images now include the specific URL that failed, making it easier to debug broken image links.
+- **Resources**: Standardized error handling for bundled application resources to provide more helpful and actionable error messages.
+
+---
+
 ## [v0.8.1-alpha] - 2025-08-02
 
 ### 🔄 Changed
