@@ -12,13 +12,20 @@ use crate::{
 };
 use regex::Captures;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     fs,
     io::Write,
     path::{Path, PathBuf},
 };
 use tempfile::NamedTempFile;
 use tracing::{instrument, warn};
+
+/// Represents a required change to a single backlink file, including its original content for rollback.
+struct BacklinkUpdate {
+    path: PathBuf,
+    old_content: String,
+    new_content: String,
+}
 
 /// A component responsible for performing safe, transactional file system
 /// write operations within the vault.
@@ -49,6 +56,40 @@ fn atomic_write(path: &Path, content: &str) -> Result<()> {
     temp_file.persist(path).map_err(|e| e.error)?;
 
     Ok(())
+}
+
+/// Replaces all instances of a given wikilink within a string.
+///
+/// This function is a core part of the rename transaction. It processes the
+/// content of a file, finds all wikilinks pointing to `old_stem`, and replaces
+/// them with `new_stem`, preserving any sections or aliases.
+///
+/// # Returns
+/// - `Some(String)` if the content was changed.
+/// - `None` if no links needed to be updated.
+fn replace_wikilink_in_content(content: &str, old_stem: &str, new_stem: &str) -> Option<String> {
+    let old_stem_lower = old_stem.to_lowercase();
+
+    // Use `replace_all` to build a new string with updated wikilinks.
+    let new_content = WIKILINK_RE.replace_all(content, |caps: &Captures| {
+        let target = caps.get(1).map_or("", |m| m.as_str());
+        // Perform a case-insensitive comparison on the link target.
+        if target.to_lowercase() == old_stem_lower {
+            let section = caps.get(2).map_or("", |m| m.as_str());
+            let alias = caps.get(3).map_or("", |m| m.as_str());
+            format!("[[{new_stem}{section}{alias}]]")
+        } else {
+            // If the link doesn't match, return the original text of the match.
+            caps.get(0).unwrap().as_str().to_string()
+        }
+    });
+
+    // Only return the new content if it has actually changed.
+    if new_content != content {
+        Some(new_content.into_owned())
+    } else {
+        None
+    }
 }
 
 impl Writer {
@@ -167,17 +208,23 @@ tags: [add, your, tags]
             return Err(ChroniclerError::FileAlreadyExists(new_path.clone()));
         }
 
-        // --- 1. Prepare Phase: Calculate all required file changes in memory ---
-        let mut backlink_updates: HashMap<PathBuf, String> = HashMap::new();
+        // --- 1. Prepare Phase: Read files and calculate changes in memory ---
+        let mut backlink_updates: Vec<BacklinkUpdate> = Vec::new();
         if old_path.is_file() {
             let old_name_stem = file_stem_string(old_path);
             let new_name_stem = file_stem_string(&new_path);
 
             for backlink_path in backlinks {
+                // Read the original content to check for links and for potential rollback.
+                let old_content = fs::read_to_string(backlink_path)?;
                 if let Some(new_content) =
-                    self.replace_wikilink_in_file(backlink_path, &old_name_stem, &new_name_stem)?
+                    replace_wikilink_in_content(&old_content, &old_name_stem, &new_name_stem)
                 {
-                    backlink_updates.insert(backlink_path.clone(), new_content);
+                    backlink_updates.push(BacklinkUpdate {
+                        path: backlink_path.clone(),
+                        old_content,
+                        new_content,
+                    });
                 }
             }
         }
@@ -195,96 +242,62 @@ tags: [add, your, tags]
     /// Performs the file system part of a rename operation transactionally.
     ///
     /// The main `fs::rename` is atomic. Each backlink update uses `atomic_write`.
-    /// If a backlink update fails, we roll back the main rename.
+    /// If any backlink update fails, this function rolls back all previous changes,
+    /// including successfully updated backlinks and the primary rename.
     fn perform_rename_transaction(
         &self,
         old_path: &Path,
         new_path: &Path,
-        backlink_updates: &HashMap<PathBuf, String>,
+        backlink_updates: &[BacklinkUpdate],
     ) -> Result<()> {
         // --- 1. Perform the primary atomic rename ---
         fs::rename(old_path, new_path)?;
 
         // --- 2. Atomically update all backlink files ---
-        // If any of these fail, we need to roll back the primary rename.
-        for (path, new_content) in backlink_updates {
-            if let Err(e) = atomic_write(path, new_content) {
-                // TODO: need to rollback the backlink_updates too
+        // Keep track of which files were successfully updated so we can roll them back on failure.
+        let mut successfully_updated: Vec<&BacklinkUpdate> = Vec::new();
+
+        for update in backlink_updates {
+            if let Err(e) = atomic_write(&update.path, &update.new_content) {
+                // --- ROLLBACK ---
                 warn!(
-                    "Failed to write backlink file {:?}, rolling back main rename. Error: {}",
-                    path, e
+                    "Failed to write backlink file {:?}, rolling back transaction. Error: {}",
+                    &update.path, e
                 );
-                // Attempt to roll back the primary rename.
+
+                // 1. Roll back the already updated backlinks by writing their old content back.
+                for change_to_revert in successfully_updated.iter().rev() {
+                    if let Err(rollback_err) =
+                        atomic_write(&change_to_revert.path, &change_to_revert.old_content)
+                    {
+                        tracing::error!(
+                            "CRITICAL: FAILED TO ROLL BACK BACKLINK FILE {:?}: {}. Vault may be inconsistent.",
+                            &change_to_revert.path,
+                            rollback_err
+                        );
+                        // Continue trying to roll back the rest of the transaction.
+                    }
+                }
+
+                // 2. Roll back the primary rename.
                 if let Err(rollback_err) = fs::rename(new_path, old_path) {
-                    // This is a critical failure state. The vault is now inconsistent.
                     tracing::error!(
-                        "CRITICAL: FAILED TO ROLL BACK RENAME from {:?} to {:?}: {}",
+                        "CRITICAL: FAILED TO ROLL BACK RENAME from {:?} to {:?}: {}. Vault is now inconsistent.",
                         new_path,
                         old_path,
                         rollback_err
                     );
                 }
+
                 // Return the original error that caused the rollback.
                 return Err(e);
-            }
-        }
-
-        // All operations succeeded.
-        Ok(())
-    }
-
-    /// Reads a file and replaces all instances of a given wikilink.
-    ///
-    /// This function is a core part of the `rename_path` transaction. It reads the
-    /// content of a file, finds all wikilinks pointing to `old_stem`, and replaces
-    /// them with new_stem`, preserving any sections or aliases.
-    ///
-    /// # Arguments
-    /// * `file_path` - The path to the file to be read and processed.
-    /// * `old_stem` - The old name of the linked file (without extension).
-    /// * `new_stem` - The new name to replace the old one with.
-    ///
-    /// # Returns
-    /// - `Ok(Some(String))` if the file content was changed.
-    /// - `Ok(None)` if no links needed to be updated.
-    /// - `Err` if the file could not be read.
-    fn replace_wikilink_in_file(
-        &self,
-        file_path: &Path,
-        old_stem: &str,
-        new_stem: &str,
-    ) -> Result<Option<String>> {
-        let content = fs::read_to_string(file_path)?;
-        let old_stem_lower = old_stem.to_lowercase();
-
-        let new_content = WIKILINK_RE.replace_all(&content, |caps: &Captures| {
-            let target = caps.get(1).map_or("", |m| m.as_str());
-            if target.to_lowercase() == old_stem_lower {
-                let section = caps.get(2).map_or("", |m| m.as_str());
-                let alias = caps.get(3).map_or("", |m| m.as_str());
-                format!(
-                    "[[{new_stem}{section}{alias}]]",
-                    section = if section.is_empty() {
-                        "".to_string()
-                    } else {
-                        format!("#{}", section)
-                    },
-                    alias = if alias.is_empty() {
-                        "".to_string()
-                    } else {
-                        format!("|{}", alias)
-                    },
-                )
             } else {
-                caps.get(0).unwrap().as_str().to_string()
+                // On success, add the update to our list for potential rollback.
+                successfully_updated.push(update);
             }
-        });
-
-        if new_content != content {
-            Ok(Some(new_content.into_owned()))
-        } else {
-            Ok(None)
         }
+
+        Ok(())
     }
 }
 
@@ -311,6 +324,26 @@ mod tests {
         (dir, page1_path, page2_path)
     }
 
+    /// Helper for the improved rollback test.
+    #[cfg(unix)]
+    fn setup_multi_backlink_test_vault() -> (tempfile::TempDir, PathBuf, PathBuf, PathBuf) {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        let subdir = root.join("subdir");
+        fs::create_dir(&subdir).unwrap();
+
+        let page1_path = root.join("Page One.md");
+        fs::write(&page1_path, "content").unwrap();
+
+        let backlink1_path = root.join("Backlink One.md");
+        fs::write(&backlink1_path, "This page links to [[Page One]].").unwrap();
+
+        let backlink2_path = subdir.join("Backlink Two.md");
+        fs::write(&backlink2_path, "This page also links to [[Page One]].").unwrap();
+
+        (dir, page1_path, backlink1_path, backlink2_path)
+    }
+
     #[test]
     fn test_rename_path_updates_links() {
         let (_dir, page1_path, page2_path) = setup_writer_test_vault();
@@ -334,40 +367,53 @@ mod tests {
 
     #[test]
     #[cfg(unix)]
-    fn test_rename_path_transaction_rollback() {
-        let (_dir, page1_path, page2_path) = setup_writer_test_vault();
+    fn test_rename_path_full_transaction_rollback() {
+        // This test ensures that if a backlink update fails mid-transaction,
+        // both the main rename AND any previously successful backlink updates are reverted.
+        let (_dir, page1_path, backlink1_path, backlink2_path) = setup_multi_backlink_test_vault();
         let writer = Writer::new();
 
-        let original_content1 = fs::read_to_string(&page1_path).unwrap();
-        let original_content2 = fs::read_to_string(&page2_path).unwrap();
+        let original_content_b1 = fs::read_to_string(&backlink1_path).unwrap();
+        let original_content_b2 = fs::read_to_string(&backlink2_path).unwrap();
 
-        // --- Induce Failure ---
-        // Make the directory read-only to cause the final `fs::write` to fail.
-        let readonly_perms = fs::Permissions::from_mode(0o555);
-        fs::set_permissions(page2_path.parent().unwrap(), readonly_perms).unwrap();
+        // Make the subdirectory for backlink2 read-only to cause atomic_write to fail there.
+        // This makes it likely that the write for backlink1 will succeed first, testing the rollback.
+        let subdir = backlink2_path.parent().unwrap();
+        let readonly_perms = fs::Permissions::from_mode(0o555); // r-x
+        fs::set_permissions(subdir, readonly_perms).unwrap();
 
-        // --- Attempt the Rename ---
-        let backlinks = HashSet::from([page2_path.clone()]);
-        let result = writer.rename_path(&page1_path, "First Chapter", &backlinks);
+        let backlinks = HashSet::from([backlink1_path.clone(), backlink2_path.clone()]);
+        let result = writer.rename_path(&page1_path, "New Name", &backlinks);
 
-        // --- Make directory writable again for cleanup and asserts ---
-        let writable_perms = fs::Permissions::from_mode(0o755);
-        fs::set_permissions(_dir.path(), writable_perms).unwrap();
+        // Restore permissions for cleanup
+        let writable_perms = fs::Permissions::from_mode(0o755); // rwx
+        fs::set_permissions(subdir, writable_perms).unwrap();
 
         // --- Assertions ---
         assert!(result.is_err(), "Expected the rename operation to fail");
-        assert!(page1_path.exists(), "Original file should be restored");
-        assert!(page2_path.exists(), "Backlink file should be restored");
 
-        let new_path = _dir.path().join("First Chapter.md");
+        // Assert main rename was rolled back
         assert!(
-            !new_path.exists(),
+            page1_path.exists(),
+            "Original file should exist after rollback"
+        );
+        assert!(
+            !_dir.path().join("New Name.md").exists(),
             "New file should not exist after rollback"
         );
 
-        let final_content1 = fs::read_to_string(&page1_path).unwrap();
-        let final_content2 = fs::read_to_string(&page2_path).unwrap();
-        assert_eq!(original_content1, final_content1);
-        assert_eq!(original_content2, final_content2);
+        // Assert that the successfully updated backlink was also rolled back
+        let final_content_b1 = fs::read_to_string(&backlink1_path).unwrap();
+        assert_eq!(
+            original_content_b1, final_content_b1,
+            "The first backlink's content should be rolled back to its original state."
+        );
+
+        // Assert that the backlink that was never touched remains unchanged
+        let final_content_b2 = fs::read_to_string(&backlink2_path).unwrap();
+        assert_eq!(
+            original_content_b2, final_content_b2,
+            "The second backlink's content should be unchanged."
+        );
     }
 }
