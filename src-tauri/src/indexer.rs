@@ -212,6 +212,10 @@ impl Indexer {
     /// Handles an in-memory rename of a file or folder.
     #[instrument(level = "debug", skip(self))]
     fn handle_rename(&mut self, from: &Path, to: &Path) {
+        // Check if the destination is a directory to determine the rename type.
+        // This is reliable because the watcher fires events after the action has occurred.
+        let is_folder_rename = to.is_dir();
+
         let pages_to_update: Vec<_> = self
             .pages
             .keys()
@@ -219,12 +223,44 @@ impl Indexer {
             .cloned()
             .collect();
 
-        for path in pages_to_update {
-            if let Some(mut page) = self.pages.remove(&path) {
-                let relative_path = path.strip_prefix(from).unwrap();
-                let new_page_path = to.join(relative_path);
-                page.path = new_page_path.clone();
-                self.pages.insert(new_page_path, page);
+        for old_path in pages_to_update {
+            // Remove the old page from the index to be replaced.
+            self.pages.remove(&old_path);
+
+            // --- Path Calculation Logic ---
+            let new_path = if is_folder_rename {
+                // CASE 1: A FOLDER was renamed.
+                // The new path is the new folder path joined with the file's relative path.
+                // e.g., to: /new_dir, relative_path: file.md -> /new_dir/file.md
+                let relative_path = old_path
+                    .strip_prefix(from)
+                    .expect("Path of a child should always have the parent as a prefix");
+                to.join(relative_path)
+            } else {
+                // CASE 2: A single FILE was renamed.
+                to.to_path_buf()
+            };
+
+            // Re-parse the file at its new location to get fresh, consistent data.
+            match parser::parse_file(&new_path) {
+                Ok(new_page) => {
+                    self.pages.insert(new_path, new_page);
+                }
+                Err(e) => {
+                    warn!(
+                        "Could not re-parse renamed file {:?}, creating a default entry: {}",
+                        new_path, e
+                    );
+                    let default_page = Page {
+                        path: new_path.clone(),
+                        title: file_stem_string(&new_path),
+                        tags: HashSet::new(),
+                        links: Vec::new(),
+                        backlinks: HashSet::new(),
+                        frontmatter: serde_json::Value::Null,
+                    };
+                    self.pages.insert(new_path, default_page);
+                }
             }
         }
         self.rebuild_relations();
