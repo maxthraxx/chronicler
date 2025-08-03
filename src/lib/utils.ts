@@ -126,7 +126,7 @@ export async function resolveImageUrl(
 
     // We verify the file exists at the path before trying to create a URL.
     if (!(await pathExists(imagePath))) {
-        throw new Error(`File does not exist: ${filename}`);
+        throw new Error(`File does not exist: ${imagePath || filename}`);
     }
 
     return convertFileSrc(imagePath);

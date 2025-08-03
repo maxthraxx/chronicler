@@ -80,7 +80,8 @@
                             src={imageUrl}
                             alt={data?.title || "Infobox image"}
                             class="infobox-image"
-                            onerror={() => (imageError = "Invalid image")}
+                            onerror={() =>
+                                (imageError = `Invalid image: Failed to load ${imageUrl}`)}
                         />
                     </div>
                 {:else if imageError}
