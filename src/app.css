@@ -177,6 +177,14 @@
     src: url("/fonts/IBM-Plex-Mono-regular.woff2") format("woff2");
 }
 
+/* Hologram body */
+@font-face {
+    font-family: "Hologram Body";
+    font-style: italic;
+    font-weight: 400;
+    src: url("/fonts/IBM-Plex-Mono-italic.woff2") format("woff2");
+}
+
 /* Roman header */
 @font-face {
     font-family: "Cinzel";
