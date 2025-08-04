@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.9.1-alpha] - 2025-08-04
+
+### ✨ Added
+
+- **Themes**: Added a new built-in "Professional" theme.
+
+### 🐞 Fixed
+
+- **Themes**: Corrected the fallback CSS for several themes that were using incorrect generic font family fallbacks (e.g., specifying 'serif' for a sans-serif font).
+- **Themes**: Addressed multiple TypeScript warnings within the theme editor to improve type safety. This includes resolving issues with implicitly typed variables and refining null-checking logic.
+- **Preview**: Resolved a layout bug where preformatted content, such as indented code blocks, could overflow and break the page layout. The preview area was refactored to correctly isolate the scrolling content.
+
+### 🔄 Changed
+
+- **Themes**: The "hologram" theme has been improved to use a proper italic font file instead of relying on the browser to synthetically slant the regular font.
+- **Startup**: The application's startup process and state management have been overhauled to be more robust, predictable, and maintainable. All initialization logic is now centralized in a single module, and the sequence is guaranteed to prevent race conditions.
+- **State Management**: The application's status store was improved from a simple string to an object, allowing for more detailed error messages to be displayed in the UI.
+- **Help**: The "Help" page was updated to include the special behaviour of the "infobox" field in the YAML frontmatter, that specifies the header text of the infobox.
+
+---
+
 ## [v0.9.0-alpha] - 2025-08-04
 
 ### ✨ Added
