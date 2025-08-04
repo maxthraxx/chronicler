@@ -206,23 +206,27 @@
                     <Editor bind:content={pageData.raw_content} />
                 </div>
                 <div class="preview-pane">
-                    <Preview
-                        renderedData={pageData.rendered_page}
-                        infoboxData={hasInfoboxContent
-                            ? pageData.rendered_page.processed_frontmatter
-                            : null}
-                        mode="split"
-                    />
+                    <div class="scroll-wrapper">
+                        <Preview
+                            renderedData={pageData.rendered_page}
+                            infoboxData={hasInfoboxContent
+                                ? pageData.rendered_page.processed_frontmatter
+                                : null}
+                            mode="split"
+                        />
+                    </div>
                 </div>
             {:else}
                 <div class="unified-preview-pane">
-                    <Preview
-                        renderedData={pageData.rendered_page}
-                        infoboxData={hasInfoboxContent
-                            ? pageData.rendered_page.processed_frontmatter
-                            : null}
-                        mode="unified"
-                    />
+                    <div class="scroll-wrapper">
+                        <Preview
+                            renderedData={pageData.rendered_page}
+                            infoboxData={hasInfoboxContent
+                                ? pageData.rendered_page.processed_frontmatter
+                                : null}
+                            mode="unified"
+                        />
+                    </div>
                 </div>
             {/if}
         </div>
@@ -289,25 +293,31 @@
         box-sizing: border-box;
         overflow: hidden;
     }
-    .unified-preview-pane {
-        flex: 1;
-        overflow-y: auto;
+    .scroll-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: auto;
         padding: 2rem;
-        min-width: 0;
     }
+    /* Panes are for sizing and positioning */
+    .unified-preview-pane,
     .preview-pane {
         flex: 1;
-        overflow-y: auto;
-        padding: 2rem;
+        min-width: 0; /* Allows the pane to shrink */
+        position: relative; /* Context for the absolute wrapper */
         height: 100%;
-        box-sizing: border-box;
     }
+
     .editor-pane {
         flex: 1;
-        overflow-y: auto;
+        min-width: 0;
         height: 100%;
         box-sizing: border-box;
         border-right: 1px solid var(--color-border-primary);
+        overflow-y: auto; /* Editor can keep its simple scroll */
     }
     .status-container {
         padding: 2rem;
