@@ -484,7 +484,6 @@ mod tests {
         fs::write(
             &page1_path,
             r#"---
-title: "First Page"
 tags: ["alpha", "beta"]
 ---
 This page links to [[Page Two]].
@@ -496,7 +495,6 @@ This page links to [[Page Two]].
         fs::write(
             &page2_path,
             r#"---
-title: "Second Page"
 tags: ["beta", "gamma"]
 ---
 This page links back to [[Page One]] and also to [[Page Three|a different name]].
@@ -508,7 +506,6 @@ This page links back to [[Page One]] and also to [[Page Three|a different name]]
         fs::write(
             &page3_path,
             r#"---
-title: "Third Page"
 tags: ["gamma"]
 ---
 No outgoing links here.
@@ -612,7 +609,6 @@ Linking to [[Page Two]]
         fs::write(
             &page3_path,
             r#"---
-title: "Third Page Modified"
 tags: ["gamma", "modified"]
 ---
 Now I link to [[Page Two]]!
@@ -621,7 +617,6 @@ Now I link to [[Page Two]]!
         .unwrap();
         indexer.handle_file_event(&FileEvent::Modified(page3_path.clone()));
         let page3 = indexer.pages.get(&page3_path).unwrap();
-        assert_eq!(page3.title, "Third Page Modified");
         assert!(page3.tags.contains("modified"));
         assert_eq!(page3.links.len(), 1);
 

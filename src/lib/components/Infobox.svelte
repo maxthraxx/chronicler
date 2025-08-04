@@ -5,7 +5,6 @@
     import { resolveImageUrl } from "$lib/utils";
 
     type InfoboxData = {
-        title?: string;
         image?: string;
         infobox?: string;
         error?: string;
@@ -48,14 +47,7 @@
         }
 
         // These keys are handled separately in the template, so we filter them out.
-        const excludedKeys = [
-            "title",
-            "tags",
-            "infobox",
-            "image",
-            "error",
-            "details",
-        ];
+        const excludedKeys = ["tags", "infobox", "image", "error", "details"];
 
         try {
             // Get all other key-value pairs from the data object to display in the list.
@@ -78,7 +70,7 @@
                     <div class="image-container">
                         <img
                             src={imageUrl}
-                            alt={data?.title || "Infobox image"}
+                            alt="Infobox image"
                             class="infobox-image"
                             onerror={() =>
                                 (imageError = `Invalid image: Failed to load ${imageUrl}`)}

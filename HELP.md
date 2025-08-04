@@ -38,23 +38,21 @@ Each page can start with an optional **YAML frontmatter** block to store metadat
 
 ```yaml
 ---
-title: Rivertown
 infobox: Location
 tags: [city, trade, river]
 image: rivertown.jpg
 ---
 ```
 
-All frontmatter fields are optional. There are four fields that have special behaviour:
+All frontmatter fields are optional. There are three fields that have special behaviour:
 
 | Field     | Description |
 |-----------|-------------|
-| `title`   | Page display title (otherwise filename is used) |
 | `infobox` | Header text for the infobox |
 | `tags`    | List of tags for categorization |
 | `image`   | Image shown in the infobox |
 
-You can add any custom fields you want (e.g `height`, `age`, `capital`, `population` etc.). Any field that is not one of the four special fields above will be automatically added as a row in the infobox, giving you a flexible way to display structured data.
+You can add any custom fields you want (e.g `height`, `age`, `capital`, `population` etc.). Any field that is not one of the three special fields above will be automatically added as a row in the infobox, giving you a flexible way to display structured data.
 
 ---
 
