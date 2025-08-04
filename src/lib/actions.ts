@@ -57,18 +57,16 @@ export function navigateToTag(tagName: string) {
 }
 
 /**
- * Initializes the vault at the given path and updates the global app status.
+ * Initializes the vault at the given path.
  * This is the main entry point after a user selects a vault folder.
  * @param path The absolute path to the vault directory.
  */
 export async function initializeVault(path: string) {
-    appStatus.set("loading");
     try {
         await commands.initializeVault(path);
-        appStatus.set("ready");
     } catch (e) {
         console.error(`Failed to initialize vault at ${path}:`, e);
-        // Re-throw the error so the calling component can handle it (e.g., display a message)
+        // Re-throw the error so the calling component can handle it
         throw new Error(
             `Could not open vault at "${path}". Please ensure it is a valid directory. Error: ${e}`,
         );

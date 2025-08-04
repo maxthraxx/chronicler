@@ -1,80 +1,59 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { get } from "svelte/store";
-    import { checkForAppUpdates } from "$lib/updater";
-    import { appStatus, resetAllStores } from "$lib/viewStores";
-    import { world } from "$lib/worldStore";
-    import { initializeVault } from "$lib/actions";
-    import { getVaultPath } from "$lib/commands";
-    import VaultSelector from "$lib/components/VaultSelector.svelte";
-    import Sidebar from "$lib/components/Sidebar.svelte";
-    import ModalManager from "$lib/components/ModalManager.svelte";
     import {
         SIDEBAR_INITIAL_WIDTH,
         SIDEBAR_MIN_WIDTH,
         SIDEBAR_MAX_WIDTH,
         SIDEBAR_KEYBOARD_RESIZE_STEP,
     } from "$lib/config";
-    import "../app.css";
-
-    import { getCurrentWindow } from "@tauri-apps/api/window";
-    import { openModal } from "$lib/modalStore";
-    import DonationModal from "$lib/components/DonationModal.svelte";
+    import { appStatus } from "$lib/viewStores";
+    import {
+        initializeApp,
+        selectNewVault,
+        handleVaultSelected,
+    } from "$lib/startup";
     import {
         hideDonationPrompt,
-        loadSettings,
         activeTheme,
         fontSize,
         userThemes,
     } from "$lib/settingsStore";
+    import { openModal } from "$lib/modalStore";
+    import { getCurrentWindow } from "@tauri-apps/api/window";
+
+    // Import UI Components
+    import VaultSelector from "$lib/components/VaultSelector.svelte";
+    import Sidebar from "$lib/components/Sidebar.svelte";
+    import ModalManager from "$lib/components/ModalManager.svelte";
     import ErrorBox from "$lib/components/ErrorBox.svelte";
     import Button from "$lib/components/Button.svelte";
+    import DonationModal from "$lib/components/DonationModal.svelte";
+
+    import "../app.css";
 
     let { children } = $props();
     let sidebarWidth = $state(SIDEBAR_INITIAL_WIDTH);
     let isResizing = $state(false);
-    let errorMessage = $state<string | null>(null);
 
     onMount(() => {
+        // Kick off the main application startup sequence
+        initializeApp();
+
+        // This UI-specific logic remains here as it's tied to the window lifecycle
         (async () => {
-            errorMessage = null;
-            try {
-                // This must run first to load the user's preferences from disk.
-                await loadSettings();
-
-                const path = await getVaultPath();
-                if (path) {
-                    await handleVaultSelected(path);
-                } else {
-                    $appStatus = "selecting_vault";
-                }
-            } catch (e: any) {
-                console.error("Failed during startup initialization:", e);
-                errorMessage =
-                    e.message || `Failed to read configuration: ${e}`;
-                $appStatus = "error";
-            }
-
             // Only attach the listener if the user has not opted out.
             if (!get(hideDonationPrompt)) {
                 let hasFiredOnce = false;
                 const unlisten = await getCurrentWindow().onCloseRequested(
                     async (event) => {
-                        if (hasFiredOnce) {
-                            return;
-                        }
+                        if (hasFiredOnce) return;
                         event.preventDefault();
                         hasFiredOnce = true;
-                        openModal({
-                            component: DonationModal,
-                            props: {},
-                        });
+                        openModal({ component: DonationModal, props: {} });
                     },
                 );
-
-                return () => {
-                    unlisten();
-                };
+                return () => unlisten();
             }
         })();
     });
@@ -83,11 +62,9 @@
     $effect(() => {
         const themeName = $activeTheme;
         const customTheme = $userThemes.find((t) => t.name === themeName);
-
         if (typeof document !== "undefined") {
             // Always clear any inline styles first.
             document.documentElement.style.cssText = "";
-
             if (customTheme) {
                 // If it's a custom theme, apply its variables as inline styles.
                 for (const [key, value] of Object.entries(
@@ -114,32 +91,9 @@
         }
     });
 
-    /**
-     * Handles the logic after a vault path has been selected by the user,
-     * either on startup or through the VaultSelector component.
-     * @param path The absolute path to the selected vault.
-     */
-    async function handleVaultSelected(path: string) {
-        errorMessage = null;
-        try {
-            // This initializes the backend and performs the initial file scan.
-            await initializeVault(path);
-            // This initializes the frontend stores with data from the backend.
-            await world.initialize();
-
-            // After the app is ready, check for updates in the background.
-            checkForAppUpdates();
-        } catch (e: any) {
-            errorMessage = e.message;
-            $appStatus = "error";
-        }
-    }
-
     /** Resets the application state to allow the user to select a new vault. */
     function handleTryAgain() {
-        world.destroy();
-        resetAllStores();
-        $appStatus = "selecting_vault";
+        selectNewVault();
     }
 
     // --- Sidebar Resizing Logic ---
@@ -191,9 +145,9 @@
 
 <ModalManager />
 
-{#if $appStatus === "selecting_vault"}
+{#if $appStatus.state === "selecting_vault"}
     <VaultSelector onVaultSelected={handleVaultSelected} />
-{:else if $appStatus === "loading"}
+{:else if $appStatus.state === "loading"}
     <div class="loading-screen">
         <img
             src="/compass.png"
@@ -202,13 +156,13 @@
         />
         <h1 class="welcome-title">Opening Vault...</h1>
     </div>
-{:else if $appStatus === "error"}
+{:else if $appStatus.state === "error"}
     <div class="loading-screen">
         <h1 class="welcome-title">Error</h1>
-        <ErrorBox>{errorMessage}</ErrorBox>
+        <ErrorBox>{$appStatus.message}</ErrorBox>
         <Button onclick={handleTryAgain}>Select a Different Folder</Button>
     </div>
-{:else if $appStatus === "ready"}
+{:else if $appStatus.state === "ready"}
     <div class="chronicler-app" style="--sidebar-width: {sidebarWidth}px">
         <Sidebar bind:width={sidebarWidth} />
 

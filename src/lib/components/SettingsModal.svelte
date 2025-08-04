@@ -7,6 +7,7 @@
         isPandocInstalled,
     } from "$lib/commands";
     import { world } from "$lib/worldStore";
+    import { selectNewVault } from "$lib/startup";
     import {
         activeTheme,
         setActiveTheme,
@@ -21,9 +22,8 @@
     import Modal from "./Modal.svelte";
     import ThemeEditorModal from "./ThemeEditorModal.svelte";
 
-    let { onClose = () => {}, onChangeVault = () => {} } = $props<{
+    let { onClose = () => {} } = $props<{
         onClose?: () => void;
-        onChangeVault?: () => void;
     }>();
 
     let pandocInstalled = $state(false);
@@ -52,6 +52,16 @@
                 console.error("Failed to get app version:", err);
             });
     });
+
+    /**
+     * This function handles the logic for changing the vault.
+     * It closes the current settings modal and then calls the global
+     * function to reset the application state.
+     */
+    function handleChangeVault() {
+        onClose();
+        selectNewVault();
+    }
 
     async function installPandoc() {
         if (
@@ -170,7 +180,7 @@
         <div class="setting-item">
             <h4>Change Vault</h4>
             <p>Change the root folder for your notes.</p>
-            <Button onclick={onChangeVault}>Change Vault Folder</Button>
+            <Button onclick={handleChangeVault}>Change Vault Folder</Button>
         </div>
 
         <div class="setting-item">

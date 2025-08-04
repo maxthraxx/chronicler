@@ -9,14 +9,22 @@ import type { PageHeader, Backlink } from "./bindings";
 // --- Application Status & View Management ---
 
 /**
- * Represents the overall status of the application, determining which main view to show.
+ * Represents the possible states of the application's lifecycle.
  */
-export type AppStatus = "selecting_vault" | "loading" | "ready" | "error";
+export type AppState = "selecting_vault" | "loading" | "ready" | "error";
+
+/**
+ * Defines the shape of the application status, allowing for an optional error message.
+ */
+export interface AppStatus {
+    state: AppState;
+    message?: string;
+}
 
 /**
  * Manages the application's current status.
  */
-export const appStatus = writable<AppStatus>("selecting_vault");
+export const appStatus = writable<AppStatus>({ state: "selecting_vault" });
 
 /**
  * A union type to represent the possible states of the main view.
@@ -144,6 +152,7 @@ export const navigation = createNavigationStore();
  * This is useful when changing vaults.
  */
 export function resetAllStores() {
+    appStatus.set({ state: "selecting_vault" });
     // Resetting the view will also reset the navigation history
     currentView.set({ type: "welcome" });
     fileViewMode.set("preview");
