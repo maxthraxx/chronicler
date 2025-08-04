@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.9.0-alpha] - 2025-08-04
+
+### ✨ Added
+
+- **Themes**: Implemented a user-defined theme editor. You can now create, edit, save, and delete an unlimited number of custom themes, all of which are persisted between sessions.
+- **Themes**: A new slider has been added to the Settings modal, allowing users to adjust the application's base font size for better readability.
+
+---
+
 ## [v0.8.2-alpha] - 2025-08-03
 
 ### 🐞 Fixed
