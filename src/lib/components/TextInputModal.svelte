@@ -25,7 +25,6 @@
         event.preventDefault();
         if (value.trim()) {
             onSubmit(value.trim());
-            onClose();
         }
     }
 </script>
