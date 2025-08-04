@@ -15,7 +15,7 @@ import { checkForAppUpdates } from "$lib/updater";
  * primary entry point after a vault path is chosen.
  * @param path The absolute path to the selected vault directory.
  */
-async function handleVaultSelected(path: string) {
+export async function handleVaultSelected(path: string) {
     appStatus.set({ state: "loading" });
     try {
         // 1. Initialize the backend state
@@ -62,6 +62,3 @@ export function selectNewVault() {
     resetAllStores();
     appStatus.set({ state: "selecting_vault" });
 }
-
-// Re-export handleVaultSelected for use in the VaultSelector component
-export { handleVaultSelected };
