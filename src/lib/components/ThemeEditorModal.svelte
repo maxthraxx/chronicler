@@ -59,34 +59,41 @@
 
     function handleSave(event: SubmitEvent) {
         event.preventDefault();
-        if (!currentTheme || !currentTheme.name.trim()) {
+
+        const themeToSave = currentTheme;
+        if (!themeToSave || !themeToSave.name.trim()) {
             alert("Theme name cannot be empty.");
             return;
         }
+
         if (
-            originalName !== currentTheme.name &&
-            $userThemes.some((t) => t.name === currentTheme.name)
+            originalName !== themeToSave.name &&
+            $userThemes.some((t) => t.name === themeToSave.name)
         ) {
             alert("A theme with this name already exists.");
             return;
         }
 
-        if (originalName && originalName !== currentTheme.name) {
+        if (originalName && originalName !== themeToSave.name) {
             deleteCustomTheme(originalName);
         }
 
-        saveCustomTheme(currentTheme);
+        saveCustomTheme(themeToSave);
         currentTheme = null; // Exit edit mode
     }
 
     function handleDelete() {
+        const themeToDelete = currentTheme;
+        if (!themeToDelete) {
+            return;
+        }
+
         if (
-            currentTheme &&
             window.confirm(
-                `Are you sure you want to delete "${currentTheme.name}"?`,
+                `Are you sure you want to delete "${themeToDelete.name}"?`,
             )
         ) {
-            deleteCustomTheme(currentTheme.name);
+            deleteCustomTheme(themeToDelete.name);
             currentTheme = null; // Exit edit mode
         }
     }
@@ -125,16 +132,25 @@
 
                     <h4>Colors</h4>
                     <div class="color-grid">
-                        {#each Object.entries(colorLabels) as [key, label]}
+                        {#each Object.keys(colorLabels) as key (key)}
+                            {@const paletteKey = key as keyof ThemePalette}
                             <div class="form-group color-picker-group">
-                                <label for="color-{key}">{label}</label>
+                                <label for="color-{paletteKey}"
+                                    >{colorLabels[paletteKey]}</label
+                                >
                                 <div class="color-input-wrapper">
                                     <input
-                                        id="color-{key}"
+                                        id="color-{paletteKey}"
                                         type="color"
-                                        bind:value={currentTheme.palette[key]}
+                                        bind:value={
+                                            currentTheme.palette[paletteKey]
+                                        }
                                     />
-                                    <span>{currentTheme.palette[key]}</span>
+                                    <span
+                                        >{currentTheme.palette[
+                                            paletteKey
+                                        ]}</span
+                                    >
                                 </div>
                             </div>
                         {/each}
