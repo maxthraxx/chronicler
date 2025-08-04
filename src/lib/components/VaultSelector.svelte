@@ -2,7 +2,7 @@
     import Button from "./Button.svelte";
     import { open } from "@tauri-apps/plugin-dialog";
 
-    let { onVaultSelected = (path: string) => {} } = $props<{
+    let { onVaultSelected = (_path: string) => {} } = $props<{
         onVaultSelected?: (path: string) => void;
     }>();
 

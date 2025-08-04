@@ -8,7 +8,7 @@ import type { FileNode } from "./bindings";
 import { pathExists } from "./commands";
 import { resolve, resolveResource } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { readTextFile, exists } from "@tauri-apps/plugin-fs";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 
 /**
  * A helper function to check if a FileNode is a directory.
