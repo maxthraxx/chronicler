@@ -70,7 +70,7 @@
                     <div class="image-container">
                         <img
                             src={imageUrl}
-                            alt="Infobox image"
+                            alt={data.infobox || "Infobox image"}
                             class="infobox-image"
                             onerror={() =>
                                 (imageError = `Invalid image: Failed to load ${imageUrl}`)}

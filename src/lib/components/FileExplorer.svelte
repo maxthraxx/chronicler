@@ -97,6 +97,7 @@
         class="file-tree-container"
         use:autoscrollOnDrag
         oncontextmenu={showRootContextMenu}
+        role="group"
     >
         <!--
             Instead of rendering the root node, we now check if it has children
