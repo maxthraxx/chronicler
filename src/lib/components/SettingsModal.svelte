@@ -7,10 +7,19 @@
         isPandocInstalled,
     } from "$lib/commands";
     import { world } from "$lib/worldStore";
-    import { theme, setTheme, type Theme } from "$lib/settingsStore";
+    import {
+        activeTheme,
+        setActiveTheme,
+        fontSize,
+        setFontSize,
+        userThemes,
+        type ThemeName,
+    } from "$lib/settingsStore";
+    import { openModal, closeModal } from "$lib/modalStore";
     import Button from "./Button.svelte";
     import ChangelogModal from "./ChangelogModal.svelte";
     import Modal from "./Modal.svelte";
+    import ThemeEditorModal from "./ThemeEditorModal.svelte";
 
     let { onClose = () => {}, onChangeVault = () => {} } = $props<{
         onClose?: () => void;
@@ -97,6 +106,15 @@
             alert(`File import failed: ${e}`);
         }
     }
+
+    function openThemeEditor() {
+        openModal({
+            component: ThemeEditorModal,
+            props: {
+                onClose: closeModal,
+            },
+        });
+    }
 </script>
 
 <Modal title="Settings" {onClose}>
@@ -104,17 +122,49 @@
         <div class="setting-item">
             <h4>Theme</h4>
             <p>Change the appearance of the application.</p>
-            <select
-                class="theme-select"
-                value={$theme}
-                onchange={(e) => setTheme(e.currentTarget.value as Theme)}
-            >
-                <option value="light">Parchment & Ink</option>
-                <option value="dark">Slate & Chalk (Dark)</option>
-                <option value="burgundy">Parchment & Wine</option>
-                <option value="slate-and-gold">Slate & Gold (Dark)</option>
-                <option value="hologram">Sci-Fi Hologram</option>
-            </select>
+            <div class="theme-controls">
+                <select
+                    class="theme-select"
+                    value={$activeTheme}
+                    onchange={(e) =>
+                        setActiveTheme(e.currentTarget.value as ThemeName)}
+                >
+                    <optgroup label="Built-in Themes">
+                        <option value="light">Parchment & Ink</option>
+                        <option value="burgundy">Parchment & Wine</option>
+                        <option value="dark">Slate & Chalk (Dark)</option>
+                        <option value="slate-and-gold"
+                            >Slate & Gold (Dark)</option
+                        >
+                        <option value="hologram">Sci-Fi Hologram</option>
+                    </optgroup>
+                    {#if $userThemes.length > 0}
+                        <optgroup label="Your Themes">
+                            {#each $userThemes as theme (theme.name)}
+                                <option value={theme.name}>{theme.name}</option>
+                            {/each}
+                        </optgroup>
+                    {/if}
+                </select>
+                <Button onclick={openThemeEditor}>Manage Themes</Button>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <h4>Font Size</h4>
+            <p>Adjust the application's base font size.</p>
+            <div class="font-slider-container">
+                <input
+                    type="range"
+                    min="80"
+                    max="140"
+                    step="5"
+                    value={$fontSize}
+                    oninput={(e) =>
+                        setFontSize(parseInt(e.currentTarget.value))}
+                />
+                <span class="font-size-label">{$fontSize}%</span>
+            </div>
         </div>
 
         <div class="setting-item">
@@ -200,7 +250,18 @@
     .modal-footer p {
         margin: 0;
     }
+    .theme-controls {
+        display: flex;
+        gap: 0.5rem;
+    }
     .theme-select {
+        flex-grow: 1;
+        appearance: none;
+        background-image: var(--select-arrow);
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.2em;
+        padding-right: 2.5rem;
         background-color: var(--color-background-secondary);
         color: var(--color-text-primary);
         border: 1px solid var(--color-border-primary);
@@ -210,6 +271,20 @@
         font-size: 1rem;
         width: 100%;
         cursor: pointer;
+    }
+    .font-slider-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .font-slider-container input[type="range"] {
+        flex-grow: 1;
+    }
+    .font-size-label {
+        font-weight: bold;
+        color: var(--color-text-secondary);
+        min-width: 4ch;
+        text-align: right;
     }
     .link-button {
         background: none;

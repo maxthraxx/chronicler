@@ -23,7 +23,9 @@
     import {
         hideDonationPrompt,
         loadSettings,
-        theme,
+        activeTheme,
+        fontSize,
+        userThemes,
     } from "$lib/settingsStore";
     import ErrorBox from "$lib/components/ErrorBox.svelte";
     import Button from "$lib/components/Button.svelte";
@@ -37,6 +39,9 @@
         (async () => {
             errorMessage = null;
             try {
+                // This must run first to load the user's preferences from disk.
+                await loadSettings();
+
                 const path = await getVaultPath();
                 if (path) {
                     await handleVaultSelected(path);
@@ -49,9 +54,6 @@
                     e.message || `Failed to read configuration: ${e}`;
                 $appStatus = "error";
             }
-
-            // Load the persistent setting first.
-            await loadSettings();
 
             // Only attach the listener if the user has not opted out.
             if (!get(hideDonationPrompt)) {
@@ -77,14 +79,38 @@
         })();
     });
 
-    // This reactive effect will run whenever the theme store's value changes.
+    // This effect handles applying the correct theme styles.
     $effect(() => {
-        const currentTheme = $theme;
+        const themeName = $activeTheme;
+        const customTheme = $userThemes.find((t) => t.name === themeName);
 
-        // Set the data-theme attribute on the root <html> element.
-        // This causes the correct block of CSS variables to be applied.
         if (typeof document !== "undefined") {
-            document.documentElement.setAttribute("data-theme", currentTheme);
+            // Always clear any inline styles first.
+            document.documentElement.style.cssText = "";
+
+            if (customTheme) {
+                // If it's a custom theme, apply its variables as inline styles.
+                for (const [key, value] of Object.entries(
+                    customTheme.palette,
+                )) {
+                    document.documentElement.style.setProperty(key, value);
+                }
+                // Also remove the data-theme attribute so it doesn't conflict.
+                document.documentElement.removeAttribute("data-theme");
+            } else {
+                // If it's a built-in theme, use the data-theme attribute.
+                document.documentElement.setAttribute(
+                    "data-theme",
+                    themeName || "light",
+                );
+            }
+        }
+    });
+
+    // This effect applies the font size.
+    $effect(() => {
+        if (typeof document !== "undefined") {
+            document.documentElement.style.fontSize = `${$fontSize}%`;
         }
     });
 

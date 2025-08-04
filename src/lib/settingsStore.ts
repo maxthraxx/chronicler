@@ -7,54 +7,82 @@
  * it's first accessed.
  */
 
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 import { LazyStore } from "@tauri-apps/plugin-store";
 
-// Define the shape of all your settings
-export type Theme = "light" | "dark" | "hologram";
+// --- Type Definitions ---
 
+/** Defines the shape of the entire settings object saved to disk. */
 interface AppSettings {
     hideDonationPrompt: boolean;
-    theme: Theme;
+    activeTheme: ThemeName;
+    fontSize: number;
+    userThemes: CustomTheme[];
 }
 
-// Use LazyStore to prevent SSR issues. It will only load when first accessed.
-const store = new LazyStore(".settings.dat");
+export type ThemeName = string;
 
-// Create Svelte stores to hold settings in memory for easy access.
-// We provide sensible defaults.
+/** Defines the shape of a single theme's color palette using semantic variable names. */
+export interface ThemePalette {
+    "--color-background-primary": string;
+    "--color-background-secondary": string;
+    "--color-background-tertiary": string;
+    "--color-text-heading": string;
+    "--color-text-primary": string;
+    "--color-text-secondary": string;
+    "--color-border-primary": string;
+    "--color-accent-primary": string;
+    "--color-text-link": string;
+    "--color-text-link-broken": string;
+    "--color-text-error": string;
+}
+
+/** Defines a full theme object, including its name and palette. */
+export interface CustomTheme {
+    name: ThemeName; // Changed from string to ThemeName for consistency
+    palette: ThemePalette;
+}
+
+// --- Store Initialization ---
+
+// Use LazyStore to prevent SSR issues. It will only load when first accessed.
+const settingsFile = new LazyStore(".settings.dat");
+
+// Create Svelte stores to hold settings in memory for easy, reactive access.
+// We provide sensible defaults for first-time users.
 export const hideDonationPrompt = writable<boolean>(false);
-export const theme = writable<Theme>("light");
+export const activeTheme = writable<ThemeName>("light");
+export const fontSize = writable<number>(100);
+export const userThemes = writable<CustomTheme[]>([]);
+
+// --- Public API ---
 
 /**
- * Loads all settings from the persistent file store and updates the Svelte stores.
+ * Loads all settings from the persistent file store into the reactive Svelte stores.
+ * This should be called once when the application initializes.
  */
 export async function loadSettings() {
-    const settings = await store.get<AppSettings>("allSettings");
+    const settings = await settingsFile.get<AppSettings>("allSettings");
     if (settings) {
-        hideDonationPrompt.set(settings.hideDonationPrompt);
-        theme.set(settings.theme);
+        hideDonationPrompt.set(settings.hideDonationPrompt || false);
+        activeTheme.set(settings.activeTheme || "light");
+        fontSize.set(settings.fontSize || 100);
+        userThemes.set(settings.userThemes || []);
     }
 }
 
 /**
- * Saves a new value for a specific setting to the persistent store.
- * @param key The setting key to update.
- * @param value The new value for the setting.
+ * Saves the entire current state of settings to the persistent file.
  */
-async function saveSetting<T extends keyof AppSettings>(
-    key: T,
-    value: AppSettings[T],
-) {
-    // Get the current settings, update the specific key, and save it back.
-    const currentSettings = (await store.get<AppSettings>("allSettings")) || {
-        hideDonationPrompt: false,
-        theme: "light",
+async function saveAllSettings() {
+    const settings: AppSettings = {
+        hideDonationPrompt: get(hideDonationPrompt),
+        activeTheme: get(activeTheme),
+        fontSize: get(fontSize),
+        userThemes: get(userThemes),
     };
-
-    currentSettings[key] = value;
-    await store.set("allSettings", currentSettings);
-    await store.save();
+    await settingsFile.set("allSettings", settings);
+    await settingsFile.save();
 }
 
 /**
@@ -62,14 +90,51 @@ async function saveSetting<T extends keyof AppSettings>(
  */
 export async function setHideDonationPrompt() {
     hideDonationPrompt.set(true);
-    await saveSetting("hideDonationPrompt", true);
+    await saveAllSettings();
 }
 
 /**
- * Sets the application theme and saves it.
- * @param newTheme The new theme to apply.
+ * Sets the application theme and saves the choice.
  */
-export async function setTheme(newTheme: Theme) {
-    theme.set(newTheme);
-    await saveSetting("theme", newTheme);
+export async function setActiveTheme(newThemeName: ThemeName) {
+    activeTheme.set(newThemeName);
+    await saveAllSettings();
+}
+
+/**
+ * Sets the application's base font size and saves the choice.
+ */
+export async function setFontSize(newSize: number) {
+    fontSize.set(newSize);
+    await saveAllSettings();
+}
+
+/**
+ * Adds a new custom theme or updates an existing one.
+ * @param theme The custom theme object to save.
+ */
+export async function saveCustomTheme(theme: CustomTheme) {
+    userThemes.update((themes) => {
+        const existingIndex = themes.findIndex((t) => t.name === theme.name);
+        if (existingIndex > -1) {
+            themes[existingIndex] = theme; // Update existing theme
+        } else {
+            themes.push(theme); // Add new theme
+        }
+        return themes;
+    });
+    await saveAllSettings();
+}
+
+/**
+ * Deletes a custom theme by its name.
+ * @param themeName The name of the theme to delete.
+ */
+export async function deleteCustomTheme(themeName: ThemeName) {
+    userThemes.update((themes) => themes.filter((t) => t.name !== themeName));
+    // If the deleted theme was active, fall back to the light theme.
+    if (get(activeTheme) === themeName) {
+        activeTheme.set("light");
+    }
+    await saveAllSettings();
 }
