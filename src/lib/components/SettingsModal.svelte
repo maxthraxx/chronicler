@@ -147,6 +147,7 @@
                             >Slate & Gold (Dark)</option
                         >
                         <option value="hologram">Sci-Fi Hologram</option>
+                        <option value="professional">Professional</option>
                     </optgroup>
                     {#if $userThemes.length > 0}
                         <optgroup label="Your Themes">
