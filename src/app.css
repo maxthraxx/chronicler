@@ -56,7 +56,7 @@
     /* Keep the base parchment colors */
     --color-accent-primary: #8c2d2d; /* A deep burgundy for accents */
     --color-text-heading: #8c2d2d; /* Deep Burgundy */
-    --font-family-heading: "Cinzel", cursive;
+    --font-family-heading: "Cinzel", serif;
 }
 
 [data-theme="slate-and-gold"] {
@@ -80,15 +80,15 @@
     --color-overlay-dark: rgba(255, 255, 255, 0.07);
 
     /* Gold theme */
-    --font-family-heading: "Cinzel", cursive;
+    --font-family-heading: "Cinzel", serif;
     --color-text-heading: #c5b358; /* A warm, desaturated gold */
     --color-accent-primary: #c5b358;
 }
 
 /* --- Sci-Fi Hologram Theme --- */
 [data-theme="hologram"] {
-    --font-family-body: "Hologram Body", serif;
-    --font-family-heading: "Hologram Heading", cursive;
+    --font-family-body: "Hologram Body", monospace;
+    --font-family-heading: "Hologram Heading", sans-serif;
 
     --color-background-primary: #020a1f; /* Deep space blue */
     --color-background-secondary: #0d275a;
