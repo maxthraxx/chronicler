@@ -1,7 +1,5 @@
 <script lang="ts">
-    import { appStatus } from "$lib/appState";
-    import { resetAllStores } from "$lib/viewStores";
-    import { world, tags, vaultPath } from "$lib/worldStore";
+    import { tags, vaultPath } from "$lib/worldStore";
     import { promptAndCreateItem } from "$lib/actions";
     import { openModal, closeModal } from "$lib/modalStore";
     import FileExplorer from "./FileExplorer.svelte";
@@ -26,12 +24,6 @@
             component: SettingsModal,
             props: {
                 onClose: closeModal,
-                onChangeVault: () => {
-                    closeModal();
-                    world.destroy();
-                    resetAllStores();
-                    appStatus.set("selecting_vault");
-                },
             },
         });
     }
