@@ -12,7 +12,7 @@ importers:
         specifier: ^6.18.6
         version: 6.18.6
       '@codemirror/lang-markdown':
-        specifier: ^6.3.3
+        specifier: ^6.3.4
         version: 6.3.4
       '@codemirror/view':
         specifier: ^6.38.1
@@ -48,8 +48,8 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       marked:
-        specifier: ^16.1.1
-        version: 16.1.1
+        specifier: ^16.1.2
+        version: 16.1.2
       svelte-codemirror-editor:
         specifier: ^1.4.1
         version: 1.4.1(codemirror@6.0.2)(svelte@5.37.3)
@@ -58,7 +58,7 @@ importers:
         specifier: ^3.0.8
         version: 3.0.8(@sveltejs/kit@2.27.0(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.37.3)(vite@6.3.5))(svelte@5.37.3)(vite@6.3.5))
       '@sveltejs/kit':
-        specifier: ^2.26.1
+        specifier: ^2.27.0
         version: 2.27.0(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.37.3)(vite@6.3.5))(svelte@5.37.3)(vite@6.3.5)
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.1.1
@@ -76,10 +76,10 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0(prettier@3.6.2)(svelte@5.37.3)
       svelte:
-        specifier: ^5.37.1
+        specifier: ^5.37.3
         version: 5.37.3
       svelte-check:
-        specifier: ^4.3.0
+        specifier: ^4.3.1
         version: 4.3.1(picomatch@4.0.3)(svelte@5.37.3)(typescript@5.6.3)
       typescript:
         specifier: ~5.6.3
@@ -655,8 +655,8 @@ packages:
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
 
-  marked@16.1.1:
-    resolution: {integrity: sha512-ij/2lXfCRT71L6u0M29tJPhP0bM5shLL3u5BePhFwPELj2blMJ6GDtD7PfJhRLhJ/c2UwrK17ySVcDzy2YHjHQ==}
+  marked@16.1.2:
+    resolution: {integrity: sha512-rNQt5EvRinalby7zJZu/mB+BvaAY2oz3wCuCjt1RDrWNpS1Pdf9xqMOeC9Hm5adBdcV/3XZPJpG58eT+WBc0XQ==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -1320,7 +1320,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.4
 
-  marked@16.1.1: {}
+  marked@16.1.2: {}
 
   mri@1.2.0: {}
 
