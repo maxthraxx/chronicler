@@ -1,30 +1,13 @@
 /**
  * @file This file contains stores related to UI state and navigation,
- * not the core application data, which is managed by worldStore.ts.
+ * not the core application data, which is managed by worldStore.ts, or the
+ * application's core lifecycle state, which is managed in appState.ts.
  */
 
 import { writable, type Writable, get, derived } from "svelte/store";
 import type { PageHeader, Backlink } from "./bindings";
 
-// --- Application Status & View Management ---
-
-/**
- * Represents the possible states of the application's lifecycle.
- */
-export type AppState = "selecting_vault" | "loading" | "ready" | "error";
-
-/**
- * Defines the shape of the application status, allowing for an optional error message.
- */
-export interface AppStatus {
-    state: AppState;
-    message?: string;
-}
-
-/**
- * Manages the application's current status.
- */
-export const appStatus = writable<AppStatus>({ state: "selecting_vault" });
+// --- View Management ---
 
 /**
  * A union type to represent the possible states of the main view.
@@ -152,7 +135,6 @@ export const navigation = createNavigationStore();
  * This is useful when changing vaults.
  */
 export function resetAllStores() {
-    appStatus.set({ state: "selecting_vault" });
     // Resetting the view will also reset the navigation history
     currentView.set({ type: "welcome" });
     fileViewMode.set("preview");

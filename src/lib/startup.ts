@@ -2,7 +2,8 @@
  * @file This file centralizes the application's startup and initialization logic.
  */
 
-import { appStatus, resetAllStores } from "$lib/viewStores";
+import { resetAllStores } from "$lib/viewStores";
+import { appStatus } from "$lib/appState";
 import { world } from "$lib/worldStore";
 import { initializeVault } from "$lib/actions";
 import { getVaultPath } from "$lib/commands";
@@ -51,10 +52,15 @@ export async function initializeApp() {
     }
 }
 
-/** Resets the application state to allow the user to select a new vault. */
+/**
+ * Resets the application state to allow the user to select a new vault.
+ * It destroys the current world state, resets all UI stores, and then
+ * explicitly sets the application status back to the vault selection screen.
+ */
 export function selectNewVault() {
     world.destroy();
     resetAllStores();
+    appStatus.set({ state: "selecting_vault" });
 }
 
 // Re-export handleVaultSelected for use in the VaultSelector component

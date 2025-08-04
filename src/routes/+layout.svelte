@@ -7,7 +7,7 @@
         SIDEBAR_MAX_WIDTH,
         SIDEBAR_KEYBOARD_RESIZE_STEP,
     } from "$lib/config";
-    import { appStatus } from "$lib/viewStores";
+    import { appStatus } from "$lib/appState";
     import {
         initializeApp,
         selectNewVault,
