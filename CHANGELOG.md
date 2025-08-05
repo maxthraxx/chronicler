@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.9.2-alpha] - 2025-08-06
+
+### 🐞 Fixed
+
+- **Config**: Fixed an issue where images and other assets would not load if they were located outside of the user's home directory.
+- **Modals**: Fixed a bug where submitting the text input modal would attempt to close it twice.
+- **Accessibility**: Resolved accessibility warnings to improve usability for screen reader users. This includes adding a semantic `role` to the file explorer and providing more descriptive alt text for images in the infobox.
+- **Sidebar**: Removed unnecessary code related to the "Change Vault" functionality in the settings
+- **Warnings**: Cleaned up the codebase by removing unused imports to fix TypeScript compiler warnings.
+
+### 🔄 Changed
+
+- **Core**: The filename is now the single source of truth for a page's title. The `title` field in YAML frontmatter has been deprecated and is no longer used.
+- **State Management**: The application's core lifecycle state (e.g., loading, ready) has been separated from UI state for improved maintainability and a clearer separation of concerns.
+
 ## [v0.9.1-alpha] - 2025-08-04
 
 ### ✨ Added
