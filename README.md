@@ -147,6 +147,14 @@ Your financial support directly funds development time, helping to build new fea
 
 ---
 
-## 📜 License
+📜 License
 
-This project is licensed under the Creative Commons BY-NC-SA 4.0 License - see the [LICENSE](LICENSE) file for details.
+This project is source-available and licensed under the PolyForm Shield 1.0.0 license.
+
+    ✅ You are free to view and audit the source code for transparency.
+
+    ✅ You are free to use the compiled application for non-commercial purposes.
+
+    ❌ You are not permitted to modify, redistribute, or use the source code to create a competing product.
+
+Please see the LICENSE file for the full license text.
