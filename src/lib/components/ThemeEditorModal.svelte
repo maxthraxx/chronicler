@@ -1,21 +1,27 @@
 <script lang="ts">
+    import { get } from "svelte/store";
+    import { confirm } from "@tauri-apps/plugin-dialog";
     import Modal from "./Modal.svelte";
     import Button from "./Button.svelte";
     import {
+        activeTheme,
         userThemes,
+        setActiveTheme,
         saveCustomTheme,
         deleteCustomTheme,
         type CustomTheme,
         type ThemePalette,
+        type ThemeName,
     } from "$lib/settingsStore";
 
     let { onClose } = $props<{ onClose: () => void }>();
 
-    // The theme currently being edited in the form.
+    // --- State ---
     let currentTheme: CustomTheme | null = $state(null);
-    let originalName: string | null = $state(null);
+    let originalName: ThemeName | null = $state(null);
+    let originalActivePalette: ThemePalette | null = $state(null);
 
-    // A map of variable names to user-friendly labels for the form.
+    // --- Constants ---
     const colorLabels: Record<keyof ThemePalette, string> = {
         "--color-background-primary": "Primary Background",
         "--color-background-secondary": "Secondary Background",
@@ -44,6 +50,51 @@
         "--color-text-error": "#8b0000",
     };
 
+    // --- Helper Functions ---
+
+    /** Applies a palette's CSS variables to the document root for live previews. */
+    function applyPalette(palette: ThemePalette | null) {
+        if (!palette) return;
+        for (const [key, value] of Object.entries(palette)) {
+            document.documentElement.style.setProperty(key, value);
+        }
+    }
+
+    /** Removes all custom palette styles, reverting to the CSS file's active theme. */
+    function clearAppliedPalette() {
+        for (const key of Object.keys(colorLabels)) {
+            document.documentElement.style.removeProperty(key);
+        }
+    }
+
+    /** Stores the currently active theme's palette so we can revert later. */
+    function captureOriginalPalette() {
+        const themeName = get(activeTheme);
+        // Find the theme among both user themes and potential built-in ones if needed.
+        // For now, assuming userThemes is sufficient or a default is used.
+        const theme = $userThemes.find((t) => t.name === themeName);
+        originalActivePalette = theme ? theme.palette : { ...defaultPalette };
+    }
+
+    // --- Component Logic ---
+
+    $effect(() => {
+        // Capture the original palette once when the component is created.
+        captureOriginalPalette();
+
+        // When the component is destroyed (modal is closed), clean up any live styles.
+        return () => {
+            clearAppliedPalette();
+        };
+    });
+
+    $effect(() => {
+        // Whenever the theme being edited changes, apply its palette for a live preview.
+        if (currentTheme) {
+            applyPalette(currentTheme.palette);
+        }
+    });
+
     function createNewTheme() {
         currentTheme = {
             name: "My New Theme",
@@ -53,19 +104,19 @@
     }
 
     function editTheme(theme: CustomTheme) {
-        currentTheme = JSON.parse(JSON.stringify(theme)); // Deep copy
+        // Deep copy the theme to avoid mutating the original store object directly.
+        currentTheme = JSON.parse(JSON.stringify(theme));
         originalName = theme.name;
     }
 
-    function handleSave(event: SubmitEvent) {
-        event.preventDefault();
-
+    function handleSave() {
         const themeToSave = currentTheme;
         if (!themeToSave || !themeToSave.name.trim()) {
             alert("Theme name cannot be empty.");
             return;
         }
 
+        // Check for name collisions if the name has changed.
         if (
             originalName !== themeToSave.name &&
             $userThemes.some((t) => t.name === themeToSave.name)
@@ -79,22 +130,39 @@
         }
 
         saveCustomTheme(themeToSave);
-        currentTheme = null; // Exit edit mode
+        // Update the original name to allow for further edits without creating duplicates.
+        originalName = currentTheme.name;
     }
 
-    function handleDelete() {
+    // --- MODIFIED FUNCTION ---
+    async function handleDelete() {
         const themeToDelete = currentTheme;
         if (!themeToDelete) {
             return;
         }
 
+        const message = `Are you sure you want to delete "${themeToDelete.name}"?`;
         if (
-            window.confirm(
-                `Are you sure you want to delete "${themeToDelete.name}"?`,
-            )
+            await confirm(message, {
+                title: "Confirm Deletion",
+                type: "warning",
+            })
         ) {
+            const currentlyActive = get(activeTheme);
             deleteCustomTheme(themeToDelete.name);
-            currentTheme = null; // Exit edit mode
+
+            // Check if the deleted theme was the one currently active in the app.
+            if (currentlyActive === themeToDelete.name) {
+                // If so, set the app's theme to a safe default.
+                setActiveTheme("light");
+            } else {
+                // Otherwise, just revert the live preview to the original active theme's colors.
+                applyPalette(originalActivePalette);
+            }
+
+            // Reset the form state to prevent editing a deleted theme.
+            currentTheme = null;
+            originalName = null;
         }
     }
 </script>
@@ -103,82 +171,65 @@
     <div class="theme-editor-container">
         <aside class="theme-list-panel">
             <h4>Custom Themes</h4>
-            <ul class="theme-list">
-                {#each $userThemes as theme (theme.name)}
-                    <li>
-                        <button
-                            class="theme-item"
-                            onclick={() => editTheme(theme)}
-                        >
-                            {theme.name}
-                        </button>
-                    </li>
-                {/each}
-            </ul>
+            {#if $userThemes.length > 0}
+                <ul class="theme-list">
+                    {#each $userThemes as theme (theme.name)}
+                        <li>
+                            <button
+                                class="theme-item"
+                                class:active={currentTheme?.name === theme.name}
+                                onclick={() => editTheme(theme)}
+                            >
+                                {theme.name}
+                            </button>
+                        </li>
+                    {/each}
+                </ul>
+            {:else}
+                <p class="no-themes-message">No custom themes yet.</p>
+            {/if}
             <Button onclick={createNewTheme}>+ Create New Theme</Button>
         </aside>
-
         <main class="theme-form-panel">
             {#if currentTheme}
-                <form onsubmit={handleSave}>
-                    <div class="form-group">
-                        <label for="theme-name">Theme Name</label>
-                        <input
-                            id="theme-name"
-                            type="text"
-                            bind:value={currentTheme.name}
-                        />
-                    </div>
-
-                    <h4>Colors</h4>
-                    <div class="color-grid">
-                        {#each Object.keys(colorLabels) as key (key)}
-                            {@const paletteKey = key as keyof ThemePalette}
-                            <div class="form-group color-picker-group">
-                                <label for="color-{paletteKey}"
-                                    >{colorLabels[paletteKey]}</label
-                                >
-                                <div class="color-input-wrapper">
-                                    <input
-                                        id="color-{paletteKey}"
-                                        type="color"
-                                        bind:value={
-                                            currentTheme.palette[paletteKey]
-                                        }
-                                    />
-                                    <span
-                                        >{currentTheme.palette[
-                                            paletteKey
-                                        ]}</span
-                                    >
-                                </div>
-                            </div>
-                        {/each}
-                    </div>
-
-                    <div class="form-actions">
-                        <Button type="submit">Save Theme</Button>
-                        {#if originalName}
-                            <Button
-                                variant="ghost"
-                                type="button"
-                                onclick={handleDelete}
+                <div class="form-group">
+                    <label for="theme-name">Theme Name</label>
+                    <input
+                        id="theme-name"
+                        type="text"
+                        bind:value={currentTheme.name}
+                    />
+                </div>
+                <h4>Colors</h4>
+                <div class="color-grid">
+                    {#each Object.keys(colorLabels) as key (key)}
+                        {@const paletteKey = key as keyof ThemePalette}
+                        <div class="form-group color-picker-group">
+                            <label for="color-{paletteKey}"
+                                >{colorLabels[paletteKey]}</label
                             >
-                                Delete
-                            </Button>
-                        {/if}
-                        <Button
-                            variant="ghost"
-                            type="button"
-                            onclick={() => (currentTheme = null)}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
-                </form>
+                            <div class="color-input-wrapper">
+                                <input
+                                    id="color-{paletteKey}"
+                                    type="color"
+                                    bind:value={
+                                        currentTheme.palette[paletteKey]
+                                    }
+                                />
+                                <span>{currentTheme.palette[paletteKey]}</span>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+                <div class="form-actions">
+                    <Button type="button" onclick={handleSave}
+                        >Save Theme</Button
+                    >
+                    <Button type="button" onclick={handleDelete}>Delete</Button>
+                </div>
             {:else}
                 <div class="placeholder">
-                    <p>Select a theme to edit or create a new one.</p>
+                    <p>Select a theme to edit, or create a new one.</p>
                 </div>
             {/if}
         </main>
@@ -197,11 +248,14 @@
         flex: 0 0 200px;
         border-right: 1px solid var(--color-border-primary);
         padding-right: 2rem;
+        display: flex;
+        flex-direction: column;
     }
     .theme-list {
         list-style: none;
         padding: 0;
         margin: 0 0 1rem 0;
+        flex-grow: 1;
     }
     .theme-item {
         width: 100%;
@@ -212,13 +266,25 @@
         padding: 0.5rem;
         border-radius: 4px;
         cursor: pointer;
+        font-size: 1rem;
     }
     .theme-item:hover {
         background-color: var(--color-background-secondary);
     }
+    .theme-item.active {
+        background-color: var(--color-accent-primary);
+        color: var(--color-text-primary);
+        font-weight: bold;
+    }
+    .no-themes-message {
+        font-style: italic;
+        color: var(--color-text-secondary);
+        padding: 1rem 0.5rem;
+        flex-grow: 1;
+    }
     .theme-form-panel {
         flex: 1;
-        /* This is the key change: allow this panel to scroll vertically */
+        /* Allow this panel to scroll vertically */
         overflow-y: auto;
         /* Add some padding to the right to make space for the scrollbar */
         padding-right: 1rem;
@@ -241,12 +307,12 @@
         background-color: var(--color-background-secondary);
         color: var(--color-text-primary);
         border-radius: 4px;
+        box-sizing: border-box;
     }
     .color-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 1rem;
-        /* Add padding to the bottom so the save button doesn't stick */
         padding-bottom: 1rem;
     }
     .color-input-wrapper {
@@ -255,17 +321,34 @@
         gap: 0.5rem;
     }
     .color-input-wrapper input[type="color"] {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
         width: 40px;
         height: 40px;
+        background-color: transparent;
         border: 1px solid var(--color-border-primary);
         padding: 0;
         border-radius: 4px;
         cursor: pointer;
     }
+    /* Hides the default color picker UI for a custom look */
+    .color-input-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+    .color-input-wrapper input[type="color"]::-webkit-color-swatch {
+        border: none;
+        border-radius: 4px;
+    }
     .form-actions {
-        margin-top: 2rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--color-border-primary);
         display: flex;
         gap: 0.5rem;
+        position: sticky;
+        bottom: 0;
+        background-color: var(--color-background-primary);
     }
     .placeholder {
         display: flex;
@@ -273,5 +356,6 @@
         justify-content: center;
         height: 100%;
         color: var(--color-text-secondary);
+        font-style: italic;
     }
 </style>
