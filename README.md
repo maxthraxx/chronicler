@@ -1,11 +1,14 @@
 # 🧭 Chronicler
 
-> **Your digital scriptorium – where knowledge links together.** 🧙‍♂️
+> **Your digital scriptorium – where knowledge links together.** 🧙‍♂️  
 > 
+> 🔒 *Chronicler is **source-available**, not open-source.* You can **view and audit** the code, but you **cannot modify, redistribute, or reuse** it. See [LICENSE](https://github.com/mak-kirkland/chronicler/blob/main/LICENSE) for details.
+
 [![Website](https://img.shields.io/badge/Website-chronicler.pro-blue?logo=google-chrome&logoColor=white)](https://chronicler.pro)
 [![Latest Release](https://img.shields.io/github/v/release/mak-kirkland/chronicler?label=Release)](https://github.com/mak-kirkland/chronicler/releases/latest)
 [![Help](https://img.shields.io/badge/Help-md-blue)](https://github.com/mak-kirkland/chronicler/blob/main/HELP.md)
 [![Changelog](https://img.shields.io/badge/Changelog-md-green)](https://github.com/mak-kirkland/chronicler/blob/main/CHANGELOG.md)
+[![License](https://img.shields.io/badge/License-PolyForm_Shield_1.0.0-red)](https://github.com/mak-kirkland/chronicler/blob/main/LICENSE)
 
 **Chronicler** is a free desktop app for note-takers, storytellers, researchers, and creative minds. It saves your notes as plain Markdown files on your computer — no subscriptions, no logins, and no internet required. Your thoughts stay in your hands.
 
@@ -92,7 +95,7 @@ Chronicler is built on three core principles:
     >
     > When you first run the installer, Microsoft Defender may show a "Windows protected your PC" screen. This is expected because Chronicler is a new application from an independent developer and is not yet code-signed.
     >
-    > To proceed, simply click **"More info"** and then **"Run anyway"**. The application is safe to use, and you can verify the open-source code here on GitHub.
+    > To proceed, simply click **"More info"** and then **"Run anyway"**. The application is safe to use, and you can verify the source code here on GitHub.
 
     > #### 🍎 A Note for macOS Users
     >
@@ -121,7 +124,7 @@ Chronicler is built on three core principles:
 
 ## ❤️ Support Chronicler's Development
 
-Chronicler is a free, open-source project driven by a passion for privacy and user ownership.
+Chronicler is a project driven by a passion for privacy and user ownership.
 
 Your financial support directly funds development time, helping to build new features, fix bugs, and design a better user experience.
 
@@ -147,14 +150,14 @@ Your financial support directly funds development time, helping to build new fea
 
 ---
 
-📜 License
+## 📜 License
 
-This project is source-available and licensed under the PolyForm Shield 1.0.0 license.
+This project is source-available and licensed under the **PolyForm Shield 1.0.0** license.
 
-    ✅ You are free to view and audit the source code for transparency.
+- ✅ You are free to view and audit the source code for transparency.
 
-    ✅ You are free to use the compiled application for non-commercial purposes.
+- ✅ You are free to use the compiled application for non-commercial purposes.
 
-    ❌ You are not permitted to modify, redistribute, or use the source code to create a competing product.
+- ❌ You are not permitted to modify, redistribute, or use the source code to create competition.
 
-Please see the LICENSE file for the full license text.
+Please see the [LICENSE](https://github.com/mak-kirkland/chronicler/blob/main/LICENSE) file for the full license text.
