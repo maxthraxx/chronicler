@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.9.3-alpha] - 2025-08-06
+
+### ✨ Added
+
+- **Theme Editor**: Implemented a live preview feature. The entire application UI now updates in real-time as you edit a theme's colors.
+- **Theme Editor**: The theme list now displays a user-friendly message when no custom themes have been created yet.
+
+### 🐞 Fixed
+
+- **Theme Editor**: Fixed a critical bug where applying a theme would incorrectly overwrite other global styles, such as the user's selected font size.
+- **Theme Editor**: Deleting a theme now uses an asynchronous confirmation dialog, preventing the theme from being deleted accidentally if the user cancelled the action.
+- **Theme Editor**: Resolved an issue where lingering CSS variables from a custom theme were not being properly cleaned up when switching back to a built-in theme.
+- **Theme Editor**: Fixed a layout bug where the theme name input field could overflow its container and cause a horizontal scrollbar.
+
+### 🔄 Changed
+
+- **Core**: The title field in a page's YAML frontmatter has been restored, reverting its deprecation in `v0.9.2-alpha`.
+- **Theme Editor**: The user experience has been significantly improved with several UX enhancements.
+- **State Management**: The application's global style and theme management has been overhauled to be more robust and performant, resolving several state synchronization bugs.
+
+---
+
 ## [v0.9.2-alpha] - 2025-08-06
 
 ### 🐞 Fixed
@@ -30,8 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### 🐞 Fixed
 
-- **Themes**: Corrected the fallback CSS for several themes that were using incorrect generic font family fallbacks (e.g., specifying 'serif' for a sans-serif font).
-- **Themes**: Addressed multiple TypeScript warnings within the theme editor to improve type safety. This includes resolving issues with implicitly typed variables and refining null-checking logic.
+- **CSS**: Corrected the fallback CSS for several themes that were using incorrect generic font family fallbacks (e.g., specifying 'serif' for a sans-serif font).
+- **Theme Editor**: Addressed multiple TypeScript warnings within the theme editor to improve type safety. This includes resolving issues with implicitly typed variables and refining null-checking logic.
 - **Preview**: Resolved a layout bug where preformatted content, such as indented code blocks, could overflow and break the page layout. The preview area was refactored to correctly isolate the scrolling content.
 
 ### 🔄 Changed
@@ -47,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### ✨ Added
 
-- **Themes**: Implemented a user-defined theme editor. You can now create, edit, save, and delete an unlimited number of custom themes, all of which are persisted between sessions.
+- **Theme Editor**: Implemented a user-defined theme editor. You can now create, edit, save, and delete an unlimited number of custom themes, all of which are persisted between sessions.
 - **Themes**: A new slider has been added to the Settings modal, allowing users to adjust the application's base font size for better readability.
 
 ---
