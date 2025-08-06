@@ -5,7 +5,6 @@
 use crate::config::MAX_FILE_SIZE;
 use crate::error::{ChroniclerError, Result};
 use crate::models::Page;
-use crate::utils::file_stem_string;
 use crate::wikilink::extract_wikilinks;
 use std::collections::HashSet;
 use std::fs;
@@ -40,10 +39,11 @@ pub fn parse_file(path: &Path) -> Result<Page> {
     // Extract metadata
     let tags = extract_tags_from_frontmatter(&frontmatter);
     let links = extract_wikilinks(&content);
+    let title = extract_title(&frontmatter, path);
 
     Ok(Page {
         path: path.to_path_buf(),
-        title: file_stem_string(path),
+        title,
         tags,
         links,
         backlinks: HashSet::new(),
@@ -102,6 +102,20 @@ fn extract_tags_from_frontmatter(frontmatter: &serde_json::Value) -> HashSet<Str
         .collect()
 }
 
+/// Determines the page title from frontmatter or filename.
+fn extract_title(frontmatter: &serde_json::Value, path: &Path) -> String {
+    frontmatter
+        .get("title")
+        .and_then(|v| v.as_str())
+        .map(String::from)
+        .unwrap_or_else(|| {
+            path.file_stem()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string()
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*; // Import everything from the parent module (parser)
@@ -124,12 +138,14 @@ Hello, this is the body. It contains a [[Link To Another Page]].
 
         let page = parse_file(&file_path).unwrap();
 
+        assert_eq!(page.title, "My Test Page");
         assert_eq!(
             page.tags,
             HashSet::from(["character".to_string(), "location".to_string()])
         );
         assert_eq!(page.links.len(), 1);
         assert_eq!(page.links[0].target, "Link To Another Page");
+        assert!(page.frontmatter.get("title").is_some());
 
         Ok(())
     }
