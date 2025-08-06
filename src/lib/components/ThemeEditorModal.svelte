@@ -9,6 +9,7 @@
         setActiveTheme,
         saveCustomTheme,
         deleteCustomTheme,
+        forceThemeRefresh,
         type CustomTheme,
         type ThemePalette,
         type ThemeName,
@@ -19,7 +20,6 @@
     // --- State ---
     let currentTheme: CustomTheme | null = $state(null);
     let originalName: ThemeName | null = $state(null);
-    let originalActivePalette: ThemePalette | null = $state(null);
 
     // --- Constants ---
     const colorLabels: Record<keyof ThemePalette, string> = {
@@ -50,48 +50,25 @@
         "--color-text-error": "#8b0000",
     };
 
-    // --- Helper Functions ---
-
-    /** Applies a palette's CSS variables to the document root for live previews. */
-    function applyPalette(palette: ThemePalette | null) {
-        if (!palette) return;
-        for (const [key, value] of Object.entries(palette)) {
-            document.documentElement.style.setProperty(key, value);
-        }
-    }
-
-    /** Removes all custom palette styles, reverting to the CSS file's active theme. */
-    function clearAppliedPalette() {
-        for (const key of Object.keys(colorLabels)) {
-            document.documentElement.style.removeProperty(key);
-        }
-    }
-
-    /** Stores the currently active theme's palette so we can revert later. */
-    function captureOriginalPalette() {
-        const themeName = get(activeTheme);
-        // Find the theme among both user themes and potential built-in ones if needed.
-        // For now, assuming userThemes is sufficient or a default is used.
-        const theme = $userThemes.find((t) => t.name === themeName);
-        originalActivePalette = theme ? theme.palette : { ...defaultPalette };
-    }
-
     // --- Component Logic ---
-
     $effect(() => {
-        // Capture the original palette once when the component is created.
-        captureOriginalPalette();
-
-        // When the component is destroyed (modal is closed), clean up any live styles.
+        // When the modal is closed, force the global theme handler to re-apply the correct theme.
         return () => {
-            clearAppliedPalette();
+            forceThemeRefresh();
         };
     });
 
     $effect(() => {
-        // Whenever the theme being edited changes, apply its palette for a live preview.
+        // Live preview effect
         if (currentTheme) {
-            applyPalette(currentTheme.palette);
+            for (const [key, value] of Object.entries(currentTheme.palette)) {
+                document.documentElement.style.setProperty(key, value);
+            }
+            return () => {
+                for (const key of Object.keys(currentTheme.palette)) {
+                    document.documentElement.style.removeProperty(key);
+                }
+            };
         }
     });
 
@@ -116,30 +93,32 @@
             return;
         }
 
-        // Check for name collisions if the name has changed.
+        const isRenaming = originalName && originalName !== themeToSave.name;
+        const wasActive = get(activeTheme) === originalName;
+
         if (
-            originalName !== themeToSave.name &&
+            isRenaming &&
             $userThemes.some((t) => t.name === themeToSave.name)
         ) {
             alert("A theme with this name already exists.");
             return;
         }
 
-        if (originalName && originalName !== themeToSave.name) {
-            deleteCustomTheme(originalName);
+        if (isRenaming) {
+            deleteCustomTheme(originalName as ThemeName);
         }
 
         saveCustomTheme(themeToSave);
-        // Update the original name to allow for further edits without creating duplicates.
-        originalName = currentTheme.name;
+        originalName = themeToSave.name;
+
+        if (isRenaming && wasActive) {
+            setActiveTheme(themeToSave.name, true);
+        }
     }
 
-    // --- MODIFIED FUNCTION ---
     async function handleDelete() {
         const themeToDelete = currentTheme;
-        if (!themeToDelete) {
-            return;
-        }
+        if (!themeToDelete) return;
 
         const message = `Are you sure you want to delete "${themeToDelete.name}"?`;
         if (
@@ -148,19 +127,7 @@
                 type: "warning",
             })
         ) {
-            const currentlyActive = get(activeTheme);
-            deleteCustomTheme(themeToDelete.name);
-
-            // Check if the deleted theme was the one currently active in the app.
-            if (currentlyActive === themeToDelete.name) {
-                // If so, set the app's theme to a safe default.
-                setActiveTheme("light");
-            } else {
-                // Otherwise, just revert the live preview to the original active theme's colors.
-                applyPalette(originalActivePalette);
-            }
-
-            // Reset the form state to prevent editing a deleted theme.
+            await deleteCustomTheme(themeToDelete.name);
             currentTheme = null;
             originalName = null;
         }

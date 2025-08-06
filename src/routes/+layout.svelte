@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { get } from "svelte/store";
     import {
         SIDEBAR_INITIAL_WIDTH,
@@ -18,6 +17,7 @@
         activeTheme,
         fontSize,
         userThemes,
+        themeRefresher,
     } from "$lib/settingsStore";
     import { openModal } from "$lib/modalStore";
     import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -36,58 +36,84 @@
     let sidebarWidth = $state(SIDEBAR_INITIAL_WIDTH);
     let isResizing = $state(false);
 
-    onMount(() => {
-        // Kick off the main application startup sequence
+    // --- App Initialization ---
+    $effect(() => {
+        // Kick off the main application startup sequence once.
         initializeApp();
-
-        // This UI-specific logic remains here as it's tied to the window lifecycle
-        (async () => {
-            // Only attach the listener if the user has not opted out.
-            if (!get(hideDonationPrompt)) {
-                let hasFiredOnce = false;
-                const unlisten = await getCurrentWindow().onCloseRequested(
-                    async (event) => {
-                        if (hasFiredOnce) return;
-                        event.preventDefault();
-                        hasFiredOnce = true;
-                        openModal({ component: DonationModal, props: {} });
-                    },
-                );
-                return () => unlisten();
-            }
-        })();
     });
 
-    // This effect handles applying the correct theme styles.
+    // --- Donation Prompt on Close ---
     $effect(() => {
-        const themeName = $activeTheme;
-        const customTheme = $userThemes.find((t) => t.name === themeName);
+        // This effect handles the window close listener and its cleanup.
+        if ($hideDonationPrompt || typeof window === "undefined") {
+            return;
+        }
+
+        let hasFiredOnce = false;
+        const appWindow = getCurrentWindow();
+        const unlistenPromise = appWindow.onCloseRequested(async (event) => {
+            if (hasFiredOnce) return;
+            event.preventDefault();
+            hasFiredOnce = true;
+            openModal({ component: DonationModal, props: {} });
+        });
+
+        // The effect's cleanup function will run when the component is destroyed.
+        return () => {
+            unlistenPromise.then((unlisten) => unlisten());
+        };
+    });
+
+    // --- Consolidated Document Style Effect ---
+    // This single effect handles all styles applied to the root document to
+    // prevent them from conflicting with each other.
+    $effect(() => {
+        // Subscribe to the refresher. This forces the effect to re-run on demand.
+        $themeRefresher;
+
         if (typeof document !== "undefined") {
-            // Always clear any inline styles first.
-            document.documentElement.style.cssText = "";
+            const style = document.documentElement.style;
+            const themeName = $activeTheme;
+            const customTheme = $userThemes.find((t) => t.name === themeName);
+
+            // A. Apply font size.
+            style.fontSize = `${$fontSize}%`;
+
+            // B. Apply theme.
+            // Define the list of variables that custom themes use.
+            const customThemeVars = [
+                "--color-background-primary",
+                "--color-background-secondary",
+                "--color-background-tertiary",
+                "--color-text-heading",
+                "--color-text-primary",
+                "--color-text-secondary",
+                "--color-border-primary",
+                "--color-accent-primary",
+                "--color-text-link",
+                "--color-text-link-broken",
+                "--color-text-error",
+            ];
+
             if (customTheme) {
-                // If it's a custom theme, apply its variables as inline styles.
+                // It's a custom theme.
+                document.documentElement.removeAttribute("data-theme");
                 for (const [key, value] of Object.entries(
                     customTheme.palette,
                 )) {
-                    document.documentElement.style.setProperty(key, value);
+                    style.setProperty(key, value);
                 }
-                // Also remove the data-theme attribute so it doesn't conflict.
-                document.documentElement.removeAttribute("data-theme");
             } else {
-                // If it's a built-in theme, use the data-theme attribute.
+                // It's a built-in theme.
                 document.documentElement.setAttribute(
                     "data-theme",
                     themeName || "light",
                 );
+                // CRITICAL: Clean up any lingering variables from a previous custom theme.
+                for (const varName of customThemeVars) {
+                    style.removeProperty(varName);
+                }
             }
-        }
-    });
-
-    // This effect applies the font size.
-    $effect(() => {
-        if (typeof document !== "undefined") {
-            document.documentElement.style.fontSize = `${$fontSize}%`;
         }
     });
 
@@ -103,14 +129,17 @@
         isResizing = true;
         // Add passive option for better scroll performance during resize.
         window.addEventListener("mousemove", doResize, { passive: true });
-        window.addEventListener("mouseup", stopResize); // Ensure it only fires once
+        window.addEventListener("mouseup", stopResize, { once: true });
     }
 
     /** Performs the resize operation based on mouse movement. */
     function doResize(event: MouseEvent) {
         if (isResizing) {
             const newWidth = event.clientX;
-            if (newWidth > SIDEBAR_MIN_WIDTH && newWidth < SIDEBAR_MAX_WIDTH) {
+            if (
+                newWidth >= SIDEBAR_MIN_WIDTH &&
+                newWidth <= SIDEBAR_MAX_WIDTH
+            ) {
                 sidebarWidth = newWidth;
             }
         }
@@ -120,7 +149,6 @@
     function stopResize() {
         isResizing = false;
         window.removeEventListener("mousemove", doResize);
-        window.removeEventListener("mouseup", stopResize);
     }
 
     /** Handles resizing the sidebar using the keyboard for accessibility. */

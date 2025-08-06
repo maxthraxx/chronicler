@@ -94,11 +94,18 @@ export async function setHideDonationPrompt() {
 }
 
 /**
- * Sets the application theme and saves the choice.
+ * Sets the application theme. By default, it saves the choice.
+ * @param newThemeName The name of the theme to activate.
+ * @param save Pass false to prevent writing to disk. Defaults to true.
  */
-export async function setActiveTheme(newThemeName: ThemeName) {
+export async function setActiveTheme(
+    newThemeName: ThemeName,
+    save: boolean = true,
+) {
     activeTheme.set(newThemeName);
-    await saveAllSettings();
+    if (save) {
+        await saveAllSettings();
+    }
 }
 
 /**
@@ -137,4 +144,29 @@ export async function deleteCustomTheme(themeName: ThemeName) {
         activeTheme.set("light");
     }
     await saveAllSettings();
+}
+
+/**
+ * A Svelte writable store that acts as a reactive signal to force UI updates.
+ *
+ * Its actual numeric value is irrelevant. Its sole purpose is to be a dependency
+ * in an `$effect` that needs to be manually re-triggered. This is used to ensure
+ * the global theme styles are correctly re-applied after being temporarily
+ * overridden by an imperative process like a live preview.
+ *
+ * It is recommended to use the `forceThemeRefresh()` function instead of
+ * directly manipulating this store.
+ */
+export const themeRefresher = writable(0);
+
+/**
+ * Triggers a global theme style refresh.
+ *
+ * This function updates the `themeRefresher` store, which causes any `$effect`
+ * subscribing to it (like the main theme-applying logic) to re-run.
+ * Call this function after a process that may have left the theme's
+ * CSS in an inconsistent state.
+ */
+export function forceThemeRefresh() {
+    themeRefresher.update((n) => n + 1);
 }
