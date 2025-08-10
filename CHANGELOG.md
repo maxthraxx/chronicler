@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.9.5-alpha] - 2025-08-08
+
+### 🐞 Fixed
+
+- **Explorer**: Resolved a layout issue where the file explorer's scrollbar was not flush with the edge of the sidebar.
+- **Explorer**: Fixed a bug that caused inconsistent text alignment for long file and directory names that wrapped to a new line.
+- **Explorer**: Corrected an issue where file and folder names could be truncated prematurely because hidden action buttons were still occupying space.
+
+### 🔄 Changed
+
+- **Sidebar**: The width of the sidebar is now a persistent setting that will be remembered across application sessions.
+- **Settings**: The system for saving settings to disk has been refactored to be automatic and debounced. This improves performance and responsiveness by bundling multiple quick changes (e.g., from a slider) into a single write operation.
+
+---
+
 ## [v0.9.4-alpha] - 2025-08-07
 
 ### 🐞 Fixed
@@ -15,7 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### 🔄 Changed
 
-- **Themes**: Centralized the list of CSS variables that define a theme's color palette into a single source of truth. The theme editor's UI is now dynamically generated from this central list.
+- **Themes**: Centralized the list of CSS variables that define a theme's color palette into a single source of truth. The theme editor's UI is now dynam
+ically generated from this central list.
 - **Themes**: Refactored the internal theme data structures to derive the `ThemePalette` type directly from the canonical list of theme keys, improving type safety and reducing redundancy.
 - **Themes**: Simplified the internal function for setting the active theme.
 
