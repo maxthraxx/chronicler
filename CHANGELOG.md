@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [v0.9.5-alpha] - 2025-08-08
+## [v0.10.0-alpha] - 2025-08-11
+
+### ✨ Added
+
+- **Settings**: Implemented a new hybrid settings model that distinguishes between global and per-vault configurations. Custom themes are stored globally, allowing them to be used across all vaults. Vault-specific settings like the active theme, font size, and sidebar width are stored in a new settings file within each vault, making them self-contained and portable.
+- **Theme Editor**: The theme editor has been enhanced to allow for font selection. You can now choose separate fonts for headings and body text from a dropdown menu, and the changes are applied in a live preview.
+
+---
+
+## [v0.9.5-alpha] - 2025-08-10
 
 ### 🐞 Fixed
 
@@ -22,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [v0.9.4-alpha] - 2025-08-07
+## [v0.9.4-alpha] - 2025-08-08
 
 ### 🐞 Fixed
 
