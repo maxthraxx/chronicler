@@ -58,10 +58,26 @@ export type ThemePalette = {
     [Key in PaletteKey]: string;
 };
 
-/** Defines a full theme object, including its name and palette. */
+/**
+ * A new constant to define the fonts available for theme customization.
+ * The `value` should match the 'font-family' name in your CSS.
+ */
+export const AVAILABLE_FONTS = [
+    { name: "Cinzel", value: `"Cinzel", serif` },
+    { name: "IBM Plex Mono", value: `"IBM Plex Mono", monospace` },
+    { name: "IM Fell English", value: `"IM Fell English", serif` },
+    { name: "Merriweather", value: `"Merriweather", serif` },
+    { name: "Open Sans", value: `"Open Sans", sans-serif` },
+    { name: "Orbitron", value: `"Orbitron", sans-serif` },
+    { name: "Uncial Antiqua", value: `"Uncial Antiqua", cursive` },
+] as const;
+
+/** Defines a full theme object, including its name, palette, and fonts. */
 export interface CustomTheme {
     name: ThemeName;
     palette: ThemePalette;
+    fontFamilyHeading?: string;
+    fontFamilyBody?: string;
 }
 
 // --- Store Initialization ---

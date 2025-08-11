@@ -82,10 +82,25 @@
             if (customTheme) {
                 // It's a custom theme.
                 document.documentElement.removeAttribute("data-theme");
+
+                // Apply color palette
                 for (const [key, value] of Object.entries(
                     customTheme.palette,
                 )) {
                     style.setProperty(key, value);
+                }
+
+                if (customTheme.fontFamilyHeading) {
+                    style.setProperty(
+                        "--font-family-heading",
+                        customTheme.fontFamilyHeading,
+                    );
+                }
+                if (customTheme.fontFamilyBody) {
+                    style.setProperty(
+                        "--font-family-body",
+                        customTheme.fontFamilyBody,
+                    );
                 }
             } else {
                 // It's a built-in theme.
@@ -93,10 +108,14 @@
                     "data-theme",
                     themeName || "light",
                 );
+
                 // CRITICAL: Clean up any lingering variables from a previous custom theme.
                 for (const varName of THEME_PALETTE_KEYS) {
                     style.removeProperty(varName);
                 }
+
+                style.removeProperty("--font-family-heading");
+                style.removeProperty("--font-family-body");
             }
         }
     });

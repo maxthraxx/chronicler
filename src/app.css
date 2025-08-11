@@ -87,8 +87,8 @@
 
 /* --- Sci-Fi Hologram Theme --- */
 [data-theme="hologram"] {
-    --font-family-body: "Hologram Body", monospace;
-    --font-family-heading: "Hologram Heading", sans-serif;
+    --font-family-body: "IBM Plex Mono", monospace;
+    --font-family-heading: "Orbitron", sans-serif;
 
     --color-background-primary: #020a1f; /* Deep space blue */
     --color-background-secondary: #0d275a;
@@ -163,7 +163,7 @@
 
 /* Hologram heading */
 @font-face {
-    font-family: "Hologram Heading";
+    font-family: "Orbitron";
     font-style: normal;
     font-weight: 400;
     src: url("/fonts/Orbitron Regular.woff2") format("woff2");
@@ -171,7 +171,7 @@
 
 /* Hologram body */
 @font-face {
-    font-family: "Hologram Body";
+    font-family: "IBM Plex Mono";
     font-style: normal;
     font-weight: 400;
     src: url("/fonts/IBM-Plex-Mono-regular.woff2") format("woff2");
@@ -179,7 +179,7 @@
 
 /* Hologram body */
 @font-face {
-    font-family: "Hologram Body";
+    font-family: "IBM Plex Mono";
     font-style: italic;
     font-weight: 400;
     src: url("/fonts/IBM-Plex-Mono-italic.woff2") format("woff2");
