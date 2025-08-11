@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.10.1-alpha] - 2025-08-12
+
+### 🐞 Fixed
+
+- **Writer**: Fixed a critical bug where renaming a page would corrupt any backlinks that used an alias. The update logic now correctly preserves the `|` separator, ensuring that links with custom display text (e.g., `[[new-page|display text]]`) are formatted correctly after a rename.
+
+---
+
 ## [v0.10.0-alpha] - 2025-08-11
 
 ### ✨ Added
