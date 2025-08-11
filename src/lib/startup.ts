@@ -7,7 +7,11 @@ import { appStatus } from "$lib/appState";
 import { world } from "$lib/worldStore";
 import { initializeVault } from "$lib/actions";
 import { getVaultPath } from "$lib/commands";
-import { loadSettings } from "$lib/settingsStore";
+import {
+    loadGlobalSettings,
+    initializeVaultSettings,
+    destroyVaultSettings,
+} from "$lib/settingsStore";
 import { checkForAppUpdates } from "$lib/updater";
 
 /**
@@ -22,7 +26,9 @@ export async function handleVaultSelected(path: string) {
         await initializeVault(path);
         // 2. Initialize the frontend stores
         await world.initialize();
-        // 3. Set status to ready ONLY after everything is finished
+        // 3. Initialize the settings specific to this vault
+        await initializeVaultSettings(path);
+        // 4. Set status to ready ONLY after everything is finished
         appStatus.set({ state: "ready" });
 
         // After the app is ready, check for updates in the background.
@@ -38,7 +44,10 @@ export async function handleVaultSelected(path: string) {
  */
 export async function initializeApp() {
     try {
-        await loadSettings();
+        // Load global settings that apply to the whole application first.
+        await loadGlobalSettings();
+
+        // Then, check if a vault was already open from the last session.
         const path = await getVaultPath();
         if (path) {
             await handleVaultSelected(path);
@@ -58,7 +67,10 @@ export async function initializeApp() {
  * explicitly sets the application status back to the vault selection screen.
  */
 export function selectNewVault() {
+    // Destroy the state for the vault that is being closed.
     world.destroy();
+    destroyVaultSettings(); // Also destroy the settings associated with the closed vault.
     resetAllStores();
+
     appStatus.set({ state: "selecting_vault" });
 }

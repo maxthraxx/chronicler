@@ -2,23 +2,30 @@
  * @file Manages persistent user settings using the Tauri Store Plugin.
  *
  * This store handles UI-related preferences that need to persist between
- * application sessions. It uses the LazyStore to avoid issues with
- * Server-Side Rendering (SSR) by only loading the data from disk when
- * it's first accessed.
+ * application sessions. It manages two distinct settings files:
+ * 1. A global settings file for theme definitions and app-wide preferences.
+ * 2. A per-vault settings file for workspace-specific configurations.
  */
 
 import { writable, get } from "svelte/store";
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { BaseDirectory } from "@tauri-apps/plugin-fs";
+import { join } from "@tauri-apps/api/path";
+
 import { SIDEBAR_INITIAL_WIDTH } from "$lib/config";
 
 // --- Type Definitions ---
 
-/** Defines the shape of the entire settings object saved to disk. */
-interface AppSettings {
+/** Defines the shape of the GLOBAL settings object saved to disk. */
+interface GlobalSettings {
+    userThemes: CustomTheme[];
     hideDonationPrompt: boolean;
+}
+
+/** Defines the shape of the PER-VAULT settings object saved to disk. */
+interface VaultSettings {
     activeTheme: ThemeName;
     fontSize: number;
-    userThemes: CustomTheme[];
     sidebarWidth: number;
 }
 
@@ -80,53 +87,109 @@ export interface CustomTheme {
     fontFamilyBody?: string;
 }
 
-// --- Store Initialization ---
+// --- Store Management ---
 
 // Use LazyStore to prevent SSR issues. It will only load when first accessed.
-const settingsFile = new LazyStore(".settings.dat");
+let globalSettingsFile: LazyStore | null = null;
+let vaultSettingsFile: LazyStore | null = null;
+
+const GLOBAL_SETTINGS_FILENAME = "global.settings.json";
+const VAULT_SETTINGS_FILENAME = ".chronicler.vault.json";
 
 // Create Svelte stores to hold settings in memory for easy, reactive access.
-// We provide sensible defaults for first-time users.
+// We provide sensible defaults for first-time users or when no vault is loaded.
+
+// Global Stores
 export const hideDonationPrompt = writable<boolean>(false);
+export const userThemes = writable<CustomTheme[]>([]);
+
+// Per-Vault Stores
 export const activeTheme = writable<ThemeName>("light");
 export const fontSize = writable<number>(100);
-export const userThemes = writable<CustomTheme[]>([]);
 export const sidebarWidth = writable<number>(SIDEBAR_INITIAL_WIDTH);
 
-// --- Private Functions ---
+// --- Private Save Functions ---
 
 /**
- * Saves the entire current state of settings to the persistent file.
+ * Saves the current state of GLOBAL settings to the persistent file.
  */
-async function saveAllSettings() {
-    const settings: AppSettings = {
-        hideDonationPrompt: get(hideDonationPrompt),
-        activeTheme: get(activeTheme),
-        fontSize: get(fontSize),
+async function saveGlobalSettings() {
+    if (!globalSettingsFile) return;
+    const settings: GlobalSettings = {
         userThemes: get(userThemes),
-        sidebarWidth: get(sidebarWidth),
+        hideDonationPrompt: get(hideDonationPrompt),
     };
-    await settingsFile.set("allSettings", settings);
-    await settingsFile.save();
+    await globalSettingsFile.set("globalSettings", settings);
+    await globalSettingsFile.save();
 }
 
-// --- Public API ---
+/**
+ * Saves the current state of VAULT settings to the persistent file.
+ */
+async function saveVaultSettings() {
+    if (!vaultSettingsFile) return;
+    const settings: VaultSettings = {
+        activeTheme: get(activeTheme),
+        fontSize: get(fontSize),
+        sidebarWidth: get(sidebarWidth),
+    };
+    await vaultSettingsFile.set("vaultSettings", settings);
+    await vaultSettingsFile.save();
+}
+
+// --- Public API & Lifecycle ---
 
 /**
- * Loads all settings from the persistent file store into the reactive Svelte stores.
+ * Loads all GLOBAL settings from the persistent file store into the reactive Svelte stores.
  * This should be called once when the application initializes.
  */
-export async function loadSettings() {
-    const settings = await settingsFile.get<AppSettings>("allSettings");
+export async function loadGlobalSettings() {
+    // Global settings are stored in the app's data directory.
+    globalSettingsFile = new LazyStore(GLOBAL_SETTINGS_FILENAME);
+
+    const settings =
+        await globalSettingsFile.get<GlobalSettings>("globalSettings");
     if (settings) {
-        hideDonationPrompt.set(settings.hideDonationPrompt || false);
-        activeTheme.set(settings.activeTheme || "light");
-        fontSize.set(settings.fontSize || 100);
-        userThemes.set(settings.userThemes || []);
-        sidebarWidth.set(settings.sidebarWidth || SIDEBAR_INITIAL_WIDTH);
+        hideDonationPrompt.set(settings.hideDonationPrompt ?? false);
+        userThemes.set(settings.userThemes ?? []);
     }
-    // Enable automatic saving only after initial settings have been loaded.
-    isInitialized = true;
+    // Enable automatic saving for global settings.
+    hideDonationPrompt.subscribe(debouncedGlobalSave);
+    userThemes.subscribe(debouncedGlobalSave);
+}
+
+/**
+ * Loads all VAULT settings from a file inside the vault directory.
+ * @param vaultPath The absolute path to the user's current vault.
+ */
+export async function initializeVaultSettings(vaultPath: string) {
+    const settingsFilePath = await join(vaultPath, VAULT_SETTINGS_FILENAME);
+    vaultSettingsFile = new LazyStore(settingsFilePath);
+
+    const settings =
+        await vaultSettingsFile.get<VaultSettings>("vaultSettings");
+    if (settings) {
+        activeTheme.set(settings.activeTheme ?? "light");
+        fontSize.set(settings.fontSize ?? 100);
+        sidebarWidth.set(settings.sidebarWidth ?? SIDEBAR_INITIAL_WIDTH);
+    }
+
+    // Enable automatic saving for vault settings.
+    activeTheme.subscribe(debouncedVaultSave);
+    fontSize.subscribe(debouncedVaultSave);
+    sidebarWidth.subscribe(debouncedVaultSave);
+}
+
+/**
+ * Resets vault-specific settings to their defaults when a vault is closed.
+ */
+export function destroyVaultSettings() {
+    // Unsubscribe from automatic saving by replacing the stores.
+    // This is simpler than managing unsubscribe functions for this use case.
+    activeTheme.set("light");
+    fontSize.set(100);
+    sidebarWidth.set(SIDEBAR_INITIAL_WIDTH);
+    vaultSettingsFile = null; // Ensure no further saves can happen.
 }
 
 /**
@@ -137,7 +200,7 @@ export function setHideDonationPrompt() {
 }
 
 /**
- * Sets the application theme.
+ * Sets the application theme for the current vault.
  * @param newThemeName The name of the theme to activate.
  */
 export function setActiveTheme(newThemeName: ThemeName) {
@@ -145,14 +208,14 @@ export function setActiveTheme(newThemeName: ThemeName) {
 }
 
 /**
- * Sets the application's base font size.
+ * Sets the application's base font size for the current vault.
  */
 export function setFontSize(newSize: number) {
     fontSize.set(newSize);
 }
 
 /**
- * Adds a new custom theme or updates an existing one.
+ * Adds a new custom theme or updates an existing one in the global store.
  * @param theme The custom theme object to save.
  */
 export function saveCustomTheme(theme: CustomTheme) {
@@ -168,7 +231,7 @@ export function saveCustomTheme(theme: CustomTheme) {
 }
 
 /**
- * Deletes a custom theme by its name.
+ * Deletes a custom theme by its name from the global store.
  * @param themeName The name of the theme to delete.
  */
 export function deleteCustomTheme(themeName: ThemeName) {
@@ -206,29 +269,21 @@ export function forceThemeRefresh() {
 
 // --- Automatic Persistence ---
 
-let saveTimeout: ReturnType<typeof setTimeout>;
-let isInitialized = false;
-
 /**
- * A debounced version of saveAllSettings. This prevents rapid, successive
- * writes to disk when settings are changed quickly.
+ * A helper function to prevent rapid, successive writes to disk.
+ * @param func The function to call after the delay.
+ * @param delay The wait time in milliseconds.
  */
-function debouncedSave() {
-    // Clear any pending save operation
-    clearTimeout(saveTimeout);
-    // Schedule a new save operation
-    saveTimeout = setTimeout(() => {
-        // Only save if the initial settings have been loaded
-        if (isInitialized) {
-            console.log("Saving settings to disk...");
-            saveAllSettings();
-        }
-    }, 500); // Wait 500ms after the last change before saving
+function debounce(func: () => Promise<void>, delay: number) {
+    let timeout: ReturnType<typeof setTimeout>;
+    return () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func();
+        }, delay);
+    };
 }
 
-// Subscribe to every settings store. Whenever one changes, trigger a debounced save.
-hideDonationPrompt.subscribe(debouncedSave);
-activeTheme.subscribe(debouncedSave);
-fontSize.subscribe(debouncedSave);
-userThemes.subscribe(debouncedSave);
-sidebarWidth.subscribe(debouncedSave);
+// Create two separate debounced savers for the two settings files.
+const debouncedGlobalSave = debounce(saveGlobalSettings, 500);
+const debouncedVaultSave = debounce(saveVaultSettings, 500);
