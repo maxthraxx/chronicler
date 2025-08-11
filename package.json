@@ -30,14 +30,14 @@
         "svelte-codemirror-editor": "^1.4.1"
     },
     "devDependencies": {
-        "@sveltejs/adapter-static": "^3.0.8",
-        "@sveltejs/kit": "^2.27.1",
+        "@sveltejs/adapter-static": "^3.0.9",
+        "@sveltejs/kit": "^2.27.3",
         "@sveltejs/vite-plugin-svelte": "^5.1.1",
         "@tauri-apps/cli": "^2.7.1",
         "@types/js-yaml": "^4.0.9",
         "prettier": "^3.6.2",
         "prettier-plugin-svelte": "^3.4.0",
-        "svelte": "^5.37.3",
+        "svelte": "^5.38.0",
         "svelte-check": "^4.3.1",
         "typescript": "~5.6.3",
         "vite": "^6.3.5"
