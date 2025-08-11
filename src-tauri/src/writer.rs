@@ -77,7 +77,7 @@ fn replace_wikilink_in_content(content: &str, old_stem: &str, new_stem: &str) ->
         if target.to_lowercase() == old_stem_lower {
             let section = caps.get(2).map_or("", |m| m.as_str());
             let alias = caps.get(3).map_or("", |m| m.as_str());
-            format!("[[{new_stem}{section}{alias}]]")
+            format!("[[{new_stem}{section}|{alias}]]")
         } else {
             // If the link doesn't match, return the original text of the match.
             caps.get(0).unwrap().as_str().to_string()
