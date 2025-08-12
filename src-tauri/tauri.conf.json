@@ -39,6 +39,11 @@
         "resources": {
             "../CHANGELOG.md": "CHANGELOG.md",
             "../HELP.md": "HELP.md"
+        },
+        "linux": {
+            "appimage": {
+                "bundleMediaFramework": false
+            }
         }
     },
     "plugins": {
