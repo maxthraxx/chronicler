@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.10.2-alpha] - 2025-08-12
+
+### 🐞 Fixed
+
+-   **Linux**: Resolved a critical crash when launching the AppImage on Wayland-based systems (e.g., Arch Linux, Steam Deck). The build configuration has been adjusted to prevent bundling a conflicting media framework library.
+
+---
+
 ## [v0.10.1-alpha] - 2025-08-12
 
 ### 🐞 Fixed
