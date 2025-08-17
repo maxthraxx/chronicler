@@ -8,7 +8,7 @@ use base64::{engine::general_purpose, Engine as _};
 use parking_lot::RwLock;
 use pulldown_cmark::{html, Event, Options, Parser};
 use regex::Captures;
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -48,16 +48,49 @@ impl Renderer {
         }
     }
 
-    /// Processes an image source path, returning a Base64 Data URL.
-    /// It resolves both absolute and relative paths before encoding.
-    pub fn convert_image_path_to_data_url(&self, path_str: &str) -> String {
+    /// Resolves a potentially relative image path to an absolute path within the vault.
+    ///
+    /// This helper centralizes the logic for handling image paths. It correctly
+    /// handles both absolute paths and relative paths, which are assumed to be
+    /// inside the vault's "images" subdirectory.
+    fn resolve_image_path(&self, path_str: &str) -> PathBuf {
         let path = Path::new(path_str);
-        let absolute_path = if path.is_absolute() {
+        if path.is_absolute() {
             path.to_path_buf()
         } else {
             // Assumes relative paths are inside the vault's "images" directory.
             self.vault_path.join("images").join(path)
-        };
+        }
+    }
+
+    /// Processes the `image` field from the frontmatter.
+    ///
+    /// This function handles all logic for the infobox image:
+    /// 1. Resolves the absolute path of the image.
+    /// 2. Adds the absolute path to the JSON map under the `image_path` key for the frontend.
+    /// 3. Converts the image to a Base64 Data URL and updates the `image` key.
+    fn process_infobox_image(&self, map: &mut Map<String, Value>, relative_image_path: &str) {
+        let absolute_path = self.resolve_image_path(relative_image_path);
+
+        // If the image exists, add its absolute path to the payload for the frontend.
+        // This allows the frontend to open the image in the viewer without knowing
+        // the vault's file structure.
+        if absolute_path.exists() {
+            map.insert(
+                "image_path".to_string(),
+                Value::String(absolute_path.to_string_lossy().to_string()),
+            );
+        }
+
+        // Convert the original path to a Base64 Data URL for embedding in the infobox preview.
+        let processed_src = self.convert_image_path_to_data_url(relative_image_path);
+        map.insert("image".to_string(), Value::String(processed_src));
+    }
+
+    /// Processes an image source path, returning a Base64 Data URL.
+    /// It resolves both absolute and relative paths before encoding.
+    pub fn convert_image_path_to_data_url(&self, path_str: &str) -> String {
+        let absolute_path = self.resolve_image_path(path_str);
 
         if let Ok(data) = fs::read(&absolute_path) {
             let mime_type = get_mime_type(path_str);
@@ -107,28 +140,7 @@ impl Renderer {
 
             // Specifically process the 'image' field for the infobox.
             if let Some(Value::String(relative_image_path)) = map.get("image").cloned() {
-                // Resolve the relative path from the frontmatter into a full, absolute path.
-                let image_path = Path::new(&relative_image_path);
-                let absolute_path = if image_path.is_absolute() {
-                    image_path.to_path_buf()
-                } else {
-                    // Resolve the path from the vault root.
-                    self.vault_path.join("images").join(image_path)
-                };
-
-                // If the image exists, add its absolute path to the payload for the frontend.
-                // This allows the frontend to open the image in the viewer without knowing
-                // the vault's file structure.
-                if absolute_path.exists() {
-                    map.insert(
-                        "image_path".to_string(),
-                        Value::String(absolute_path.to_string_lossy().to_string()),
-                    );
-                }
-
-                // Convert the original path to a Base64 Data URL for embedding in the infobox preview.
-                let processed_src = self.convert_image_path_to_data_url(&relative_image_path);
-                map.insert("image".to_string(), Value::String(processed_src));
+                self.process_infobox_image(map, &relative_image_path);
             }
         }
 
