@@ -106,8 +106,28 @@ impl Renderer {
             }
 
             // Specifically process the 'image' field for the infobox.
-            if let Some(Value::String(image_path)) = map.get("image").cloned() {
-                let processed_src = self.convert_image_path_to_data_url(&image_path);
+            if let Some(Value::String(relative_image_path)) = map.get("image").cloned() {
+                // Resolve the relative path from the frontmatter into a full, absolute path.
+                let image_path = Path::new(&relative_image_path);
+                let absolute_path = if image_path.is_absolute() {
+                    image_path.to_path_buf()
+                } else {
+                    // Resolve the path from the vault root.
+                    self.vault_path.join("images").join(image_path)
+                };
+
+                // If the image exists, add its absolute path to the payload for the frontend.
+                // This allows the frontend to open the image in the viewer without knowing
+                // the vault's file structure.
+                if absolute_path.exists() {
+                    map.insert(
+                        "image_path".to_string(),
+                        Value::String(absolute_path.to_string_lossy().to_string()),
+                    );
+                }
+
+                // Convert the original path to a Base64 Data URL for embedding in the infobox preview.
+                let processed_src = self.convert_image_path_to_data_url(&relative_image_path);
                 map.insert("image".to_string(), Value::String(processed_src));
             }
         }

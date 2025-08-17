@@ -58,6 +58,14 @@ export function navigateToTag(tagName: string) {
 }
 
 /**
+ * Navigates the main view to display an image.
+ * @param image The header of the image to open, containing its path and title.
+ */
+export function navigateToImage(image: PageHeader) {
+    currentView.set({ type: "image", data: image });
+}
+
+/**
  * Initializes the vault at the given path.
  * This is the main entry point after a user selects a vault folder.
  * @param path The absolute path to the vault directory.

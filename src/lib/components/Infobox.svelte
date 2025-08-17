@@ -1,10 +1,12 @@
 <script lang="ts">
-    import { navigateToTag } from "$lib/actions";
+    import { navigateToTag, navigateToImage } from "$lib/actions";
     import ErrorBox from "./ErrorBox.svelte";
+    import type { PageHeader } from "$lib/bindings";
 
     type InfoboxData = {
         title?: string;
         image?: string;
+        image_path?: string; // The absolute path to the image, for opening in the viewer.
         infobox?: string;
         error?: string;
         details?: string; // Error details
@@ -17,6 +19,31 @@
     }>();
 
     let filteredData = $state<[string, any][]>([]);
+
+    /**
+     * Derives a display title for the image, falling back from the page title
+     * to the image filename.
+     * @param pageTitle The title from the page's frontmatter.
+     * @param imagePath The absolute path to the image file.
+     * @returns A suitable title string for the image view.
+     */
+    function getImageTitle(pageTitle: string | undefined, imagePath: string): string {
+        return pageTitle || imagePath.split(/[\\/]/).pop() || "Image";
+    }
+
+    /**
+     * Handles the double-click event on the infobox image, navigating to the
+     * full image view if a valid path exists.
+     */
+    function openImageView() {
+        if (data?.image_path) {
+            const imageTitle = getImageTitle(data.title, data.image_path);
+            navigateToImage({
+                path: data.image_path,
+                title: imageTitle,
+            });
+        }
+    }
 
     // This effect prepares the data for display by filtering out reserved keys.
     $effect(() => {
@@ -31,6 +58,7 @@
             "tags",
             "infobox",
             "image",
+            "image_path",
             "error",
             "details", // Error details
         ];
@@ -57,6 +85,7 @@
                         src={data.image}
                         alt={data?.title || "Infobox image"}
                         class="infobox-image"
+                        ondblclick={openImageView}
                     />
                 </div>
             </div>
@@ -154,6 +183,8 @@
         max-height: 400px;
         object-fit: contain;
         border-radius: 2px;
+        /* Add cursor pointer on hover to indicate it's interactive */
+        cursor: pointer;
     }
     .no-fields-message {
         grid-column: 1 / -1;
