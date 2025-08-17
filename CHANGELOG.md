@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.11.1-alpha] - 2025-08-17
+
+### ✨ Added
+
+- **Image View**: Navigation controls have been added to the Image View.  A new reusable `ViewHeader.svelte` component has been created to unify the header structure across the application. Previously, header logic was duplicated in `FileView` and `TagIndexView` but was absent in `ImageView`.
+
+### 🔄 Changed
+
+- **Preview**: The preview area has been refactored to allow page content to wrap around the infobox for a more fluid reading experience.
+- **File View**: Simplified infobox logic. The `FileView` component now passes the frontmatter object directly, and the `Infobox` component itself determines whether it should render.
+- **Donations**: The Patreon and Buy Me a Coffee links in the welcome footer have been replaced with a single, consolidated link to the support section of chronicler.pro.
+
+---
+
 ## [v0.11.0-alpha] - 2025-08-15
 
 ### ✨ Added
