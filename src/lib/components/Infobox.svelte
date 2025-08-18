@@ -1,7 +1,6 @@
 <script lang="ts">
     import { navigateToTag, navigateToImage } from "$lib/actions";
     import ErrorBox from "./ErrorBox.svelte";
-    import type { PageHeader } from "$lib/bindings";
 
     type InfoboxData = {
         title?: string;
@@ -27,7 +26,10 @@
      * @param imagePath The absolute path to the image file.
      * @returns A suitable title string for the image view.
      */
-    function getImageTitle(pageTitle: string | undefined, imagePath: string): string {
+    function getImageTitle(
+        pageTitle: string | undefined,
+        imagePath: string,
+    ): string {
         return pageTitle || imagePath.split(/[\\/]/).pop() || "Image";
     }
 
