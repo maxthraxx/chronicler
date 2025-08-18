@@ -2,6 +2,7 @@
 
 use crate::error::ChroniclerError;
 use crate::models::{Backlink, FullPageData};
+use crate::sanitizer;
 use crate::wikilink::WIKILINK_RE;
 use crate::{error::Result, indexer::Indexer, models::RenderedPage, parser};
 use base64::{engine::general_purpose, Engine as _};
@@ -300,10 +301,15 @@ impl Renderer {
         let mut html_output = String::new();
         html::push_html(&mut html_output, new_events.into_iter());
 
-        // --- 5. Post-Processing for Embedded Images ---
-        // After all other markdown and custom syntax has been rendered to HTML,
-        // find any <img> tags and convert their `src` paths to Base64 data URLs.
-        self.process_body_image_tags(&html_output)
+        // --- 5. Sanitize HTML ---
+        // Sanitize the raw rendered HTML to remove any malicious user-written
+        // tags (like <script>) or attributes (like onerror) and prevent XSS.
+        let sanitized_html = sanitizer::sanitize_html(&html_output);
+
+        // --- 6. Post-Processing for Embedded Images ---
+        // Now that the HTML is safe, find the remaining <img> tags and convert
+        // their local src paths to Base64 data URLs.
+        self.process_body_image_tags(&sanitized_html)
     }
 
     /// Renders a full Markdown string to an HTML string using pulldown-cmark.

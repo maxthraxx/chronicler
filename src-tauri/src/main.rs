@@ -21,6 +21,7 @@ mod licensing;
 mod models;
 mod parser;
 mod renderer;
+mod sanitizer;
 mod utils;
 mod watcher;
 mod wikilink;
