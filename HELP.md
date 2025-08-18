@@ -84,7 +84,7 @@ There are three supported ways to specify the image path:
   - This only works on your current machine and may break if you move
     the vault
 
-Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.svg`
+Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`
 
 ---
 
