@@ -5,8 +5,7 @@
  */
 
 import type { FileNode } from "./bindings";
-import { pathExists } from "./commands";
-import { resolve, resolveResource } from "@tauri-apps/api/path";
+import { resolveResource } from "@tauri-apps/api/path";
 import { readTextFile } from "@tauri-apps/plugin-fs";
 
 /**

@@ -144,12 +144,6 @@ pub fn move_path(world: State<World>, source_path: String, dest_dir: String) -> 
     world.move_path(PathBuf::from(source_path), PathBuf::from(dest_dir))
 }
 
-/// Checks if a file or directory exists at the given path.
-#[command]
-pub fn path_exists(path: PathBuf) -> bool {
-    path.exists()
-}
-
 /// Opens the specified path in the OS's default file explorer.
 #[command]
 pub fn open_in_explorer(app_handle: AppHandle, path: String) -> Result<()> {

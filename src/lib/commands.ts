@@ -130,14 +130,6 @@ export const movePath = (sourcePath: string, destDir: string) =>
     invoke<void>("move_path", { sourcePath, destDir });
 
 /**
- * Checks if a file or directory exists at the given path.
- * @param path The absolute path to check.
- * @returns A promise that resolves to true if the path exists.
- */
-export const pathExists = (path: string) =>
-    invoke<boolean>("path_exists", { path });
-
-/**
  * Opens a given path in the OS's default file explorer.
  * @param path The absolute path to the directory or file to open.
  */
