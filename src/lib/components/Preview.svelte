@@ -24,6 +24,14 @@
         const handleContentClick = (event: MouseEvent) => {
             // First, ensure the target is an HTMLElement
             if (event.target instanceof HTMLElement) {
+                // --- Handle Spoilers ---
+                // Find the closest parent spoiler span.
+                const spoiler = event.target.closest("span.spoiler");
+                if (spoiler) {
+                    // Toggle the 'revealed' class to show/hide the content via CSS.
+                    spoiler.classList.toggle("revealed");
+                }
+
                 // --- Handle External Links ---
                 // Find the closest parent `<a>` tag to the click target.
                 const link = event.target.closest("a");
@@ -31,14 +39,6 @@
                 if (link && link.href.startsWith("http")) {
                     event.preventDefault();
                     openUrl(link.href);
-                }
-
-                // --- Handle Spoilers ---
-                // Find the closest parent spoiler span.
-                const spoiler = event.target.closest("span.spoiler");
-                if (spoiler) {
-                    // Toggle the 'revealed' class to show/hide the content via CSS.
-                    spoiler.classList.toggle("revealed");
                 }
             }
         };
