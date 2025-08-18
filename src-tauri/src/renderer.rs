@@ -133,14 +133,14 @@ impl Renderer {
 
         // 2. Process special fields within the frontmatter JSON
         if let Value::Object(map) = &mut frontmatter_json {
-            // Process wikilinks in all string and array-of-string values
+            // Process custom syntax in all string and array-of-string values
             for (_, value) in map.iter_mut() {
                 if let Value::String(s) = value {
-                    *value = Value::String(self.render_wikilinks_in_string(s));
+                    *value = Value::String(self.render_custom_syntax_in_string(s));
                 } else if let Value::Array(arr) = value {
                     for item in arr.iter_mut() {
                         if let Value::String(s) = item {
-                            *item = Value::String(self.render_wikilinks_in_string(s));
+                            *item = Value::String(self.render_custom_syntax_in_string(s));
                         }
                     }
                 }
@@ -152,7 +152,7 @@ impl Renderer {
             }
         }
 
-        // 3. Render the main body content to HTML, correctly handling wikilinks.
+        // 3. Render the main body content to HTML, correctly handling custom syntax.
         let rendered_html = self.render_body_to_html(body);
 
         // 4. Return the complete structure.
@@ -162,12 +162,17 @@ impl Renderer {
         })
     }
 
-    /// Replaces all wikilink syntax in a string with valid HTML <a> tags.
-    fn render_wikilinks_in_string(&self, text: &str) -> String {
-        let indexer = self.indexer.read();
+    /// Replaces all custom syntax (spoilers and wikilinks) in a string with valid HTML.
+    fn render_custom_syntax_in_string(&self, text: &str) -> String {
+        // First, process spoilers sequentially.
+        let with_spoilers = SPOILER_RE.replace_all(text, |caps: &Captures| {
+            format!("<span class=\"spoiler\">{}</span>", &caps[1])
+        });
 
+        // Then, process wikilinks on the result.
+        let indexer = self.indexer.read();
         WIKILINK_RE
-            .replace_all(text, |caps: &Captures| {
+            .replace_all(&with_spoilers, |caps: &Captures| {
                 let target = caps.get(1).map_or("", |m| m.as_str()).trim();
                 let alias = caps.get(3).map(|m| m.as_str().trim()).unwrap_or(target);
                 let normalized_target = target.to_lowercase();
@@ -224,26 +229,6 @@ impl Renderer {
         // Create the event stream parser from the raw Markdown string.
         let parser = Parser::new_ext(markdown, options);
 
-        // This closure is a helper for building the final HTML for a found wikilink.
-        // It's defined once here to be reused later. It checks if the link exists
-        // and creates either a valid <a> tag or a "broken link" <span> tag.
-        let indexer = self.indexer.read();
-        let build_link_html = |caps: &Captures| -> String {
-            let target = caps.get(1).map_or("", |m| m.as_str()).trim();
-            let alias = caps.get(3).map(|m| m.as_str().trim()).unwrap_or(target);
-            let normalized_target = target.to_lowercase();
-
-            if let Some(path) = indexer.link_resolver.get(&normalized_target) {
-                format!(
-                    "<a href=\"#\" class=\"internal-link\" data-path=\"{}\">{}</a>",
-                    path.to_string_lossy(),
-                    alias
-                )
-            } else {
-                format!("<span class=\"internal-link broken\">{}</span>", alias)
-            }
-        };
-
         // `new_events` will store our final, modified list of events after processing.
         let mut new_events = Vec::new();
         // `text_buffer` will temporarily store the content of consecutive `Text` events.
@@ -259,14 +244,9 @@ impl Renderer {
                 return;
             }
 
-            // First, process spoilers sequentially.
-            let with_spoilers = SPOILER_RE.replace_all(buffer, |caps: &Captures| {
-                format!("<span class=\"spoiler\">{}</span>", &caps[1])
-            });
-
-            // Then, process wikilinks on the result.
-            let final_html = WIKILINK_RE.replace_all(&with_spoilers, &build_link_html);
-            events.push(Event::Html(final_html.to_string().into()));
+            // Process all custom syntax on the buffer and push the result as a single HTML event.
+            let final_html = self.render_custom_syntax_in_string(buffer);
+            events.push(Event::Html(final_html.into()));
 
             // Reset the buffer so it's ready for the next block of text.
             buffer.clear();
@@ -395,6 +375,8 @@ mod tests {
         // Create a dummy file for link resolution
         let page1_path = root.join("Page One.md");
         fs::write(&page1_path, "content").unwrap();
+        let link_path = root.join("link.md");
+        fs::write(&link_path, "content").unwrap();
 
         // Create and scan the indexer
         let mut indexer = Indexer::new(root);
@@ -407,14 +389,14 @@ mod tests {
     }
 
     #[test]
-    fn test_render_wikilinks_in_string() {
+    fn test_render_custom_syntax_in_string() {
         let (renderer, page1_path) = setup_renderer();
-        let content = "Link to [[Page One]] and a [[Broken Link|bad link]].";
-        let rendered = renderer.render_wikilinks_in_string(content);
+        let content = "Link to [[Page One]] and a ||spoiler||.";
+        let rendered = renderer.render_custom_syntax_in_string(content);
 
         let expected_path_str = page1_path.to_string_lossy();
         let expected = format!(
-            "Link to <a href=\"#\" class=\"internal-link\" data-path=\"{}\">Page One</a> and a <span class=\"internal-link broken\">bad link</span>.",
+            "Link to <a href=\"#\" class=\"internal-link\" data-path=\"{}\">Page One</a> and a <span class=\"spoiler\">spoiler</span>.",
             expected_path_str
         );
 
@@ -529,19 +511,21 @@ A normal link for comparison: [[Page One]].
     }
 
     #[test]
-    fn test_spoilers_and_nesting() {
+    fn test_spoilers_do_render_internal_wikilinks() {
         let (renderer, page1_path) = setup_renderer();
+        let link_path = page1_path.parent().unwrap().join("link.md");
         let content = r#"
-This is a ||secret||.
-This is a ||secret with a [[Page One]]||.
-This is a [[Page One|link with a ||spoiler alias||]].
+A normal link to [[Page One]].
+A spoiler with a ||secret [[link]] inside||.
 "#;
         let result = renderer.render_page_preview(content).unwrap();
-        let expected_path_str = page1_path.to_string_lossy();
+        let page1_path_str = page1_path.to_string_lossy();
+        let link_path_str = link_path.to_string_lossy();
 
         let expected_html = format!(
-            "<p>This is a <span class=\"spoiler\">secret</span>.\nThis is a <span class=\"spoiler\">secret with a <a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a></span>.\nThis is a <a href=\"#\" class=\"internal-link\" data-path=\"{0}\">link with a <span class=\"spoiler\">spoiler alias</span></a>.</p>\n",
-            expected_path_str
+            "<p>A normal link to <a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a>.\nA spoiler with a <span class=\"spoiler\">secret <a href=\"#\" class=\"internal-link\" data-path=\"{1}\">link</a> inside</span>.</p>\n",
+            page1_path_str,
+            link_path_str
         );
 
         assert_eq!(result.rendered_html, expected_html);
