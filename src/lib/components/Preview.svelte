@@ -167,44 +167,4 @@
         background-color: var(--color-overlay-light);
         font-weight: bold;
     }
-
-    /* --- Spoiler Styles --- */
-    .main-content :global(span.spoiler) {
-        background-color: var(--color-overlay-medium);
-        color: transparent;
-        cursor: pointer;
-        padding: 0 0.2em;
-        border-radius: 3px;
-        transition:
-            background-color 0.1s ease-in-out,
-            color 0.1s ease-in-out;
-    }
-
-    .main-content :global(span.spoiler:hover) {
-        background-color: var(--color-overlay-dark);
-    }
-
-    .main-content :global(span.spoiler.revealed) {
-        background-color: transparent;
-        color: inherit;
-        cursor: text;
-    }
-
-    /* --- Nested Spoiler Styles --- */
-    /* This specifically targets links inside a hidden spoiler to make them transparent. */
-    .main-content :global(span.spoiler a.internal-link),
-    .main-content :global(span.spoiler span.internal-link.broken) {
-        color: transparent;
-        border-bottom-color: transparent;
-    }
-
-    /* When the spoiler is revealed, restore the link's original colors. */
-    .main-content :global(span.spoiler.revealed a.internal-link) {
-        color: var(--color-text-link);
-        border-bottom-color: var(--color-text-link);
-    }
-    .main-content :global(span.spoiler.revealed span.internal-link.broken) {
-        color: var(--color-text-link-broken);
-        border-bottom-color: var(--color-text-link-broken);
-    }
 </style>

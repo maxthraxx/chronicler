@@ -310,3 +310,43 @@ span.internal-link.broken {
     border-bottom: 1px dotted var(--color-text-link-broken);
     cursor: help;
 }
+
+/* --- Global Spoiler Styles --- */
+span.spoiler {
+    background-color: var(--color-overlay-dark);
+    color: transparent;
+    cursor: pointer;
+    padding: 0 0.2em;
+    border-radius: 3px;
+    transition:
+        background-color 0.1s ease-in-out,
+        color 0.1s ease-in-out;
+}
+
+span.spoiler:hover {
+    background-color: var(--color-overlay-medium);
+}
+
+span.spoiler.revealed {
+    background-color: transparent;
+    color: inherit;
+    cursor: text;
+}
+
+/* --- Nested Spoiler Styles --- */
+/* This specifically targets links inside a hidden spoiler to make them transparent. */
+span.spoiler a.internal-link,
+span.spoiler span.internal-link.broken {
+    color: transparent;
+    border-bottom-color: transparent;
+}
+
+/* When the spoiler is revealed, restore the link's original colors. */
+span.spoiler.revealed a.internal-link {
+    color: var(--color-text-link);
+    border-bottom-color: var(--color-text-link);
+}
+span.spoiler.revealed span.internal-link.broken {
+    color: var(--color-text-link-broken);
+    border-bottom-color: var(--color-text-link-broken);
+}
