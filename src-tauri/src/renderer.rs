@@ -251,35 +251,10 @@ impl Renderer {
                 return;
             }
 
-            // Find all wikilink matches in the entire buffered string.
-            let matches: Vec<_> = WIKILINK_RE.find_iter(buffer).collect();
+            // Process wikilinks on the entire buffer and push the result as a single HTML event.
+            let final_html = WIKILINK_RE.replace_all(buffer, &build_link_html);
+            events.push(Event::Html(final_html.to_string().into()));
 
-            // If there are no wikilinks, just push the whole buffer as a single `Text` event.
-            if matches.is_empty() {
-                events.push(Event::Text(buffer.clone().into()));
-            } else {
-                // If we found wikilinks, we need to reconstruct the text around them.
-                let mut last_end = 0;
-                for mat in matches {
-                    // 1. Push the plain text *before* the wikilink.
-                    if mat.start() > last_end {
-                        events.push(Event::Text(
-                            buffer[last_end..mat.start()].to_string().into(),
-                        ));
-                    }
-                    // 2. Build the HTML for the wikilink itself and push it as an `Html` event.
-                    if let Some(caps) = WIKILINK_RE.captures(mat.as_str()) {
-                        let html_link = build_link_html(&caps);
-                        events.push(Event::Html(html_link.into()));
-                    }
-                    // 3. Update our position to the end of the current wikilink match.
-                    last_end = mat.end();
-                }
-                // 4. After the loop, push any remaining plain text *after* the last wikilink.
-                if last_end < buffer.len() {
-                    events.push(Event::Text(buffer[last_end..].to_string().into()));
-                }
-            }
             // Reset the buffer so it's ready for the next block of text.
             buffer.clear();
         };
