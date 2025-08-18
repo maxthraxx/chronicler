@@ -125,18 +125,6 @@
     .main-content :global(h3 + p) {
         margin-top: 0;
     }
-    .main-content :global(a.internal-link) {
-        color: var(--color-text-link);
-        text-decoration: none;
-        border-bottom: 1px dotted var(--color-text-link);
-        cursor: pointer;
-    }
-    .main-content :global(span.internal-link.broken) {
-        color: var(--color-text-link-broken);
-        text-decoration: none;
-        border-bottom: 1px dotted var(--color-text-link-broken);
-        cursor: help;
-    }
     .main-content :global(blockquote) {
         border-left: 3px solid var(--color-border-primary);
         padding-left: 1em;

@@ -215,18 +215,6 @@
         margin: 0;
         padding-left: 1.2rem;
     }
-    :global(.infobox a.internal-link) {
-        color: var(--color-text-link);
-        text-decoration: none;
-        border-bottom: 1px dotted var(--color-text-link);
-        cursor: pointer;
-    }
-    :global(.infobox span.internal-link.broken) {
-        color: var(--color-text-link-broken);
-        text-decoration: none;
-        border-bottom: 1px dotted var(--color-text-link-broken);
-        cursor: help;
-    }
     .tag-container {
         display: flex;
         flex-wrap: wrap;
