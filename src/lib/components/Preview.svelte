@@ -18,26 +18,35 @@
         mode?: "split" | "unified";
     }>();
 
-    /// Intercept links to open them using the user's default browser, rather
-    /// than navigating to them within Chronicler's webview.
+    /// Intercepts clicks within the preview pane to handle custom interactions
+    /// like opening external links or revealing spoilers.
     onMount(() => {
-        const handleLinkClick = (event: MouseEvent) => {
+        const handleContentClick = (event: MouseEvent) => {
             // First, ensure the target is an HTMLElement
             if (event.target instanceof HTMLElement) {
-                // Now TypeScript knows event.target has DOM methods
+                // --- Handle External Links ---
+                // Find the closest parent `<a>` tag to the click target.
                 const link = event.target.closest("a");
-
+                // If it's an external link, open it in the default browser.
                 if (link && link.href.startsWith("http")) {
                     event.preventDefault();
                     openUrl(link.href);
                 }
+
+                // --- Handle Spoilers ---
+                // Find the closest parent spoiler span.
+                const spoiler = event.target.closest("span.spoiler");
+                if (spoiler) {
+                    // Toggle the 'revealed' class to show/hide the content via CSS.
+                    spoiler.classList.toggle("revealed");
+                }
             }
         };
 
-        document.body.addEventListener("click", handleLinkClick);
+        document.body.addEventListener("click", handleContentClick);
 
         return () => {
-            document.body.removeEventListener("click", handleLinkClick);
+            document.body.removeEventListener("click", handleContentClick);
         };
     });
 </script>
@@ -169,5 +178,45 @@
     .main-content :global(th) {
         background-color: var(--color-overlay-light);
         font-weight: bold;
+    }
+
+    /* --- Spoiler Styles --- */
+    .main-content :global(span.spoiler) {
+        background-color: var(--color-overlay-medium);
+        color: transparent;
+        cursor: pointer;
+        padding: 0 0.2em;
+        border-radius: 3px;
+        transition:
+            background-color 0.1s ease-in-out,
+            color 0.1s ease-in-out;
+    }
+
+    .main-content :global(span.spoiler:hover) {
+        background-color: var(--color-overlay-dark);
+    }
+
+    .main-content :global(span.spoiler.revealed) {
+        background-color: transparent;
+        color: inherit;
+        cursor: text;
+    }
+
+    /* --- Nested Spoiler Styles --- */
+    /* This specifically targets links inside a hidden spoiler to make them transparent. */
+    .main-content :global(span.spoiler a.internal-link),
+    .main-content :global(span.spoiler span.internal-link.broken) {
+        color: transparent;
+        border-bottom-color: transparent;
+    }
+
+    /* When the spoiler is revealed, restore the link's original colors. */
+    .main-content :global(span.spoiler.revealed a.internal-link) {
+        color: var(--color-text-link);
+        border-bottom-color: var(--color-text-link);
+    }
+    .main-content :global(span.spoiler.revealed span.internal-link.broken) {
+        color: var(--color-text-link-broken);
+        border-bottom-color: var(--color-text-link-broken);
     }
 </style>

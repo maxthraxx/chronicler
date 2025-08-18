@@ -7,11 +7,19 @@ use crate::{error::Result, indexer::Indexer, models::RenderedPage, parser};
 use base64::{engine::general_purpose, Engine as _};
 use parking_lot::RwLock;
 use pulldown_cmark::{html, Event, Options, Parser};
-use regex::Captures;
+use regex::{Captures, Regex};
 use serde_json::{Map, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
+
+/// Spoiler regex pattern.
+/// Captures: 1: content
+/// Format: ||content||
+static SPOILER_RE: LazyLock<Regex> = LazyLock::new(|| {
+    // The `.*?` is a non-greedy match to correctly handle multiple spoilers on one line.
+    Regex::new(r"\|\|(.*?)\|\|").unwrap()
+});
 
 /// A struct responsible for rendering Markdown content.
 #[derive(Debug)]
@@ -251,8 +259,13 @@ impl Renderer {
                 return;
             }
 
-            // Process wikilinks on the entire buffer and push the result as a single HTML event.
-            let final_html = WIKILINK_RE.replace_all(buffer, &build_link_html);
+            // First, process spoilers sequentially.
+            let with_spoilers = SPOILER_RE.replace_all(buffer, |caps: &Captures| {
+                format!("<span class=\"spoiler\">{}</span>", &caps[1])
+            });
+
+            // Then, process wikilinks on the result.
+            let final_html = WIKILINK_RE.replace_all(&with_spoilers, &build_link_html);
             events.push(Event::Html(final_html.to_string().into()));
 
             // Reset the buffer so it's ready for the next block of text.
@@ -509,6 +522,25 @@ A normal link for comparison: [[Page One]].
         // indented and fenced code blocks, but NOT inside inline code.
         let expected_html = format!(
             "<p>Case 1: Indented with 4 spaces</p>\n<pre><code><a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a>\n</code></pre>\n<p>Case 2: Fenced with backticks</p>\n<pre><code><a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a>\n</code></pre>\n<p>Case 3: Inline with single backticks <code>[[Page One]]</code>.</p>\n<p>A normal link for comparison: <a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a>.</p>\n",
+            expected_path_str
+        );
+
+        assert_eq!(result.rendered_html, expected_html);
+    }
+
+    #[test]
+    fn test_spoilers_and_nesting() {
+        let (renderer, page1_path) = setup_renderer();
+        let content = r#"
+This is a ||secret||.
+This is a ||secret with a [[Page One]]||.
+This is a [[Page One|link with a ||spoiler alias||]].
+"#;
+        let result = renderer.render_page_preview(content).unwrap();
+        let expected_path_str = page1_path.to_string_lossy();
+
+        let expected_html = format!(
+            "<p>This is a <span class=\"spoiler\">secret</span>.\nThis is a <span class=\"spoiler\">secret with a <a href=\"#\" class=\"internal-link\" data-path=\"{0}\">Page One</a></span>.\nThis is a <a href=\"#\" class=\"internal-link\" data-path=\"{0}\">link with a <span class=\"spoiler\">spoiler alias</span></a>.</p>\n",
             expected_path_str
         );
 
