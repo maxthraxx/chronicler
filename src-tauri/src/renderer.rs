@@ -21,6 +21,11 @@ static SPOILER_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"\|\|(.*?)\|\|").unwrap()
 });
 
+/// HTML img tag regex pattern.
+/// Captures: 1: src attribute content
+/// Used to find and replace local image paths with Base64 data URLs.
+static IMG_TAG_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"<img src="([^"]+)""#).unwrap());
+
 /// A struct responsible for rendering Markdown content.
 #[derive(Debug)]
 pub struct Renderer {
@@ -108,6 +113,20 @@ impl Renderer {
             // If reading the file fails, return the original src to show a broken image link.
             path_str.to_string()
         }
+    }
+
+    /// A post-processing step that finds all standard HTML `<img src="...">` tags
+    /// in a block of rendered HTML and converts their `src` paths to Base64 data URLs.
+    /// This allows users to embed images directly in the markdown body with standard HTML.
+    fn process_body_image_tags(&self, html: &str) -> String {
+        IMG_TAG_RE
+            .replace_all(html, |caps: &Captures| {
+                let path_str = &caps[1];
+                let data_url = self.convert_image_path_to_data_url(path_str);
+                // Reconstruct the beginning of the img tag with the new data URL source.
+                format!("<img src=\"{}\"", data_url)
+            })
+            .to_string()
     }
 
     /// Processes raw markdown content into a structured, rendered page object.
@@ -245,6 +264,7 @@ impl Renderer {
             }
 
             // Process all custom syntax on the buffer and push the result as a single HTML event.
+            // This is more efficient than splitting the text into multiple events.
             let final_html = self.render_custom_syntax_in_string(buffer);
             events.push(Event::Html(final_html.into()));
 
@@ -279,7 +299,11 @@ impl Renderer {
         // Render our new, modified stream of events into the final HTML string.
         let mut html_output = String::new();
         html::push_html(&mut html_output, new_events.into_iter());
-        html_output
+
+        // --- 5. Post-Processing for Embedded Images ---
+        // After all other markdown and custom syntax has been rendered to HTML,
+        // find any <img> tags and convert their `src` paths to Base64 data URLs.
+        self.process_body_image_tags(&html_output)
     }
 
     /// Renders a full Markdown string to an HTML string using pulldown-cmark.

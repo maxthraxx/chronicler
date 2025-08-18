@@ -88,6 +88,49 @@ Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.svg`
 
 ---
 
+## ✨ Images in the Page Body
+
+You can also embed images directly within the main text of your page using standard HTML `<img>` tags. This gives you full control over styling like size, positioning, and text wrapping.
+
+The path rules are the same as for infobox images. It's recommended to place your images in an `images` folder in your vault root and refer to them by filename.
+
+### Basic Image
+
+To add an image, simply use the `<img>` tag:
+
+```html
+<img src="world-map.jpg" alt="Map of the known world">
+```
+
+### Styled Image (Float Right)
+
+You can add inline CSS styles to control the appearance. This example floats the image to the right of the text, adds some space around it, and sets its width.
+
+```html
+<img
+  src="rivertown-market.png"
+  alt="Bustling market square in Rivertown"
+  style="float: right; margin-left: 1em; margin-bottom: 1em; width: 300px;"
+>
+```
+
+The text on your page will wrap around the image. This is a great way to illustrate points without breaking the flow of the text.
+
+### Image with a Caption
+
+For a more structured image with a caption, wrap the `<img>` tag in `<figure>` and `<figcaption>` tags. This is great for creating a clean, professional look.
+
+```html
+<figure style="float: right; width: 250px; margin: 0 0 1em 1em;">
+  <img src="silverflow-river.jpg" alt="The Silverflow River at dawn" style="width: 100%;">
+  <figcaption style="font-size: 0.9em; text-align: center; font-style: italic;">
+    The Silverflow River at dawn.
+  </figcaption>
+</figure>
+```
+
+---
+
 ## 🔗 Linking Between Pages
 
 Use `[[Page Name]]` to link to other pages in your vault.
