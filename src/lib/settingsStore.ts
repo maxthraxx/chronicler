@@ -9,7 +9,6 @@
 
 import { writable, get } from "svelte/store";
 import { LazyStore } from "@tauri-apps/plugin-store";
-import { BaseDirectory } from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
 
 import { SIDEBAR_INITIAL_WIDTH } from "$lib/config";
