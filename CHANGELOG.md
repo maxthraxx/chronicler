@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.12.0-alpha] - 2025-08-19
+
+### ✨ Added
+
+- **Infobox**: You can now double-click the image within a page's infobox to open it in the full-screen image viewer.
+
+### 🐞 Fixed
+
+- **Fonts**: Updated the "Cinzel" font file to a version that includes the full Greek character set, fixing a rendering bug where the mu character (μ) would not display correctly.
+- **Explorer**: Added checks to avoid unnecessary error popups when attempting to move a file or folder into the folder it's already in.
+
+### 🔄 Changed
+
+- **Infobox**: Fields in the infobox are now displayed in the same order they are defined in the YAML frontmatter, rather than being sorted alphabetically.
+
+### 🔒 Security
+
+- **Images**: The method for displaying images has been completely refactored for better performance and security. All image processing is now handled by the Rust backend, which reads image files and embeds them as Base64 Data URLs.
+
+---
+
 ## [v0.11.1-alpha] - 2025-08-17
 
 ### ✨ Added
