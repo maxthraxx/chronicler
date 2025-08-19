@@ -112,12 +112,14 @@
         // Deep copy to avoid mutating the original store object.
         currentTheme = JSON.parse(JSON.stringify(theme));
 
-        // Ensure font properties exist for older themes being edited for the first time
-        if (!currentTheme.fontFamilyHeading) {
-            currentTheme.fontFamilyHeading = AVAILABLE_FONTS[0].value;
-        }
-        if (!currentTheme.fontFamilyBody) {
-            currentTheme.fontFamilyBody = AVAILABLE_FONTS[2].value;
+        if (currentTheme) {
+            // Ensure font properties exist for older themes being edited for the first time
+            if (!currentTheme.fontFamilyHeading) {
+                currentTheme.fontFamilyHeading = AVAILABLE_FONTS[0].value;
+            }
+            if (!currentTheme.fontFamilyBody) {
+                currentTheme.fontFamilyBody = AVAILABLE_FONTS[2].value;
+            }
         }
 
         originalName = theme.name;
@@ -126,6 +128,7 @@
     function handleSave() {
         const themeToSave = currentTheme;
         if (!themeToSave || !themeToSave.name.trim()) {
+            // TODO: Using a custom modal or inline message is better than alert() in Tauri apps.
             alert("Theme name cannot be empty.");
             return;
         }
@@ -161,7 +164,6 @@
         if (
             await confirm(message, {
                 title: "Confirm Deletion",
-                type: "warning",
             })
         ) {
             deleteCustomTheme(themeToDelete.name);
