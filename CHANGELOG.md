@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.13.0-alpha] - 2025-08-21
+
+### ✨ Added
+
+- **Spoilers**: Added support for Discord-style `||spoiler||` syntax in Markdown.
+- **License Nag Screen**: Implemented a modal to encourage unlicensed users to purchase a license after 30 days of use.
+
+### 🔄 Changed
+
+- **Styling**: The CSS rules for internal wikilinks have been consolidated from individual components into the global `app.css` file.
+- **Internal**: The backend rendering logic for custom syntax has been refactored to improve maintainability.
+
+---
+
 ## [v0.12.0-alpha] - 2025-08-19
 
 ### ✨ Added
