@@ -6,7 +6,7 @@ import { resetAllStores } from "$lib/viewStores";
 import { appStatus } from "$lib/appState";
 import { world } from "$lib/worldStore";
 import { initializeVault } from "$lib/actions";
-import { getVaultPath } from "$lib/commands";
+import { getVaultPath, getAppUsageDays } from "$lib/commands";
 import {
     loadGlobalSettings,
     initializeVaultSettings,
@@ -14,6 +14,9 @@ import {
 } from "$lib/settingsStore";
 import { checkForAppUpdates } from "$lib/updater";
 import { licenseStore } from "./licenseStore";
+import { get } from "svelte/store";
+import { openModal } from "./modalStore";
+import NagScreenModal from "./components/NagScreenModal.svelte";
 
 /**
  * Orchestrates the complete vault initialization sequence. This function is the
@@ -47,6 +50,18 @@ export async function initializeApp() {
     try {
         // Load global settings and license status that apply to the whole application first.
         await Promise.all([loadGlobalSettings(), licenseStore.initialize()]);
+
+        // After license is checked, see if we need to show the nag screen.
+        const license = get(licenseStore);
+        if (license.status !== "licensed") {
+            const daysUsed = await getAppUsageDays();
+            if (daysUsed >= 30) {
+                openModal({
+                    component: NagScreenModal,
+                    props: { daysUsed },
+                });
+            }
+        }
 
         // Then, check if a vault was already open from the last session.
         const path = await getVaultPath();

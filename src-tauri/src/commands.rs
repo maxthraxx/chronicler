@@ -13,6 +13,7 @@ use crate::{
     models::{FileNode, RenderedPage},
     world::World,
 };
+use chrono::{Local, NaiveDate};
 use std::path::PathBuf;
 use tauri::{command, AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
@@ -217,5 +218,32 @@ pub fn get_linux_install_type() -> String {
     } else {
         // This indicates it's likely a .deb, .rpm, or other system-managed package.
         "other".to_string()
+    }
+}
+
+/// Checks the number of days the application has been in use.
+/// If it's the first time this check is run, it records the current date.
+#[command]
+#[instrument(skip(app_handle))]
+pub fn get_app_usage_days(app_handle: AppHandle) -> Result<i64> {
+    let mut config = config::load(&app_handle)?;
+
+    match config.first_launch_date {
+        Some(date_str) => {
+            // If a date is already stored, calculate the difference.
+            let first_launch_date = NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
+                .unwrap_or_else(|_| Local::now().date_naive());
+            let current_date = Local::now().date_naive();
+            let duration = current_date.signed_duration_since(first_launch_date);
+            Ok(duration.num_days())
+        }
+        None => {
+            // If no date is stored, this is the first launch.
+            // Record today's date and return 0 days.
+            let today = Local::now().date_naive().format("%Y-%m-%d").to_string();
+            config.first_launch_date = Some(today);
+            config::save(&app_handle, &config)?;
+            Ok(0)
+        }
     }
 }

@@ -201,3 +201,9 @@ export const verifyAndStoreLicense = (licenseKey: string) =>
 export function getLinuxInstallType(): Promise<string> {
     return invoke("get_linux_install_type");
 }
+
+/**
+ * Checks the number of days the application has been in use.
+ * @returns {Promise<number>} A promise that resolves to the number of days.
+ */
+export const getAppUsageDays = () => invoke<number>("get_app_usage_days");

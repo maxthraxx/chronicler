@@ -30,6 +30,7 @@ pub const DEFAULT_EVENT_CHANNEL_CAPACITY: usize = 100;
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct AppConfig {
     pub vault_path: Option<String>,
+    pub first_launch_date: Option<String>,
 }
 
 /// Retrieves the path to the configuration file.
