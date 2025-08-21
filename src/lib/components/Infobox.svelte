@@ -83,12 +83,19 @@
         {#if data?.image}
             <div class="image-column">
                 <div class="image-container">
-                    <img
-                        src={data.image}
-                        alt={data?.title || "Infobox image"}
-                        class="infobox-image"
-                        ondblclick={openImageView}
-                    />
+                    <button
+                        type="button"
+                        class="image-button"
+                        onclick={openImageView}
+                        aria-label={"View larger: " +
+                            (data?.title || "Infobox image")}
+                    >
+                        <img
+                            src={data.image}
+                            alt={data?.title || "Infobox image"}
+                            class="infobox-image"
+                        />
+                    </button>
                 </div>
             </div>
         {/if}
@@ -180,13 +187,24 @@
         border-radius: 4px;
         overflow: hidden;
     }
+    .image-button {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        line-height: 0; /* Prevents extra spacing */
+    }
+    /* Adds a visible outline for keyboard users, which is an accessibility best practice */
+    .image-button:focus-visible {
+        outline: 2px solid var(--color-accent, Highlight);
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
     .infobox-image {
         max-width: 100%;
         max-height: 400px;
         object-fit: contain;
         border-radius: 2px;
-        /* Add cursor pointer on hover to indicate it's interactive */
-        cursor: pointer;
     }
     .no-fields-message {
         grid-column: 1 / -1;
