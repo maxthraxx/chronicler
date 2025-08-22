@@ -56,6 +56,8 @@ All frontmatter fields are optional. There are four fields that have special beh
 
 You can add any custom fields you want (e.g `height`, `age`, `capital`, `population` etc.). Any field that is not one of the four special fields above will be automatically added as a row in the infobox, giving you a flexible way to display structured data.
 
+Note that special syntax like `[[wikilinks]]` and `||spoilers||` must be `"||surrounded by double quotes||"` to be rendered properly by the infobox.
+
 ---
 
 ## 🖼️ Infoboxes and Images
@@ -142,7 +144,7 @@ Use `[[Page Name]]` to link to other pages in your vault.
 
 ---
 
-## 🏷️ Tags and Hierarchies
+## 🏷️ Tags
 
 You can tag pages using the `tags:` field in YAML frontmatter:
 
@@ -151,6 +153,23 @@ tags: [city, coastal]
 ```
 
 - Click on any tag to see a list of all pages with that tag
+
+---
+
+## 🫣 Spoilers
+
+You can use the **spoiler syntax** by wrapping text in double pipes `||like this||`.
+
+Example:
+
+```
+The king’s advisor is ||secretly a vampire||
+```
+
+This will render as:
+> The king’s advisor is ▓▓▓▓▓▓▓▓▓▓▓▓
+
+Readers can click to reveal the hidden text, and click again to hide it.
 
 ---
 
