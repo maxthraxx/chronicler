@@ -7,8 +7,7 @@
 
     let { daysUsed } = $props<{ daysUsed: number }>();
 
-    const DONATE_URL =
-        "[https://chronicler.pro/#support](https://chronicler.pro/#support)";
+    const DONATE_URL = "https://chronicler.pro/#support";
     const COUNTDOWN_SECONDS = 6;
 
     let countdown = $state(COUNTDOWN_SECONDS);
