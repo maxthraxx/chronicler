@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.14.2-alpha] - 2025-08-23
+
+### 🐞 Fixed
+
+- **Renderer**: Fixed a bug where certain Markdown-generated HTML (e.g horizontal lines via `***`) was being removed due to overly restrictive sanitization. The sanitizer whitelist has been extended to include formats that were previously working.
+
+---
+
 ## [v0.14.1-alpha] - 2025-08-23
 
 ### 🐞 Fixed
