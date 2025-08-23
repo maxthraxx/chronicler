@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.14.1-alpha] - 2025-08-23
+
+### 🐞 Fixed
+
+- **Renderer**: Fixed a critical bug where internal page links were broken, attempting to open external URLs instead of navigating to the linked page.
+
+---
+
 ## [v0.14.0-alpha] - 2025-08-23
 
 ### ✨ Added
