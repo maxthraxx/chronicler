@@ -10,41 +10,48 @@ license = "PolyForm Shield License 1.0.0"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+# Tauri
 tauri = { version = "2", features = [] }
-serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["preserve_order"] }
-serde_yaml = "0.9"
-regex = "1.10"
-pulldown-cmark = { version = "0.10", features = ["serde"] }
-walkdir = "2.3"
-notify = "6.1"
-thiserror = "1.0"
-log = "0.4"
-dirs-next = "2.0"
-twox-hash = "1.6"
-atomicwrites = "0"
-notify-debouncer-full = "0.3"
-tokio = { version = "1", features = ["sync"] }
-parking_lot = "0.12"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time"] }
-clap = { version = "4.5", features = ["derive"] }
-tempfile = "3"
-tauri-plugin-dialog = "2"
-# Added for importer
-reqwest = { version = "0.12", features = ["json"] }
-zip-extract = "0.1"
-flate2 = "1.0"
-tar = "0.4"
-glob = "0.3"
 tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
 tauri-plugin-process = "2"
 tauri-plugin-os = "2"
 tauri-plugin-store = "2"
 tauri-plugin-fs = "2"
-base64 = "0.22.1"
-chrono = "0.4.41"
-ammonia = "4.1.1"
+tauri-plugin-updater = "2"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+serde_yaml = "0.9"
+
+# Core logic dependencies
+regex = "1.10"
+pulldown-cmark = { version = "0.10" }
+walkdir = "2.3"
+notify = "6.1"
+thiserror = "1.0"
+notify-debouncer-full = "0.3"
+parking_lot = "0.12"
+tempfile = "3"
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock"] } # For getting current time
+ammonia = "4.1" # For HTML sanitization
+
+# Async runtime and utilities
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
+
+# Logging and CLI parsing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time"] }
+clap = { version = "4.5", features = ["derive"] }
+
+# Importer dependencies
+# The 'blocking' feature is removed as async calls are used in importer.rs and licensing.rs
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+zip-extract = "0.1"
+flate2 = "1.0"
+tar = "0.4"
+glob = "0.3"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"
