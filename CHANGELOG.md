@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.14.0-alpha] - 2025-08-23
+
+### ✨ Added
+
+- **Explorer**: You can now duplicate any page from the file explorer's context menu. A copy is created in the same directory with a numerical suffix.
+- **Images**: Added the ability to embed images directly in the body of a page using standard HTML `<img>` tags. The renderer automatically converts the `src` paths of these images into self-contained Base64 data URLs.
+
+### 🐞 Fixed
+
+- **Nag Screen**: Corrected the URL for the donation link in the license nag screen.
+
+### 🔒 Security
+
+- **Security**: Implemented an HTML sanitizer to prevent Cross-Site Scripting (XSS) attacks from user-provided content. The renderer now strips dangerous tags (like `<script>`) and attributes (like `onerror`) while allowing a whitelist of safe elements.
+- **Security**: Removed support for SVG images to mitigate a potential XSS vulnerabilities. Because SVGs can contain embedded `<script>` tags, this change hardens application security by disallowing the format in favor of safer raster image types.
+
+### 🔄 Changed
+
+- **Infobox**: Images can now be viewed full-screen with a single click instead of a double click.
+- **Help**: The Help page has been updated with a new section for the spoiler syntax and examples for embedding and styling images using HTML.
+
+---
+
 ## [v0.13.0-alpha] - 2025-08-21
 
 ### ✨ Added
