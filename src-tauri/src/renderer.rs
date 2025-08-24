@@ -44,6 +44,8 @@ fn get_mime_type(filename: &str) -> &str {
         "image/jpeg"
     } else if lower.ends_with(".gif") {
         "image/gif"
+    } else if lower.ends_with(".svg") {
+        "image/svg+xml"
     } else if lower.ends_with(".webp") {
         "image/webp"
     } else {

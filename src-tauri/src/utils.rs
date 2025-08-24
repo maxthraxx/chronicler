@@ -5,7 +5,7 @@
 use std::path::Path;
 
 /// A list of common image file extensions.
-const IMAGE_EXTENSIONS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp"];
+const IMAGE_EXTENSIONS: &[&str] = &["png", "jpg", "jpeg", "gif", "webp", "svg"];
 
 /// Helper function to check if a path points to a Markdown file.
 pub fn is_markdown_file(path: &Path) -> bool {
