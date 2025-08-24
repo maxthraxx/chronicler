@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.14.3-alpha] - 2025-08-24
+
+### 🔄 Changed
+
+- **Build**: Optimized the backend's dependencies. Default features for several dependencies were disabled in favor of an opt-in approach, ensuring only necessary and cross-platform compatible code is compiled. This speeds up build time, reduces the final binary size and improves build reliability.
+- **Images**: Restored support for SVG images.
+
+---
+
 ## [v0.14.2-alpha] - 2025-08-23
 
 ### 🐞 Fixed
