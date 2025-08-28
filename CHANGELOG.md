@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.15.0-alpha] - 2025-08-28
+
+### ✨ Added
+
+- **Templates**: Added a system for creating, managing, and using user-defined page templates. These templates are stored in a global configuration directory, making them accessible across all vaults.
+
+### 🔄 Changed
+
+- **New Page Workflow**: The "New Page" workflow has been updated with a new dropdown menu. This menu is populated with your saved templates, allowing you to start a new page with pre-defined content.
+
+---
+
 ## [v0.14.3-alpha] - 2025-08-24
 
 ### 🔄 Changed
