@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.16.0-alpha] - 2025-08-30
+
+### ✨ Added
+
+- **Preview**: You can now create a missing page by clicking its "broken" wikilink directly in the preview pane.
+- **Reports**: Added a new "Reports" tab to the sidebar to house vault analytics.
+- **Reports**: Implemented a "Broken Links" report that lists all unresolved wikilinks and the source pages they appear on, allowing you to click on the broken link's target to create the missing page.
+
+### 🔄 Changed
+
+- **Internal**: The frontend logic for rendering the main view (e.g., file view, reports) has been refactored to a more scalable and modern component map system.
+- **Internal**: As part of the view rendering refactor, the welcome screen has been extracted into its own dedicated `WelcomeView.svelte` component.
+- **Internal**: The modal management system has been modernized, improving code clarity.
+
+---
+
 ## [v0.15.0-alpha] - 2025-08-28
 
 ### ✨ Added
