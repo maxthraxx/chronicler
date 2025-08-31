@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.16.1-alpha] - 2025-08-31
+
+### 🐞 Fixed
+
+- **Parser**: Fixed the wikilink parser which was incorrectly allowing multiple `#` characters in a link, such as `[[Page#Section1#SubSection]]`. The logic has been updated to enforce a stricter syntax, ensuring that malformed links with multiple section markers are now treated as plain text.
+- **Parser**: Resolved an issue where wikilinks with extra whitespace around the alias pipe character (e.g., `[[link | alias]]`) were incorrectly flagged as broken. The parser now trims leading and trailing whitespace from the link target and alias, making it more permissive of common user formatting and improving the accuracy of link resolution.
+
+---
+
 ## [v0.16.0-alpha] - 2025-08-30
 
 ### ✨ Added
