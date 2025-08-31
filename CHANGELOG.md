@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.17.0-alpha] - 2025-09-02
+
+### ✨ Added
+
+- **Preview**: An automatic Table of Contents (ToC) is now generated for pages that contain Markdown headers, making it easier to navigate long documents. The ToC comes with a `[hide]` button, and Chronicler remembers your choice.
+
+### 🔄 Changed
+
+- **UI**: Modals now have a maximum height to prevent them from overflowing the viewport and will display a vertical scrollbar when their content is too long.
+- **Writer**: The logic for writing page content to disk has been centralized into the application's `writer` module to ensure all saves are atomic operations. This improves data integrity by preventing corruption or data loss if an operation is interrupted.
+- **Renderer**: The HTML sanitizer has been configured to no longer automatically add `rel="noopener noreferrer"` to external links. This change was implemented to resolve internal test failures and results in cleaner HTML output.
+- **Help**: The Help page has been updated with a new section explaining how to create tables using Markdown syntax.
+
+---
+
 ## [v0.16.1-alpha] - 2025-08-31
 
 ### 🐞 Fixed
