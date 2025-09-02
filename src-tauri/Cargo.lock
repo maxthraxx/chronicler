@@ -627,6 +627,7 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "pulldown-cmark",
+ "quick-xml 0.38.3",
  "regex",
  "reqwest",
  "serde",
