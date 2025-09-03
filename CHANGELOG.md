@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.17.1-alpha] - 2025-09-03
+
+### 🔒 Security
+
+- **Security**: All values within the YAML frontmatter are now sanitized before rendering. This prevents malicious HTML, like `onerror` attributes, from being injected and executed in the infobox, protecting against Cross-Site Scripting (XSS) attacks.
+
+### 🐞 Fixed
+
+- **Preview**: Fixed a bug where the page title would display a link's alias instead of the actual page name when navigating via internal links. Page titles are now correctly derived from the file path.
+
+---
+
 ## [v0.17.0-alpha] - 2025-09-02
 
 ### ✨ Added
