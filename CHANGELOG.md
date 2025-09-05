@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.18.0-alpha] - 2025-09-05
+
+### ✨ Added
+
+- **Importer**: You can now import an entire folder of `.docx` files at once.
+- **Importer**: When converting `.docx` files, any embedded images are now automatically extracted and saved into a dedicated `images` directory. The resulting Markdown files will correctly link to these images using clean, relative paths.
+- **Importer**: The import UI has been moved from the general settings into a new, dedicated modal. This new interface provides better user feedback by displaying a loading message while the import is in progress.
+
+---
+
 ## [v0.17.1-alpha] - 2025-09-03
 
 ### 🔒 Security
