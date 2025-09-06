@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.18.1-alpha] - 2025-09-06
+
+### ✨ Added
+
+- **Infobox**: The page title is now displayed at the top of the infobox.
+
+### 🔄 Changed
+
+- **UI**: The application icons have been updated with the new Chronicler logo.
+- **Styling**: The width of tables in the preview area is now set to `auto` to better fit their content.
+
+### 🐞 Fixed
+
+- **Images**: Fixed a bug that prevented images from rendering if their file paths contained special characters (like `&`) or URL-encoded characters (like `%20` for a space). The renderer now correctly decodes these paths, making image handling significantly more reliable.
+- **Preview**: Resolved a critical issue where clicking a broke Markdown link (e.g., `[link](Target)`) would cause an unrecoverable 404 error, breaking the page view. All click events are now handled by a unified system that neutralizes such links to prevent the error.
+- **Styling**: Corrected a layout bug where headings would incorrectly wrap around floated images from a previous section. Headings now automatically clear preceding floats, ensuring a predictable document structure.
+
+---
+
 ## [v0.18.0-alpha] - 2025-09-05
 
 ### ✨ Added
