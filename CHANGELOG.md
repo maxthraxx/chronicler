@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.18.2-alpha] - 2025-09-07
+
+### 🐞 Fixed
+
+- **Styling**: Fixed a layout regression where main page content would incorrectly appear below the infobox instead of wrapping around it. This was resolved by adding a new wrapper element that correctly contains the flow of the main content while allowing headings inside it to clear floats as intended.
+
+---
+
 ## [v0.18.1-alpha] - 2025-09-06
 
 ### ✨ Added
