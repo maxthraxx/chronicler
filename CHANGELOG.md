@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.19.0-alpha] - 2025-09-09
+
+### ✨ Added
+
+- **New Page Workflow**: The "New Page" modal has been enhanced with a dropdown menu that lists all available folders within the vault. This allows you to select a destination for the new page directly from the modal.
+
+### 🐞 Fixed
+
+- **Renderer**: Wikilinks located inside raw HTML blocks (e.g., within `<table>` tags) are now correctly processed and rendered as clickable links. Previously, they were passed through as plain text.
+- **Parser**: Corrected an issue where wikilinks with aliases used inside Markdown tables were not parsed correctly. The parser now properly handles the necessary escaped pipe character (`\|`), which is required to prevent conflicts with table syntax.
+- **UI**: Fixed a minor layout issue that could cause an unnecessary horizontal scrollbar to appear in the text input modal.
+
+---
+
 ## [v0.18.2-alpha] - 2025-09-07
 
 ### 🐞 Fixed
