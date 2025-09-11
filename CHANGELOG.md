@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.19.1-alpha] - 2025-09-11
+
+### 🔄 Changed
+
+- **Performance**: Significantly improved performance of batch file operations, such as adding multiple files to the vault at once. Previously, the application would trigger a full, expensive re-indexing for each individual file change. The file watcher now collects multiple events into a single batch, and the expensive relationship-rebuilding step is performed only once after all changes have been processed.
+
+---
+
 ## [v0.19.0-alpha] - 2025-09-09
 
 ### ✨ Added
