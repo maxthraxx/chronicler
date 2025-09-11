@@ -6,6 +6,7 @@
         title?: string;
         image?: string;
         image_path?: string; // The absolute path to the image, for opening in the viewer.
+        subtitle?: string;
         infobox?: string;
         error?: string;
         details?: string; // Error details
@@ -57,6 +58,7 @@
         // These keys are handled separately in the template, so we filter them out.
         const excludedKeys = [
             "title",
+            "subtitle",
             "tags",
             "infobox",
             "image",
@@ -82,6 +84,10 @@
     <div class="infobox-content-wrapper">
         {#if data?.title}
             <h3 class="infobox-title">{data.title}</h3>
+        {/if}
+
+        {#if data?.subtitle}
+            <p class="infobox-subtitle">{data.subtitle}</p>
         {/if}
 
         {#if data?.image}
@@ -184,6 +190,13 @@
         padding-bottom: 0.5rem;
         border-bottom: 1px solid var(--color-border-primary);
     }
+    .infobox-subtitle {
+        font-size: 1rem;
+        font-style: italic;
+        /* Use a negative top margin to pull it closer to the title's bottom border */
+        margin: -0.75rem 0 1rem 0;
+        padding: 0;
+    }
     .image-column {
         width: 100%;
         margin-bottom: 1rem;
@@ -278,7 +291,8 @@
             align-items: flex-start;
             flex-wrap: wrap;
         }
-        .infobox-title {
+        .infobox-title,
+        .infobox-subtitle {
             flex-basis: 100%; /* Make the title span the full width */
         }
         .image-column {
