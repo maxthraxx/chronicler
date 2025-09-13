@@ -268,7 +268,6 @@ impl Renderer {
             .to_string()
     }
 
-
     /// Renders Markdown body content to HTML, processing custom wikilinks, and generating a TOC.
     ///
     /// The function splits the resulting HTML at the first header, allowing the frontend
@@ -356,7 +355,8 @@ impl Renderer {
                     let number = number_parts.join(".");
 
                     // Process the raw header text to get clean display text for the TOC.
-                    let display_text = self.extract_display_text_from_wikilinks(&header_text_buffer);
+                    let display_text =
+                        self.extract_display_text_from_wikilinks(&header_text_buffer);
 
                     // Slugify the clean display text for a more readable anchor ID.
                     let mut slug = slug::slugify(&display_text);
