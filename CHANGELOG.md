@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.20.0-alpha] - 2025-09-13
+
+### ✨ Added
+
+- **Importer**: Added a new importer for MediaWiki XML dumps, which is now available as an option in the Importer modal. It uses a robust two-pass process to accurately parse pages and infer tags from infobox templates by mapping template categories. The importer automatically downloads all images referenced in the content from the live wiki's API, flattens infobox data into YAML frontmatter, and converts wikitext to Markdown with `[[wikilinks]]`.
+- **Images**: You can now embed images using the popular wikilink syntax (`![[image.jpg]]`). The renderer converts this into a standard `<img>` tag and processes it through the same consistent pipeline as other images.
+
+### 🐞 Fixed
+
+- **Table of Contents**: Corrected the rendering of headers that contain wikilinks. The TOC will now display the clean alias or page name (e.g., "Display Text") instead of the raw Markdown (`[[My Page|Display Text]]`). The anchor link URLs are also now generated from this cleaned text for more readable links.
+
+---
+
 ## [v0.19.1-alpha] - 2025-09-11
 
 ### 🔄 Changed
