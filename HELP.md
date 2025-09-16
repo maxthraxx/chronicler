@@ -28,6 +28,7 @@ Your **vault** is just a folder on your computer. You decide where the world is 
 Chronicler uses **Markdown** to format your pages.
 
 - Use `# heading`, `## subheading`, `**bold**`, `*italic*`, `-` for bullet lists, and so on
+- Use `---` to insert horizontal separators to divide long pages into readable sections.
 
 ---
 
@@ -67,7 +68,24 @@ All frontmatter fields are optional. There are four fields that have special beh
 
 You can add any custom fields you want (e.g `height`, `age`, `capital`, `population` etc.). Any field that is not one of the four special fields above will be automatically added as a row in the infobox, giving you a flexible way to display structured data.
 
-**Note**: special syntax like `[[wikilinks]]` and `||spoilers||` must be `"||surrounded by double quotes||"` to be rendered properly by the infobox.
+### Special syntax inside frontmatter values
+
+Some values may contain special characters that need to be treated properly (for example `[[wikilinks]]` or `||spoilers||`). There are two safe ways to include these without breaking the frontmatter:
+
+1. **Wrap the value in quotes**:
+
+```yaml
+motto: 'Strength | Honor'
+race: '[[Elf|High Elf]]'
+```
+
+2. **Use a YAML block scalar (the pipe `|`) for multi-line or literal values**
+
+```yaml
+notes: |
+  This value can contain literal pipes without escaping: A | B | C
+  It can also contain wikilinks like [[Example Page]] or spoilers like ||secret||.
+```
 
 ---
 
@@ -160,6 +178,22 @@ For a more structured image with a caption, wrap the `<img>` tag in `<figure>` a
     The Silverflow River at dawn.
   </figcaption>
 </figure>
+```
+
+### Simple Images
+
+In addition to HTML `<img>` tags, Chronicler supports two simpler image syntaxes. These are easier to type but **do not** support the advanced styling (size, float, captions etc.) available with HTML.
+
+#### Markdown image
+
+```markdown
+![Alt text](world-map.jpg)
+```
+
+#### Wikilink image
+
+```markdown
+![[world-map.jpg]]
 ```
 
 ---
