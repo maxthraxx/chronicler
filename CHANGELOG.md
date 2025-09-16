@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.21.0-alpha] - 2025-09-16
+
+### ✨ Added
+
+- **Infobox**: A new `subtitle` field is now supported in the YAML frontmatter. It is rendered directly below the main title in italics.
+
+### 🔄 Changed
+
+- **Table of Contents**: A new "Contents" button has been added to the header of the main view, allowing you to toggle the visibility of the Table of Contents globally.
+- **Help**: The Help page has been updated with a new section for using inline images, such as flags or icons, and also mentions the new 'subtitle' YAML field.
+
+### 🐞 Fixed
+
+- **File Explorer**: The file and folder sorting has been changed from standard alphabetical to natural sort order. This corrects an issue where numbered files were sorted unintuitively (e.g., `100` appearing before `21`) and ensures all entries are now listed in a more human-friendly order.
+
+---
+
 ## [v0.20.0-alpha] - 2025-09-13
 
 ### ✨ Added
