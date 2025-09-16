@@ -57,12 +57,13 @@ image: rivertown.jpg
 
 All frontmatter fields are optional. There are four fields that have special behaviour:
 
-| Field     | Description |
-|-----------|-------------|
-| `title`   | Page display title (otherwise filename is used) |
-| `infobox` | Header text for the infobox |
-| `tags`    | List of tags for categorization |
-| `image`   | Image shown in the infobox (see below) |
+| Field      | Description |
+|------------|-------------|
+| `title`    | Page display and infobox title (otherwise filename is used) |
+| `subtitle` | Infobox subtitle |
+| `infobox`  | Header text below the infobox image |
+| `tags`     | List of tags for categorization |
+| `image`    | Image shown in the infobox (see below) |
 
 You can add any custom fields you want (e.g `height`, `age`, `capital`, `population` etc.). Any field that is not one of the four special fields above will be automatically added as a row in the infobox, giving you a flexible way to display structured data.
 
