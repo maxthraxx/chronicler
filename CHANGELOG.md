@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.21.1-alpha] - 2025-09-17
+
+### 🔄 Changed
+
+- **Help**: The Help page has been updated with new sections covering horizontal separators (`---`), embedding images using both Markdown and wikilink syntax, and using YAML block scalars (`|`).
+
+### 🐞 Fixed
+
+- **Preview**: Fixed a bug that prevented creating new pages by clicking on broken links in the preview pane. A previous bad cherry-pick had caused the HTML sanitizer to incorrectly strip the necessary `data-target` attribute from links.
+
+---
+
 ## [v0.21.0-alpha] - 2025-09-16
 
 ### ✨ Added
