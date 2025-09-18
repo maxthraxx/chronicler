@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.22.0-alpha] - 2025-09-18
+
+### ✨ Added
+
+- **Infobox**: You can now use inline Markdown formatting (like bold and italics) in any string value within the YAML frontmatter.
+- **Infobox**: Images can now be embedded directly into frontmatter fields using either standard `<img>` tags or wikilink syntax (`![[...]]`). These images are converted to Base64 data URLs and styled to display correctly within the infobox.
+
+### 🔄 Changed
+
+- **Infobox**: The default italic styling has been removed from the infobox subtitle. This change allows users to apply their own formatting now that Markdown is supported.
+- **Internal**: The backend rendering pipeline has been refactored to improve maintainability. All frontmatter processing logic—including sanitation, field rendering, and image handling—has been encapsulated into a single `process_frontmatter` function.
+
+---
+
 ## [v0.21.1-alpha] - 2025-09-17
 
 ### 🔄 Changed
