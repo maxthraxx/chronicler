@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.22.1-alpha] - 2025-09-20
+
+### 🐞 Fixed
+
+- **Windows**: Fixed a critical bug that caused navigation to fail when creating new pages in subfolders. The issue stemmed from the backend sending paths with inconsistent separators (`\` vs. `/`) due to a subtle behavior in Tauri's serialization layer. A custom serializer has been implemented to guarantee that all paths sent to the frontend are consistently formatted with forward slashes.
+
+---
+
 ## [v0.22.0-alpha] - 2025-09-18
 
 ### ✨ Added
