@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.23.0-alpha] - 2025-09-21
+
+### ✨ Added
+
+- **Infobox**: An image carousel has been implemented for the infobox. The `image` field in the YAML frontmatter now accepts a list of image paths in addition to a single string.
+- **View Modes**: A new "editor-only" view mode has been added.
+
+### 🔄 Changed
+
+- **Infobox**: The component's styling has been refactored to use modern CSS best practices. All hardcoded `px` values have been replaced with relative `rem` units, making the component fully scalable and accessible. CSS Custom Properties have also been introduced to create a consistent design system for spacing and sizing.
+
+### 🐞 Fixed
+
+- **UI**: Fixed an issue that caused a flash of the default light theme on application startup and when the vault selector was open.
+
+---
+
 ## [v0.22.2-alpha] - 2025-09-21
 
 ### 🐞 Fixed
