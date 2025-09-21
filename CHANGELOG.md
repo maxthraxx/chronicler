@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.22.2-alpha] - 2025-09-21
+
+### 🐞 Fixed
+
+- **Windows**: Fixed a cross-platform bug that prevented wikilinks from navigating correctly on Windows due to inconsistent path separators. The HTML renderer had not been updated to account for an earlier change that standardized path serialization to a web-standard format. A new helper function has been added to centralize path normalization, guaranteeing all paths sent to the frontend use the web-standard format.
+
+---
+
 ## [v0.22.1-alpha] - 2025-09-20
 
 ### 🐞 Fixed
