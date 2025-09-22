@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.23.2-alpha] - 2025-09-22
+
+### 🔄 Changed
+
+- **Performance**: Implemented a new hybrid image loading strategy to resolve critical performance bottlenecks and UI freezes caused by the previous all-Base64 approach. Images located inside the vault (using relative paths) are now loaded via Tauri's highly performant `asset://` protocol, which loads them asynchronously to prevent UI freezes and reduce memory usage.
+
+### 🐞 Fixed
+
+- **Styling**: Fixed an issue where inline images in the infobox were not styled correctly. A consistent CSS class (`embedded-image`) is now applied to all `<img>` tags during rendering, regardless of their source, and the infobox styles have been updated to account for this.
+
+---
+
 ## [v0.23.1-alpha] - 2025-09-22
 
 ### 🐞 Fixed
