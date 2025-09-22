@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.23.1-alpha] - 2025-09-22
+
+### 🐞 Fixed
+
+- **Infobox**: Fixed a regression that caused fields in the infobox to be rendered in an unpredictable order, which often resulted in the last field from the YAML appearing first in the UI.
+
+---
+
 ## [v0.23.0-alpha] - 2025-09-21
 
 ### ✨ Added
