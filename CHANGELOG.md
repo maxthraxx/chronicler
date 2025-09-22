@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.23.3-alpha] - 2025-09-22
+
+### 🐞 Fixed
+
+- **Images**: Fixed a critical regression where images stopped loading after the recent change in `v0.23.2`. This reverts image handling back to the previous behaviour.
+
+---
+
 ## [v0.23.2-alpha] - 2025-09-22
 
 ### 🔄 Changed
