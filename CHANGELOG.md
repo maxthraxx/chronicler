@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.23.4-alpha] - 2025-09-23
+
+### 🔄 Changed
+
+- **Performance / Images**: The high-performance hybrid image loading system has been re-instated. This system significantly improves performance and reduces memory usage by loading in-vault images asynchronously via a custom asset protocol, while retaining Base64 encoding for external images.
+
+### 🐞 Fixed
+
+- **Windows**: Fixed a critical bug that prevented in-vault images from loading on Windows with the new asset protocol. This was caused by a difference in how webview engines handle custom protocols. The backend now uses conditional compilation to generate the correct URL format for each platform, making the performance improvements fully cross-platform.
+
+---
+
 ## [v0.23.3-alpha] - 2025-09-22
 
 ### 🐞 Fixed
