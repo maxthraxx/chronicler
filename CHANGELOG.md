@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.24.1-alpha] - 2025-09-24
+
+### 🐞 Fixed
+
+- **Windows / New Page**: Fixed a bug on Windows where the "New Page" modal failed to pre-select the correct parent directory due to inconsistent path separators.
+
+---
+
 ## [v0.24.0-alpha] - 2025-09-24
 
 ### ✨ Added
