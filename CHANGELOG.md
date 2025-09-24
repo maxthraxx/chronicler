@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.24.0-alpha] - 2025-09-24
+
+### ✨ Added
+
+- **Fonts**: You can now add and use your own custom fonts in themes. The application will automatically scan a new `fonts` directory in the app's configuration folder on startup. Supported formats are `.woff2`, `.ttf`, and `.otf`.
+
+### 🔄 Changed
+
+- **File View**: The main view will now remain focused on a file after it has been renamed or moved. Previously, these actions required you to manually locate and re-open the file.
+- **Reports**: The "Broken Links" report now uses natural sort order instead of alphabetical. This ensures that numbered items (e.g., "1st Scion", "18th Scion") are sorted correctly and intuitively.
+- **Internal**: The frontend's view navigation logic has been centralized, removing duplicated local functions.
+
+---
+
 ## [v0.23.4-alpha] - 2025-09-23
 
 ### 🔄 Changed
