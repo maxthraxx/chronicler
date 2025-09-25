@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.24.2-alpha] - 2025-09-25
+
+### 🐞 Fixed
+
+- **Importer**: Fixed an issue where the MediaWiki importer would fail with a "program not found" error. The importer now correctly locates and uses the application-managed Pandoc executable instead of attempting to call a globally installed version.
+
+---
+
 ## [v0.24.1-alpha] - 2025-09-24
 
 ### 🐞 Fixed
