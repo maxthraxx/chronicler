@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.24.3-alpha] - 2025-09-27
+
+### 🐞 Fixed
+
+- **Fonts / Windows**: Fixed an issue that prevented custom fonts from rendering correctly on Windows 11. This was because the font's filename was being used as its CSS `font-family`, which stricter browser engines reject if it doesn't match the font's internal metadata. The application now extracts the correct "Font Family Name" from the file's metadata, ensuring fonts are applied reliably across all platforms.
+
+---
+
 ## [v0.24.2-alpha] - 2025-09-25
 
 ### 🐞 Fixed
