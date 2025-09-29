@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.24.4-alpha] - 2025-09-29
+
+### 🐞 Fixed
+
+- **Images**: Fixed a bug that prevented images embedded as Base64 `data:` URIs from rendering, which broke the full-screen image viewer. This was caused by the `data:` source being accidentally removed from the Content Security Policy's `img-src` directive during a recent refactor.
+
+---
+
 ## [v0.24.3-alpha] - 2025-09-27
 
 ### 🐞 Fixed
