@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### ✨ Added
 
-- **Infobox**: You can now create highly customizable, wiki-style infobox layouts directly from the YAML frontmatter.A new `layout` key allows you to inject `header` rules to add centered titles and `group` rules to render multiple fields as columns. Rules can be positioned relative to existing fields (e.g., `{ "above": "field_name" }`).
+- **Infobox**: You can now create highly customizable, wiki-style infobox layouts directly from the YAML frontmatter. A new `layout` key allows you to inject `header` rules to add centered titles and `group` rules to render multiple fields as columns. Rules can be positioned relative to existing fields (e.g., `{ "above": "field_name" }`).
 
 ---
 

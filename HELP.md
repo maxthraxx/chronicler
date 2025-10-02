@@ -56,7 +56,7 @@ image: rivertown.jpg
 ---
 ```
 
-All frontmatter fields are optional. There are four fields that have special behaviour:
+All frontmatter fields are optional. There are several fields that have special behaviour:
 
 | Field      | Description |
 |------------|-------------|
